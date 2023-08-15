@@ -43,7 +43,7 @@ sudo update-mime-database /usr/share/mime # 刷新数据库，或者说同步数
 
 - 安装zsh-syntax-highlighting语法高亮插件
 
-```
+```shell
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
 echo "source $ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
 source ~/.zshrc
@@ -51,7 +51,7 @@ source ~/.zshrc
 
 - 安装zsh-autosuggestions语法历史记录插件
 
-```
+```shell
 git clone https://github.com/zsh-users/zsh-autosuggestions.git $ZSH_CUSTOM/plugins/zsh-autosuggestions 
 echo "source $ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc 
 source ~/.zshrc
@@ -63,7 +63,7 @@ source ~/.zshrc
 
 首先编辑grub文件
 
-```
+```shell
 sudo gedit /etc/default/grub
 ```
 
@@ -71,13 +71,13 @@ sudo gedit /etc/default/grub
 
 然后编辑30_os-prober 文件
 
-```
+```shell
 sudo gedit /etc/grub.d/30_os-prober   
 ```
 
 找到这一串C代码
 
-```
+```shell
 if [ "\${timeout}" = 0 ]; then
 
 set timeout=10
@@ -87,7 +87,7 @@ fi
 
 将这三行都注释掉，保存，最后：
 
-```
+```shell
 sudo update-grub
 ```
 
@@ -158,7 +158,7 @@ tar xzvf my.tar.gz
 - 先在Windows下配对，配对好了会在注册表下生成蓝牙设备相关信息
 - 在Linux上同样连接上你的蓝牙设备，然后我们获取Linux下的相关参数
 
-```
+```shell
 su
 
 cd /var/lib/bluetooth 
@@ -613,25 +613,25 @@ env WINEPREFIX="$HOME/.deepinwine/Deepin-TIM" winecfg
 
 首先先安装qcef这个软件包
 
-```
+```shell
 sudo pacman -S qcef
 ```
 
 编辑netease-cloud-music.bash文件
 
-```
+```shell
 sudo gedit /opt/netease/netease-cloud-music/netease-cloud-music.bash
 ```
 
 更改
 
-```
+```shell
 #!/bin/shHERE="$(dirname "$(readlink -f "${0}")")"export LD_LIBRARY_PATH=/usr/libexport QT_PLUGIN_PATH="${HERE}"/pluginsexport QT_QPA_PLATFORM_PLUGIN_PATH="${HERE}"/plugins/platformsexec "${HERE}"/netease-cloud-music $@
 ```
 
 最后安装vlc
 
-```
+```shell
 sudo pacman -S vlc
 ```
 
@@ -663,22 +663,26 @@ sudo pacman -S vlc
 
 将下面的内容粘贴到~/.pam_environment
 
-    GTK_IM_MODULE DEFAULT=fcitx5
-    
-    QT_IM_MODULE DEFAULT=fcitx5
-    
-    XMODIFIERS DEFAULT=@im=fcitx
+```
+GTK_IM_MODULE DEFAULT=fcitx5
+QT_IM_MODULE DEFAULT=fcitx5
+XMODIFIERS DEFAULT=@im=fcitx
+```
 
 系统登陆后默认启动Fcitx5输入法
 
 将下面的内容粘贴到 ~/.xprofile
 
-    fcitx5 &
+```
+fcitx5 &
+```
 
 配置主题:
 可以使用fcitx5-material-color这个主题
 
-    sudo pacman -S fcitx5-material-color
+```shell
+sudo pacman -S fcitx5-material-color
+```
 
 ### 4、Arch上关于源码编译的问题
 
@@ -720,7 +724,7 @@ conda deactivate
 
 第二步：在终端“root”权限下，卸载系统存在的所有英伟达驱动
 
-```
+```shell
 sudo apt autoremove nvidia-*
 ```
 
@@ -728,7 +732,7 @@ sudo apt autoremove nvidia-*
 
 第三步：在终端“root”权限下，禁止nouveau驱动
 
-```
+```shell
 sudo dedit /etc/modprobe.d/blacklist.conf
 ```
 
@@ -744,13 +748,13 @@ alias lbm-nouveau off
 
 然后：
 
-```
+```shell
 sudo update-initramfs -u
 ```
 
 第四步：重启系统，使用代码：
 
-```
+```shell
 lsmod | grep nouveau
 ```
 
@@ -762,7 +766,7 @@ lsmod | grep nouveau
 
 第一步：在终端“root”权限下，使用代码：
 
-```
+```shell
 sudo apt install nvidia-driver
 ```
 
@@ -770,7 +774,7 @@ sudo apt install nvidia-driver
 
 第二步：查看自己电脑存在的显卡，使用代码：
 
-```
+```shell
 lspci | egrep "VGA|3D"
 ```
 
@@ -778,7 +782,7 @@ lspci | egrep "VGA|3D"
 
 第三步：
 
-```
+```shell
 sudo dedit /etc/X11/xorg.conf
 ```
 
@@ -800,7 +804,7 @@ EndSection
 
 第四步：
 
-```
+```shell
 sudo dedit ~/.xinitrc
 ```
 
@@ -814,13 +818,13 @@ xrandr --dpi 125
 
 第五步：使用代码：
 
-```
+```shell
 sudo dedit /etc/lightdm/display_setup.sh
 ```
 
 在新建的display_setup.sh文件中复制以下内容并保存
 
-```
+```shell
 #!/bin/sh  
 xrandr --setprovideroutputsource modesetting NVIDIA-0  
 xrandr --auto
@@ -828,19 +832,19 @@ xrandr --auto
 
 赋予权限
 
-```
+```shell
 sudo chmod +x /etc/lightdm/display_setup.sh
 ```
 
 第六步：使用代码：
 
-```
+```shell
 sudo dedit /etc/lightdm/lightdm.conf
 ```
 
 在打开的文本中，找到[Seat:*]行，在下面一行复制以下内容并保存
 
-```
+```shell
 display-setup-script=/etc/lightdm/display_setup.sh
 ```
 
@@ -852,7 +856,7 @@ display-setup-script=/etc/lightdm/display_setup.sh
 
 第一步：使用代码：
 
-```
+```shell
 sudo apt install nvidia-smi nvidia-settings
 ```
 
@@ -866,7 +870,7 @@ sudo apt install nvidia-smi nvidia-settings
 
 列出声卡设备信息（以本人设备信息为例）：
 
-```
+```shell
 arecord -l
 ```
 
@@ -890,7 +894,7 @@ card 0代表声卡号，device 0代表设备号
 
 用相应的设备录制一段音频文件：
 
-```
+```shell
 arecord -Dhw:0,6 -d 10 -f cd -c 2 -t wav test.wav			//0代表card num，6代表device num，test文件在根目录
 ```
 
@@ -898,13 +902,13 @@ arecord -Dhw:0,6 -d 10 -f cd -c 2 -t wav test.wav			//0代表card num，6代表d
 
 首先复制配置文件：
 
-```
+```shell
 sudo cp /usr/share/pulseaudio/alsa-mixer/profile-sets/default.conf  /usr/share/pulseaudio/alsa-mixer/profile-sets/audio.conf		//复制的配置文件名字自定义即可
 ```
 
 编辑相应文件：
 
-```
+```shell
 sudo dedit /usr/share/pulseaudio/alsa-mixer/profile-sets/audio.conf
 ```
 
@@ -923,13 +927,13 @@ direction = input
 
 测试一下看看：
 
-```
+```shell
 pacmd load-module module-alsa-card device_id=0 profile_set=audio.conf	//记得你的配置文件名
 ```
 
 应该在设置里可以选择到输入设备了，最后一步，将上述参数写入到/etc/pulse/default.pa里面，在最后一行添加：
 
-```
+```shell
 load-module module-alsa-card device_id=0 profile_set=audio.conf
 ```
 
@@ -945,7 +949,7 @@ load-module module-alsa-card device_id=0 profile_set=audio.conf
 
 关键在于iwlwifi驱动文件，debian内核有明确说明，需要修改参数
 
-```
+```shell
 sudo gedit /etc/modprobe.d/iwlwifi.conf
 ```
 
@@ -963,13 +967,13 @@ sudo gedit /etc/modprobe.d/iwlwifi.conf
 
 首先获取deepin-wine
 
-```
+```shell
 wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
 ```
 
 然后按照提示安装相应软件，如微信
 
-```
+```shell
 sudo apt install deepin.com.wechat
 ```
 
@@ -977,7 +981,7 @@ sudo apt install deepin.com.wechat
 
 #### DPI显示问题：同上
 
-```
+```shell
 env WINEPREFIX="/home/****/.deepinwine/Deepin-WeChat" deepin-wine winecfg
 ```
 
@@ -985,7 +989,7 @@ env WINEPREFIX="/home/****/.deepinwine/Deepin-WeChat" deepin-wine winecfg
 
 以星火商店中的deepin-wine5版本为例
 
-```
+```shell
 env WINEPREFIX="/home/ping/.deepinwine/Spark-WeChat" deepin-wine5 winecfg
 ```
 
@@ -994,9 +998,11 @@ env WINEPREFIX="/home/ping/.deepinwine/Spark-WeChat" deepin-wine5 winecfg
 #### 文字乱码问题：
 
 本质上还是因为Deepin-WeChat这个容器中配置的字体与你系统中所存在的字体不一致引起的。
-```
+
+```shell
 WINEPREFIX=~/.deepinwine/Deepin-TIM deepin-wine6-stable regedit
 ```
+
 代码前半部分定位到相关软件的文件夹，第二个参数是容器名，我的是deepin-wine6-stable，regedit代表编辑的是注册表
 
 找到HKEY_LOCAL_MACHINE/Software/Microsoft/Windows NT/CurrentVersion/FontSubstitutes
@@ -1043,7 +1049,7 @@ Exec=env QT_SCALE_FACTOR=2 /opt/apps/com.163.music/files/bin/netease-cloud-music
 
 如屏幕闪烁以及自带键盘（yoga 14s）无法使用
 
-```
+```shell
 sudo gedit /etc/default/grub
 ```
 
@@ -1061,7 +1067,7 @@ obs以及simplescreenrecord下都有这个问题，不确定我说的对，但�
 
 ### 7、为了使用Utools修改alt space快捷键
 
-```
+```shell
 sudo dedit ~/.config/kglobalshortcutsrc
 ```
 
@@ -1071,13 +1077,13 @@ sudo dedit ~/.config/kglobalshortcutsrc
 
 首先，列举分区的相关详细信息：
 
-```
+```shell
 sudo blkid
 ```
 
 这样应该就能看到磁盘下属分区的详细UUID，与fstab文件信息中的UUID进行对照：
 
-```
+```shell
 sudo dedit /etc/fstab
 ```
 
@@ -1089,13 +1095,13 @@ mdadm配置文件导致的开机缓慢，本质上也是因为UUID的更改导�
 
 删除原先的配置文件：
 
-```
+```shell
 sudo rm /etc/mdadm/mdadm.conf
 ```
 
 更新新的mdadm配置文件：
 
-```
+```shell
 update-initramfs  -u
 ```
 
