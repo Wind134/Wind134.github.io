@@ -1,7 +1,7 @@
 ---
-title: Linux学习纪实
+title: Linux使用汇总
 author: Ping
-date: 2023-05-09 22:33:00 +0800
+date: 2023-05-09 14:33:00 +0800
 categories: [Linux]
 tags: [Debian, Arch Linux, shell, tools]
 ---
