@@ -71,7 +71,7 @@ MySQL是一个关系型数据库管理系统，由瑞典MySQL AB公司开发，�
 
 - **SQL语言**
   
-  在以下的[操作部分](## 操作部分)有详细的笔记；
+  在[操作部分](https://wind134.github.io/posts/MySQL_Operation/)的文档有详细的笔记；
 
 ## MySQL数据类型介绍
 
