@@ -1,6 +1,7 @@
 ---
 title: HTTP概述
 author: Ping
+math: true
 date: 2023-06-08 14:33:00 +0800
 categories: [计算机网络]
 tags: [NetWork, Linux, 网络编程]
