@@ -1593,7 +1593,7 @@ epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
   - 跟边缘触发相关的类型只需要知道：
   - read函数**发现输入缓冲中没有数据可读时**返回-1，同时在errno中保存EAGAIN常量；
 
-- 更改套接字特性以完成非阻塞(Non-blocking)I/O，[这一段同样涉及](##send & recv函数)非阻塞方式；
+- 更改套接字特性以完成非阻塞(Non-blocking)I/O，send与recv函数也涉及到了非阻塞方式；
 
   - 这里通过Linux平台提供的方法进行更改；
 
