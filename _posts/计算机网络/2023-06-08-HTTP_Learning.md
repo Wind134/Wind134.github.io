@@ -56,11 +56,11 @@ HTTP是Web开发中非常重要的协议，它提供了一种标准的方式来�
 我来列举一段请求报文：
 
 ```
-GET /path/to/resource HTTP/1.1		-- 请求行，包含请求方法GET，URL: /path/to/resource，HTTP协议版本：1.1
-Host: example.com					-- 从这里开始的3行是请求头部，包含了一系列的键值对
+GET /path/to/resource HTTP/1.1   -- 请求行，包含请求方法GET，URL: /path/to/resource，HTTP协议版本：1.1
+Host: example.com                -- 从这里开始的3行是请求头部，包含了一系列的键值对
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
-									-- 空行，用于分隔头部和请求体(请求体可选)
+                                 -- 空行，用于分隔头部和请求体(请求体可选)
 ```
 
 从上面的报文可以看到的是，如果请求报文中使用了GET方法，一般不会包含请求体；
@@ -68,12 +68,12 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/a
 接下来再看一段不同的请求报文，该段请求报文请求行使用了POST方法，而POST以及PUT请求方法，通常需要在请求体中包含数据；
 
 ```
-POST /path/to/resource HTTP/1.1		-- 请求行，包含了请求方法、URL、HTTP协议版本
-Host: example.com					-- 从这里开始的3行是请求头部
+POST /path/to/resource HTTP/1.1  -- 请求行，包含了请求方法、URL、HTTP协议版本
+Host: example.com                -- 从这里开始的3行是请求头部
 Content-Type: application/json
 Content-Length: 32
-									-- 空行
-{									-- 请求体，包含了键值对
+                                 -- 空行
+{                                -- 请求体，包含了键值对
   "key1": "value1",
   "key2": "value2"
 }
@@ -99,11 +99,11 @@ GET一般不附带请求体，POST一般请求体中会附带表单信息，比�
 下面继续列举一段响应报文：
 
 ```
-HTTP/1.1 200 OK					-- 状态行，HTTP版本：1.1，状态码：200，状态描述：OK，表明正常收到请求
-Content-Type: text/html			-- 第二第三行都属于响应头部，包含一系列的键值对；
-Content-Length: 127				-- 这个属于响应头部的字段，展示的是响应体中内容的长度；
-								-- 空行，用于分隔头部和响应体；
-<!DOCTYPE html>					-- 下面的都属于响应体，响应的实际内容，这里展示的是HTML
+HTTP/1.1 200 OK         -- 状态行，HTTP版本：1.1，状态码：200，状态描述：OK，表明正常收到请求
+Content-Type: text/html	-- 第二第三行都属于响应头部，包含一系列的键值对；
+Content-Length: 127     -- 这个属于响应头部的字段，展示的是响应体中内容的长度；
+                        -- 空行，用于分隔头部和响应体；
+<!DOCTYPE html>         -- 下面的都属于响应体，响应的实际内容，这里展示的是HTML
 <html>
 <head>
     <title>Example</title>
