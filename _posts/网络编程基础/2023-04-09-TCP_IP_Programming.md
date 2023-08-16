@@ -7,28 +7,27 @@ tags: [网络编程, Linux, socket, IO复用]
 ---
 
 
-# 理解网络编程和套接字
+## 理解网络编程和套接字
 
-## 概念理解
+### 概念理解
 
 
 **网络编程:** 编写程序使得两台连网得计算机相互交换数据，又称为套接字编程；
 
 **套接字(socket):** 套接字是网络数据传输用的软件设备，操作系统会提供这么一个部件，编程中的"套接字"就是用来连接因特网的工具；
 
-**POSIX(Portable Operation System Interface)标准:** POSIX是为UNIX系列操作系统设立的标准，它定义了一些数据类型；
+**POSIX(Portable Operation System Interface)标准:** POSIX是为UNIX系列操作系统设立的标准，它定义了一些数据类型：
 
-```html
-<table>
+<table style="width:100%; text-align:center;">
     <tr>
         <th colspan="3" style="text-align: center;">POSIX中定义的数据类型</th>
-    </tr >
+    </tr>
     <tr>
         <td style="text-align: center;"><b>数据类型名称</b></td>
         <td style="text-align: center;"><b>数据类型说明</b></td>
         <td style="text-align: center;"><b>声明的头文件</b></td>  
-    </tr >
-    <tr >
+    </tr>
+    <tr>
         <td style="text-align: center;">int8_t</td>
         <td style="text-align: center;">signed 8-bit int</td>
         <td rowspan="6" style="text-align: center;">sys/types.h</td>
@@ -62,7 +61,7 @@ tags: [网络编程, Linux, socket, IO复用]
         <td style="text-align: center;">socklen_t</td>
         <td style="text-align: center;">长度(length of struct)</td>
     </tr>
-        <tr>
+    <tr>
         <td style="text-align: center;">in_addr_t</td>
         <td style="text-align: center;">IP地址，声明为uint32_t</td>
         <td rowspan="2" style="text-align: center;">netinet/in.h</td>
@@ -71,10 +70,9 @@ tags: [网络编程, Linux, socket, IO复用]
         <td style="text-align: center;">in_port_t</td>
         <td style="text-align: center;">端口号，声明为uint16_t</td>
     </tr>
-<table>
-```
+</table>
 
-## 基本轮廓介绍
+### 基本流程介绍
 
 网络编程中接受连接请求的套接字创建过程整理如下：
 
@@ -120,7 +118,7 @@ int connect(int sockfd, struct sockaddr *serv_addr, socklen_t addrlen);    // �
 - 调用socket函数创建套接字；
 - 调用connect函数向服务器端发送连接请求；
 
-### Linux文件操作
+## Linux文件操作
 
 在Linux操作系统中，socket也被认为是一种文件，因此在网络数据传输过程中可以使用文件I/O的相关函数，而windows则需要区分socket和文件，因此需要调用特殊的数据传输相关的函数；
 
@@ -196,36 +194,43 @@ ssize_t read(int fd, void * buf, size_t nbytes);    // fd文件描述符；buf�
 
 <font color=red>注意上面没有const，这部分我理解为是要保存读取的那部分数据的所在地址，可以变？</font>
 
-### 基于Windows平台
+## 基于Windows平台
 
-#### 基于Windows的套接字相关函数
+Windows平台的这部分内容暂时省略，后续学习再进行补充！
 
-#### Windows中的文件句柄和套接字句柄
+### 基于Windows的套接字相关函数
+
+### Windows中的文件句柄和套接字句柄
 
 Windows通过调用系统函数创建文件时，返回"句柄"(handle)，Windows中的句柄相当于Linux中的文件描述符，然而Windows中要区分文件句柄和套接字句柄；
 
-#### 基于Windows的I/O函数
+### 基于Windows的I/O函数
 
 Windows严格区分文件I/O函数以及套接字I/O函数；
 
-# 套接字类型与协议设置
+## 套接字类型与协议设置
 
-## 套接字
+首先记录一些相关概念：
 
 **协议(Protocol):** 在计算机领域，协议就是计算机间的通信规则，是为了完成数据交换而定好的约定；
 
 ### 套接字的创建
 
-这部分针对socket函数进行详细介绍，首先是基本用法：
+这部分针对socket函数进行详细介绍，该函数用来创建套接字：
 
 ```c
 #include <sys/socket.h>
 
+// domain是使用的协议族信息
+// type是套接字数据传输类型信息
+// protocol是具体的协议信息
 // socket函数成功时返回套接字的文件描述符，失败返回-1
-int socket(int domain, int type, int protocol); // domain是使用的协议族信息，type是套接字数据传输类型信息，protocol是具体的协议信息
+int socket(int domain, int type, int protocol);
 ```
 
-首先介绍**协议族(Protocol Family)**：声明的协议族一般保存在头文件`sys/socket.h`中
+下面对socket函数中使用的三个参数一一介绍：
+
+**协议族(Protocol Family)**：声明的协议族一般保存在头文件`sys/socket.h`中，一般包括以下类型：
 
 | 名称        | 协议族           |
 |:---------:|:-------------:|
@@ -237,7 +242,7 @@ int socket(int domain, int type, int protocol); // domain是使用的协议族�
 
 重点讲解的是IPv4互联网协议族，即PF_INET，此外套接字采用的最终协议是通过socket中的第三个参数传递的，在指定的协议族范围内通过第一个参数决定第三个参数；
 
-其次介绍**套接字类型(Type):** 套接字类型指的是套接字的数据传输方式，通过socket函数的第二个参数传递，通过该参数决定创建的套接字的数据传输方式；是的，协议族本身也存在着多种数据传输方式；
+**套接字类型(Type):** 套接字类型指的是套接字的数据传输方式，通过socket函数的第二个参数传递，通过该参数决定创建的套接字的数据传输方式；是的，协议族本身也存在着多种数据传输方式，下面主要介绍两种，基本上是对应着TCP与UDP这两种传送协议：
 
 - **面向连接的套接字(SOCK_STREAM)**
   
@@ -264,16 +269,15 @@ int socket(int domain, int type, int protocol); // domain是使用的协议族�
   - 传输的数据有数据边界；
   - 限制每次传输的数据大小；
 
-最后介绍**协议(protocol):** 一般而言，传递了前两个参数即可创建所需的套接字，因此大部分时候可以向第三个参数传递0，除:** *同一协议族中存在多个数据传输方式相同的协议**，此时需要通过第三个参数具体指定协议信息；
+**协议(protocol):** 一般而言，传递了前两个参数即可创建所需的套接字，因此大部分时候可以向第三个参数传递0，除非**同一协议族中存在多个数据传输方式相同的协议**，此时需要通过第三个参数具体指定协议信息：
 
 ```c
 int tcp_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);    // 协议采用TCP，IPv4协议族中面向连接的传输方式
 int udp_socket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);    // 协议采用UDP，IPv4协议族中面向消息的传输方式
 ```
 
-# 地址族与数据序列
 
-## 套接字的IP与端口分配
+### 套接字的IP与端口介绍
 
 这部分的知识有基础，不赘述，会补充一些细节；
 
@@ -281,7 +285,7 @@ int udp_socket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);    // 协议采用UDP
 
 端口号本身是不能重复的，但TCP套接字和UDP套接字不会共用端口号，因此允许重复，但TCP与TCP之间不允许共用；
 
-IP以及端口信息以如下的方式呈现：
+**IP以及端口信息在C语言中以如下的方式呈现:**
 
 ```c
 struct sockaddr_in
@@ -330,12 +334,17 @@ sa_data中保存的信息中需包含IP地址和端口号，剩余部分应该�
 
 ## 网络字节序与地址变换
 
-不同CPU对4字节整数型值1在内存空间的保存方式是不同的，此谓之大端小端存储；
+之所以介绍这部分，是因为不同CPU对4字节整数型值1在内存空间的保存方式是不同的，此谓之大端小端存储：
 
 - 大端：高位字节放低位地址；
 - 小端：高位字节放在高位地址；(Intel系列CPU以**小端序方式**保存数据)
 
+而网络编程为了尽可能跨平台(硬件软件)，会统一采用**网络字节序**，一般是大端字节顺序；
+
+因此一般来说我们需要进行字节序转换；
+
 ### 字节序转换
+
 
 介绍几个帮助转换字节序的函数：
 
@@ -344,77 +353,93 @@ sa_data中保存的信息中需包含IP地址和端口号，剩余部分应该�
 - `unsigned long htonl`-如上
 - `unsigned long ntohl`-如上
 
-## IP的初始化与分配
+上面的host理解为主机，network理解为网络即可；
 
-首先介绍一个简单的前提：将类似"211.214.107.99"的点分十进制格式的字符串主要通过以下两个函数来实现：
+### IP地址转换的例子
+
+首先介绍一个简单的示例：将类似"211.214.107.99"的点分十进制格式的字符串转换成一个网络字节序主要通过以下两种方式来实现：
 
 ```c
 #include <arpa/inet.h>
 
-in_addr_t inet_addr(const char * string);    // inet_addr转换
+// inet_addr将一个点分十进制格式的字符串转换为一个标准格式的IP地址
+in_addr_t inet_addr(const char * string);
 
+// inet_aton将一个点分十进制格式的字符串转换为一个标准格式的IP地址，但结果保存到第二个参数的地址
+// 转换成功返回非0值，转换失败返回0值
 int inet_aton(const char * string, struct in_addr * addr);    // inet_aton转换，该函数利用了in_addr结构体，保存到该地址
 ```
-
 同时也有一个函数可以将**网络字节序**整数型IP地址转换为我们熟悉的字符串形式：
 
 ```c
 #include <arpa/inet.h>
 
-char * inet_ntoa(struct in_addr adr);    // 竟然是传值作为参数
+// 传地址值作为参数
+// 返回一个点分十进制类型的IP
+char * inet_ntoa(struct in_addr adr);
 ```
-
 该函数返回类型为char指针，这部分的数据随时可能会被清除，如果需要长期保存，需要：
 
 ```c
 addr1.sin_addr.s_addr = htonl(0x1020304);
 addr2.sin_addr.s_addr = htonl(0x1010101);
 
-str_ptr = inet_ntoa(addr1.sin_addr);    // 返回char指针
-strcpy(str_arr, str_ptr);        // 将str_ptr地址的内容交给str_arr
+// 返回char指针，传给str_ptr
+str_ptr = inet_ntoa(addr1.sin_addr);
 
-inet_ntoa(addr2.sin_addr);        // 这一步会使得新的IP地址字符串覆盖，但由于上面str_arr已保存，不影响
+// 将str_ptr地址的内容交给str_arr
+strcpy(str_arr, str_ptr);
+
+// 这一步会使得新的IP地址字符串覆盖，但由于上面str_arr已保存，不影响
+inet_ntoa(addr2.sin_addr);
 ```
 
-### 初始化过程
+### IP地址初始化过程
+
+初始化过程的代码：
 
 ```c
 struct sockaddr_in addr;
 char * serv_ip = "211.217.168.13";    // 声明IP地址字符串，这是一种硬编码
 char * serv_port = "9190";            // 声明端口号字符串
+
 memset(&addr, 0, sizeof(addr));        // 结构体变量addr的所有成员初始化为0
-addr.sin_family = AF_INET;            // 指定IPv4地址族
-addr.sin_addr.s_addr = inet_addr(serv_ip);    // 基于字符串的IP地址初始化，服务端可以用INADDR_ANY
-addr.sin_port = htons(atoi(serv_port));        // 基于字符串的端口号初始化，atoi将char->int
+
+// 下面三行做的事情分别是：
+// 指定IPv4地址族
+// 基于字符串的IP地址初始化，如果是服务端可以用INADDR_ANY，表示采用自动分配的IP
+// 基于字符串的端口号初始化，atoi将char->int，同时转换成网络字节序
+addr.sin_family = AF_INET;
+addr.sin_addr.s_addr = inet_addr(serv_ip);
+addr.sin_port = htons(atoi(serv_port));
 ```
+INADDR_ANY参数介绍：
 
-上述网络地址信息初始化过程主要针对服务器端而非客户端，服务端的准备工作通过bind函数完成，而客户端则通过connect函数完成，以下内容针对服务端进行讨论：
-
-- **INADDR_ANY**
-  
-  **对于服务端而言，可以利用常数INADDR_ANY分配服务端的IP地址，采用这种方式可以自动获取运行服务器端的计算机IP地址，**只要端口号一致，就可以从不同IP地址接收数据；
+- **INADDR_ANY:** 对于服务端而言，可以利用常数INADDR_ANY分配服务端的IP地址，采用这种方式可以自动获取运行服务器端的计算机IP地址，只要端口号一致，就可以从不同IP地址接收数据；
 
 ### 套接字IP分配
 
-在初始化之后，需要将初始化的地址信息分配给套接字，这一项工作由bind函数负责：
+在初始化之后，需要将初始化的地址信息分配给套接字，这一项工作在服务端由bind函数负责：
 
 ```c
 #include <sys/socket.h>
 
-// 三个参数分别是：要分配地址信息的套接字文件描述符，存有地址信息的结构体变量地址值，第二个结构体变量的长度
-int bind(int sockfd, struct sockaddr * myaddr, socket_t addrlen);    // 成功返回0，失败返回-1
+// sockfd 要分配地址信息的套接字文件描述符
+// myaddr 存有地址信息的结构体变量地址值
+// addrlen 第二个结构体变量的长度
+// return 成功返回0，失败返回-1
+int bind(int sockfd, struct sockaddr * myaddr, socket_t addrlen);
 ```
 
 调用成功后，则将第二个参数指定的地址信息分配给第一个参数中相应的套接字；
 
-# 基于TCP的C/S端
+## TCP的服务/客户端预备知识
 
-## TCP/IP协议栈
+### TCP/IP协议栈
 
 TCP/IP协议栈共分4层，以一个表格展示：
 
-```html
-<table>
+<table style="width:100%; text-align:center;">
     <tr>
         <th colspan="2" style="text-align: center;">应用层</th>
     </tr >
@@ -428,13 +453,13 @@ TCP/IP协议栈共分4层，以一个表格展示：
     <tr>
         <td colspan="2" style="text-align: center;"><b>链路层</b></td>
     </tr>
-```    
+</table>    
 
 数据收发分成了4个层次化过程，这四个层次化过程结合起来称作**TCP/IP协议栈**；
 
 各层的实现通过操作系统等软件实现，也可能通过类似**NIC(Network Interface Card)** 的硬件设备实现；
 
-**一个很有感触的设计思想:** 分层式协议
+一个很有感触的设计思想: **分层式协议**
 
 - 公开对外的标准，引导更多的人遵守规范，因此即便是不同公司的路由器，走的还是IP层的协议标准，网卡，走的也是链路层的协议标准；
 
@@ -446,19 +471,17 @@ TCP/IP协议栈共分4层，以一个表格展示：
 
 - **传输层与IP层间的关系**
   
-  IP层只关注1个数据包的传输过程，即便是传输多个数据包，每个数据包也是由IP层实际传输的，但是传输本身以及传输顺序是不可靠的；
-  
-  因此需要添加TCP/UDP层；
+  IP层只关注1个数据包的传输过程，即便是传输多个数据包，每个数据包也是由IP层实际传输的，但是传输本身以及传输顺序是不可靠的，因此需要添加TCP/UDP层来处理这些不可靠的情形；
 
 **应用层:** 上述三层是套接字通信过程中自动处理的，即可以理解为都封装在套接字内部，程序员无需在意这些细节，而程序员需要根据程序特点决定服务器端和客户端之间的数据传输规则，这就是应用层协议；
 
-## C/S端的实现
+## 实现基于TCP的服务/客户端
 
 展示**TCP服务端的默认的函数调用顺序:** 
 
 <img title="" src="/assets/img/TCP-IP/调用顺序.svg" alt="" data-align="center">
 
-创建套接字以及向套接字分配网络地址的过程已经进行过详细讲解，接下来针对后续的几个过程进行讲解：
+创建套接字以及向套接字分配网络地址的过程在上一章节已经进行过详细讲解，接下来针对后续的几个过程进行讲解；
 
 ### 等待连接请求状态
 
@@ -467,9 +490,10 @@ TCP/IP协议栈共分4层，以一个表格展示：
 ```c
 #include <sys/socket.h>
 
-// sock为希望进入等待连接请求的套接字文件描述符，传递的套接字参数成为服务器端套接字(监听套接字)
-// backlog为连接请求队列的长度，若为5则该长为5，表示最多使5个连接请求进入队列
-int listen(int sock, int backlog);    // 成功时返回0，失败时返回-1
+// sock 希望进入等待连接请求的套接字文件描述符，传递的套接字参数成为服务器端套接字(监听套接字)
+// backlog 为连接请求队列的长度，若为5则该长为5，表示最多使5个连接请求进入队列
+// return 成功时返回0，失败时返回-1
+int listen(int sock, int backlog);
 ```
 
 **等待连接请求状态:** 客户端请求连接时，服务端受理连接前一直使请求处于等待状态；
@@ -487,16 +511,16 @@ int listen(int sock, int backlog);    // 成功时返回0，失败时返回-1
 ```c
 #include <sys/socket.h>
 
-// sock为服务器套接字的文件描述符
-// addr为发起连接请求的客户端地址信息的变量地址值
-// addrlen为第二个参数addr结构体的长度，但是传入的是存有该长度的变量地址
-int accept(int sock, struct sockaddr * addr, socklen_t * addrlen);    // 成功时返回创建的套接字文件描述符，失败返回-1
+// sock 服务器套接字的文件描述符
+// addr 发起连接请求的客户端地址信息的变量地址值
+// addrlen 第二个参数addr结构体的长度，但是传入的是存有该长度的变量地址
+// return 成功时返回创建的套接字文件描述符，失败返回-1
+int accept(int sock, struct sockaddr * addr, socklen_t * addrlen);
 ```
 
 accept函数受理连接请求等待队列中待处理的客户端连接请求，**函数调用成功后将产生用于数据I/O的套接字**，并返回其文件描述符；
 
 accept函数获取客户端IP地址等信息的过程：
-
 - 操作系统提供的网络协议栈完成了网络连接的建立和数据传输等操作；
 - 当服务器调用accept函数时，操作系统会在内核中创建一个新的套接字，该套接字与客户端的套接字建立连接，完成TCP三次握手。
 - accept函数会返回这个新的套接字的描述符，该描述符可以用于向客户端发送和接收数据。
@@ -505,27 +529,30 @@ accept函数获取客户端IP地址等信息的过程：
 
 我们可以通过将该变量强制类型转换为`struct sockaddr_in`类型，来获取其中的IP地址和端口号等信息。
 
+以上是服务端的准备工作，而客户端层面同样需要发起连接请求。
+
 ### 客户端的连接请求
 
-与服务端相比，区别就在于"请求连接"，它是创建客户端套接字后向服务器端发起的连接请求，服务器端调用listen函数后创建连接请求等待队列，之后客户端即可请求连接：
+与服务端相比，区别就在于**请求连接**，它是创建**客户端套接字**后向服务器端发起的连接请求，服务器端调用listen函数后创建连接请求等待队列，之后客户端即可请求连接：
 
 ```c
 #include <sys/socket.h>
 
-// sock为客户端套接字文件描述符
-// servaddr保存目标服务器端地址信息的变量地址值
-// addrlen以字节为单位传递servaddr的地址变量长度
-int connect(int sock, struct sockaddr * servaddr, socklen_t addrlen);    // 成功返回0，失败返回-1
+// sock 客户端套接字文件描述符
+// servaddr 目标服务器端地址信息的变量地址值
+// addrlen 以字节为单位传递servaddr的地址变量长度
+// return 成功返回0，失败返回-1
+int connect(int sock, struct sockaddr * servaddr, socklen_t addrlen);
 ```
 
 客户端调用connect函数后，发生以下情况才会返回：
-
 - 服务器端接收连接请求；
-  - 该接收请求并不意味着服务器端调用accept函数，而是把连接请求信息记录到等待队列(<font color=red>我知道你要连接了，知道了知道了</font>)；
+  - 该接收请求并不意味着服务器端调用accept函数，而是把连接请求信息记录到等待队列
+  - <font color=red>我知道你要连接了，知道了知道了；</font>
   - 客户端就会想，<font color=red>好的，你知道了，那你应该知道我需要连接了，我可以返回我的connect结果了</font>；
 - 发生断网等异常情况而中断连接请求；
 
-**客户端如何给套接字分配IP和端口号**
+**客户端层面对套接字IP和端口号的分配**
 
 网络数据交换必须分配IP和端口，对于客户端而言，**客户端的IP地址和端口在调用connect函数时自动分配**，而无需像服务器那样调用bind函数进行分配；
 
@@ -535,7 +562,7 @@ int connect(int sock, struct sockaddr * servaddr, socklen_t addrlen);    // 成�
 
 客户端在调用connect函数之前，服务器可能率先调用了accept函数，在这种情况下服务器端进入了阻塞状态，直到客户端调用connect；
 
-## 迭代C/S端的实现
+## 迭代版本的服务/客户端的实现
 
 本质上是服务器端将客户端传输的字符串数据原封不动地传回客户端，就像回声一样，在这部分主要分两个环节，迭代服务器端，以及迭代客户端；
 
@@ -771,7 +798,6 @@ struct hostent * gethostbyaddr(const char * addr, socklen_t len, int family);   
 
 书中列出了一系列可设置套接字的多种可选项(140页)，该一系列套接字选项几乎都可以进行**读取(Get)**和**设置(Set)**，接下来会针对一些重要的套接字可选项进行介绍；
 
-```html
 <table>
   <tr>
     <th style="text-align: center;">协议层</th>
@@ -780,7 +806,7 @@ struct hostent * gethostbyaddr(const char * addr, socklen_t len, int family);   
     <th style="text-align: center;">设置</th>
   </tr>
   <tr>
-    <td style="text-align: center;"rowspan="9">SQL_SOCKET</td>
+    <td style="text-align: center;" rowspan="9">SQL_SOCKET</td>
     <td style="text-align: center;">SO_SNDBUF</td>
     <td style="text-align: center;">O</td>
     <td style="text-align: center;">O</td>
@@ -826,7 +852,7 @@ struct hostent * gethostbyaddr(const char * addr, socklen_t len, int family);   
     <td style="text-align: center;">X</td>
   </tr>
   <tr>
-    <td style="text-align: center;"rowspan="5">IPPROTO_IP</td>
+    <td style="text-align: center;" rowspan="5">IPPROTO_IP</td>
     <td style="text-align: center;">IP_TOS</td>
     <td style="text-align: center;">O</td>
     <td style="text-align: center;">O</td>
@@ -852,7 +878,7 @@ struct hostent * gethostbyaddr(const char * addr, socklen_t len, int family);   
     <td style="text-align: center;">O</td>
   </tr>
   <tr>
-    <td style="text-align: center;"rowspan="3">IPPROTO_TCP</td>
+    <td style="text-align: center;" rowspan="3">IPPROTO_TCP</td>
     <td style="text-align: center;">TCP_KEEPALIVE</td>
     <td style="text-align: center;">O</td>
     <td style="text-align: center;">O</td>
@@ -862,13 +888,12 @@ struct hostent * gethostbyaddr(const char * addr, socklen_t len, int family);   
     <td style="text-align: center;">O</td>
     <td style="text-align: center;">O</td>
   </tr>
-    <tr>
+  <tr>
     <td style="text-align: center;">TCP_MAXSEG</td>
     <td style="text-align: center;">O</td>
     <td style="text-align: center;">O</td>
   </tr> 
-  <tr>
-```
+</table>
 
 针对**读取和设置**先介绍两个函数：
 
@@ -1650,66 +1675,44 @@ ssize_t recv(int sockfd, void * buf, size_t nbytes, int flags);	// 成功时返�
 
 send函数以及recv函数的最后一个参数是收发数据时的可选项，利用**位或bit OR**运算同时传递多个信息：
 
-~~~html
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    th, td {
-      text-align: center;
-      padding: 8px;
-    }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-  </style>
-</head>
-<body>
-  <table style="width:100%; text-align:center;">
-    <tr>
-      <th>可选项(Option)</th>
-      <th>含义</th>
-      <th>send</th>
-      <th>recv</th>
-    </tr>
-    <tr>
-      <td>MSG_OOB</td>
-      <td>用于传输带外数据(Out-of-band data)</td>
-      <td>Yes</td>
-      <td>Yes</td>
-    </tr>
-    <tr>
-      <td>MSG_PEEK</td>
-      <td>验证输入缓冲中是否存在接收的数据</td>
-      <td>-</td>
-      <td>Yes</td>
-    </tr>
-    <tr>
-      <td>MSG_DONTROUTE</td>
-      <td>数据传输过程中不参照路由表，在本地网络中寻找目的地</td>
-      <td>Yes</td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td>MSG_DONTWAIT</td>
-      <td>调用I/O函数时不阻塞，用于使用非阻塞(Non-blocking)I/O</td>
-      <td>Yes</td>
-      <td>Yes</td>
-    </tr>
-    <tr>
-      <td>MSG_WAITALL</td>
-      <td>防止函数返回，直到接收全部请求的字节数</td>
-      <td>-</td>
-      <td>Yes</td>
-    </tr>
-  </table>
-</body>
-</html>
-~~~
+<table style="width:100%; text-align:center;">
+  <tr>
+    <th>可选项(Option)</th>
+    <th>含义</th>
+    <th>send</th>
+    <th>recv</th>
+  </tr>
+  <tr>
+    <td>MSG_OOB</td>
+    <td>用于传输带外数据(Out-of-band data)</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>MSG_PEEK</td>
+    <td>验证输入缓冲中是否存在接收的数据</td>
+    <td>-</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>MSG_DONTROUTE</td>
+    <td>数据传输过程中不参照路由表，在本地网络中寻找目的地</td>
+    <td>Yes</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>MSG_DONTWAIT</td>
+    <td>调用I/O函数时不阻塞，用于使用非阻塞(Non-blocking)I/O</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>MSG_WAITALL</td>
+    <td>防止函数返回，直到接收全部请求的字节数</td>
+    <td>-</td>
+    <td>Yes</td>
+  </tr>
+</table>
 
 不同的操作系统针对上述可选项的支持情况不同，选取表中的一部分进行详细讲解：
 
