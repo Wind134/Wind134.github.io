@@ -345,7 +345,6 @@ sa_data中保存的信息中需包含IP地址和端口号，剩余部分应该�
 
 ### 字节序转换
 
-
 介绍几个帮助转换字节序的函数：
 
 - `unsigned short htons;`-转换无符号短整型(host字节序->network字节序)；
@@ -587,7 +586,8 @@ str_len = read(sock, message, BUF_SIZE - 1);    // read会读取缓冲区的前B
 
 该部分**代码假设**：每次调用read、write函数都会以字符串为单位执行实际的I/O操作；
 
-- <font color=red>但实际上由于TCP不存在数据边界(没有单位)</font>，多次调用write传递的字符串有可能一次性传递到服务器端，然后客户端一次性收到多个字符串；
+- 但实际上由于TCP不存在数据边界，多次调用write传递的字符串有可能一次性传递到服务器端，然后客户端一次性收到多个字符串；
+- 这就是常说的TCP的**粘包问题**；
 
 **了解到的其他解释:** 
 
@@ -606,17 +606,17 @@ while(recv_len < str_len)    // 当读取到的字节长小于之前发送过去
     if (recv_cnt == -1)    error_handing("read() error!");
     recv_len += recv_cnt;
 }
-message[recv_len] = 0;    // 添加'\0'
+message[recv_len] = 0;    // 在最后添加一个空字符'\0'
 printf("Message from server: %s", message);    // 这样打印出来的信息就很准确了
 ```
 
-上述问题即便被很好的修复了，但依然要明白一个事实:** 在更多的情况下，我们都不太可能提前知道要接收的数据长度；**
+上述问题即便被很好的修复了，但依然要明白一个事实: **在更多的情况下，我们都不太可能提前知道要接收的数据长度；**
 
-因此收发过程中也需要定好规则以表示数据的边界，或者提前告知收发数据的大小，**服务器/客户端实现过程中逐步定义的这些规则集合就是应用层协议**；
+因此收发过程中也需要定好规则以表示数据的边界，或者提前告知收发数据的大小，**服务器/客户端实现过程中逐步定义的这些规则集合就是应用层协议**，但是上面的解决策略也可以看作是解决粘包问题的一种手段；
 
 具体的实现见[Github源码](https://github.com/Wind134/TCP-IP-Programming/tree/main/2-%E8%BF%AD%E4%BB%A3%E6%9C%8D%E5%8A%A1%E5%99%A8-%E5%AE%A2%E6%88%B7%E7%AB%AF)；
 
-# 基于UDP的C/S端
+## 基于UDP的服务/客户端
 
 UDP只在IP的数据服务之上添加了很少一点的功能，即**复用和分用的功能**以及**差错检测**的功能，UDP特点：
 
@@ -627,7 +627,7 @@ UDP只在IP的数据服务之上添加了很少一点的功能，即**复用和�
 - UDP支持一对一、一对多、多对一和多对多的交互通信(<font color=red>这个怎么理解？</font>)；
 - UDP的首部开销小，仅8字节；
 
-## C/S端的实现
+### C/S端的实现
 
 **UDP中的服务器端和客户端没有连接**，因此UDP中只有创建套接字的过程和数据交换过程；
 
@@ -646,21 +646,38 @@ UDP只在IP的数据服务之上添加了很少一点的功能，即**复用和�
 
 以下是针对相关函数的介绍：
 
+首先是服务器向客户端发送数据的函数：
+
 ```c
 #include <sys/socket.h>
 
+// sock UDP套接字的文件描述符
+// buff 保存待传输数据的缓冲地址值
+// nbytes 待传输的数据长度
+// flags 可选参数，默认0
+// to 目的地址
+// addrlen 地址字节长，传值
 // 成功时返回传输的字节数，失败时返回-1
-ssize_t sendto(int sock, void *buff, size_t nbytes, int flags,    // sock-UDP套接字的文件描述符，buff-保存待传输数据的缓冲地址值
-              struct sockaddr *to, socklen_t addrlen);    // nbytes-待传输的数据长度，flags可选参数，默认0，最后的两个比较常规
+ssize_t sendto(int sock, void *buff, size_t nbytes, int flags,
+               struct sockaddr *to, socklen_t addrlen);
 ```
 
 与TCP的输出函数write函数最大的区别是：此函数需要**向它传递目标地址信息**(无连接嘛)；
 
+客户端从服务器接收数据的函数；
+
 ```c
 #include <sys/socket.h>
 
-ssize_t recvfrom(int sock, void *buff, size_t nbytes, int flags,// sock-UDP套接字的文件描述符，buff-保存接收数据的缓冲地址值
-                struct sockaddr * from, socklen_t *addrlen); // nbytes-待接收的数据长度，flags可选参数，默认0，最后的两个比较常规
+// sock 客户端UDP套接字的文件描述符
+// buff 保存待接收数据的缓冲地址值
+// nbytes 待接收的数据长度
+// flags 可选参数，默认0
+// from 数据的来源方
+// addrlen 地址字节长，传值
+// 成功时返回传输的字节数，失败时返回-1
+ssize_t recvfrom(int sock, void *buff, size_t nbytes, int flags,
+                 struct sockaddr * from, socklen_t *addrlen);
 ```
 
 **基于UDP的回声服务器端/客户端**的源码实现在这一块不详细记录；
@@ -669,7 +686,7 @@ ssize_t recvfrom(int sock, void *buff, size_t nbytes, int flags,// sock-UDP套�
 
 ### UDP的数据传输特性
 
-TCP传输面向字节流，数据不存在边界，而UDP是具有边界的协议，**传输中调用I/O函数的次数非常重要**，换句话说，输入函数的调用次数和输出函数的调用次数完全一致，这样才能保证数据接收全部的已发送数据；
+TCP传输面向字节流，数据不存在边界，而UDP是**具有边界**的协议(一次一个包)，**传输中调用I/O函数的次数非常重要**，换句话说，输入函数的调用次数和输出函数的调用次数完全一致，这样才能保证数据接收全部的已发送数据；
 
 **介绍两种类型的UDP套接字:** 
 
@@ -677,7 +694,7 @@ TCP传输面向字节流，数据不存在边界，而UDP是具有边界的协�
   
   针对目标地址每次都变动的问题，可以重复利用同一套UDP套接字向不同目标传输数据，这种未注册目标地址信息的套接字称为未连接套接字；
   
-  **但是如果需要向同一个地址发送多次数据呢**？这样的效率就不是很高，我们可以创建已连接UDP套接字；
+  *但是如果需要向同一个地址发送多次数据呢*？这样的效率就不是很高，我们可以创建已连接UDP套接字；
 
 - **创建已连接UDP套接字**
   
@@ -695,11 +712,11 @@ TCP传输面向字节流，数据不存在边界，而UDP是具有边界的协�
 
 具体实现[详见github](https://github.com/Wind134/TCP-IP-Programming/tree/main/4-UDP%E7%9A%84%E6%95%B0%E6%8D%AE%E8%BE%B9%E7%95%8C)；
 
-# 优雅的断开套接字连接
+## 优雅的断开套接字连接
 
-这部分可以结合TCP的四次握手的过程进行理解，发送方A->接收方B的连接关闭后，**B->A的连接还是保留着**，B确认自身没有任何需要发送的数据之后，B会告知TCP可以断开连接了；
+这部分可以结合TCP的[四次握手](https://wind134.github.io/posts/TCP_Learning/)的过程进行理解，发送方A->接收方B的连接关闭后，**B->A的连接还是保留着**，B确认自身没有任何需要发送的数据之后，B会告知TCP可以断开连接了；
 
-## "优雅断开"的理解
+### 理解"优雅断开"
 
 **理解:** 
 
@@ -715,8 +732,10 @@ TCP传输面向字节流，数据不存在边界，而UDP是具有边界的协�
 ```c
 #include <sys/socket.h>
 
+// sock 需要断开的套接字文件描述符
+// howto 传递断开方式信息
 // 成功返回0，失败返回-1
-int shutdown(int sock, int howto)    // sock-需要断开的套接字文件描述符；howto-传递断开方式信息
+int shutdown(int sock, int howto)
 ```
 
 `howto`的三个参数：
@@ -727,7 +746,7 @@ int shutdown(int sock, int howto)    // sock-需要断开的套接字文件描�
 
 源码部分[已上传Github](https://github.com/Wind134/TCP-IP-Programming/tree/main/3-%E4%BC%98%E9%9B%85%E7%9A%84%E6%96%AD%E5%BC%80%E5%A5%97%E6%8E%A5%E5%AD%97%E8%BF%9E%E6%8E%A5)！
 
-## 半关闭的必要性
+### 半关闭的必要性
 
 考虑这么一个情景：客户端连接到服务器端，服务器端将约定的文件传给客户端，客户端收到后发送字符串"Thank you"到服务器端；
 
@@ -741,33 +760,38 @@ int shutdown(int sock, int howto)    // sock-需要断开的套接字文件描�
 
 当然我们可以在调用close函数的同时关闭I/O流，这样也会向对方发送EOF，但此时无法再接收对方传输的数据，因此可以调用shutdown函数，只关闭服务器的输出流，这样又可以表明自己的数据发送完毕，又可以接收对方数据；
 
-# 域名及网络地址
+## 域名及网络地址
 
 **DNS域名系统:** 对IP地址和域名进行相互转换的系统，其核心是DNS服务器；基于这些情形，我们需要考虑的一点是：在我们写的程序中需不需要填进去域名呢，针对用户而言，我们需要考虑一种尽可能便利的方法；
 
 - 写入域名对应的IP到程序，那么每次IP更换我们都需要重新编译，下下策；
 - 因此，我们考虑让程序本身根据域名去自动获取IP地址；
 
-## 地址<->域名
+### 地址<->域名
 
-**利用域名获取IP地址的函数**
+**利用域名获取IP地址**
 
 以下函数可以通过传递字符串格式的域名获取IP：
 
 ```c
 #include <netdb.h>    // 需要包含该头文件
 
-// 成功时返回hostent结构体地址，失败时返回NULL指针
-struct hostent * gethostbyname(const char * hostname);    // 域名作参数
+// hostname 域名参数，字符串类型
+// return 成功时返回hostent结构体地址，失败时返回NULL指针
+struct hostent * gethostbyname(const char * hostname);
 
-// hostent结构体的定义如下：
+// h_name 官方域名，代表某一主页，但不是每家著名公司都会注册官方域名
+// h_aliases 多个域名，即可以通过多个域名访问同一主页，h_aliases指向一个字符串数组，保存多个域名
+// h_addrtype 获取的IP地址的地址族信息
+// h_length 保存IP地址长度，IPv4地址长为4，IPv6长为16
+// h_addr_list 一些网站可能将多个IP分配给同一域名，这里保存了多个IP(以整数形式(char形式？)保存)
 struct hostent
 {
-    char * h_name;        // 官方域名，代表某一主页，但不是每家著名公司都会注册官方域名
-    char ** h_aliases;    // 多个域名，即可以通过多个域名访问同一主页，h_aliases指向一个字符串数组，保存多个域名
-    int h_addrtype;        // 获取的IP地址的地址族信息
-    int h_length;        // 保存IP地址长度，IPv4地址长为4，IPv6长为16
-    char ** h_addr_list;// 一些网站可能将多个IP分配给同一域名，这里保存了多个IP(以整数形式(char形式？)保存)
+    char * h_name;
+    char ** h_aliases;
+    int h_addrtype;
+    int h_length;
+    char ** h_addr_list;
 }
 ```
 
@@ -778,27 +802,31 @@ struct hostent
 ```c
 #include <netdb.h>    // 需要包含该头文件
 
-// addr是含有IP地址信息的in_addr结构体指针，为了传递IPV4地址之外的信息，该变量类型声明为char指针
-// len表示第一个参数中的地址信息的字节数，IPv4时为4，IPv6时为16
-// family传递地址族信息，IPv4时为AF_INET，IPv6时为AF_INET6，(AF_INET是一个宏常量，值为2)
-struct hostent * gethostbyaddr(const char * addr, socklen_t len, int family);    // 成功时返回hostent结构体地址，失败时返回NULL指针
+// addr 含有IP地址信息的in_addr结构体指针，为了传递IPV4地址之外的信息，该变量类型声明为char指针
+// len 表示第一个参数中的地址信息的字节数，IPv4时为4，IPv6时为16
+// family 传递地址族信息，IPv4时为AF_INET，IPv6时为AF_INET6，(AF_INET是一个宏常量，值为2)
+// return 成功时返回hostent结构体地址，失败时返回NULL指针
+struct hostent * gethostbyaddr(const char * addr, socklen_t len, int family);
 ```
 
-***Notes:** *<font color=red>上面说的传递IPV4地址之外的信息是什么意思？</font>
+**Notes:** <font color=red>上面说的传递IPV4地址之外的信息是什么意思？</font>
+- 意思是可能出于某种需要，需要附带与IP地址相关的一些信息；
+
+从上面两个函数，我们可以看到的是，本质上都是获取同一个信息：`struct hostent*`；
+- 传入域名的参数，可以通过返回的结构体提取IP信息；
+- 传入IP的参数，可以通过返回的结构体提取域名信息；
 
 详细的使用过程[见源码](https://github.com/Wind134/TCP-IP-Programming/tree/main/5-%E5%9F%9F%E5%90%8D%E5%8F%8A%E7%BD%91%E7%BB%9C%E5%9C%B0%E5%9D%80)；
 
-# 套接字的多种可选项
+## 套接字的多种可选项
 
-## 套接字可选项
-
-**套接字的多种可选项**
+### 套接字可选项
 
 之前的程序基本用的是默认套接字特性进行数据通信，之前所有的范例比较简单，无须特别操作套接字特性；
 
 书中列出了一系列可设置套接字的多种可选项(140页)，该一系列套接字选项几乎都可以进行**读取(Get)**和**设置(Set)**，接下来会针对一些重要的套接字可选项进行介绍；
 
-<table>
+<table style="width:100%; text-align:center;">
   <tr>
     <th style="text-align: center;">协议层</th>
     <th style="text-align: center;">选项名</th>
@@ -895,42 +923,45 @@ struct hostent * gethostbyaddr(const char * addr, socklen_t len, int family);   
   </tr> 
 </table>
 
-针对**读取和设置**先介绍两个函数：
+针对**读取和设置**套接字可选项，先介绍两个函数：
 
 ```c
 #include <sys/socket.h>
 
-// sock为套接字文件描述符，level为查看的可选项的协议层，optname为要查看的可选项名
-// optval为保存查看结果的缓冲地址值，optlen是向optval传递的缓冲大小
-int getsockopt(int sock, int level, int optname, void *optval, socklen_t *optlen);    // 成功返回0，失败返回-1
+// sock 套接字文件描述符，level为查看的可选项的协议层，optname为要查看的可选项名
+// optval 保存查看结果的缓冲地址值，optlen是向optval传递的缓冲大小
+// 成功返回0，失败返回-1
+int getsockopt(int sock, int level, int optname, void *optval, socklen_t *optlen);
 
-int setsockopt(int sock, int level, int optname, void *optval, socklen_t *optlen);    // 成功返回0，失败返回-1
+// 成功返回0，失败返回-1
+int setsockopt(int sock, int level, int optname, void *optval, socklen_t *optlen);
 
 // 上面两个函数的功能分别是查看和设置sock套接字的类型，具体的类型值体现在optval中，对于SOCK_STREAM而言一般是对应返回1，SOCK_DGRAM一般是返回2
 // 但是换句话来说，set的意义不大，因为套接字只能在创建时决定，后续不能再更改
 ```
 
-在实现TCP以及UDP的服务器端/客户端通信的过程中，我们已经了解到，**Linux系统中针对套接字的写入读取与针对一般文件的写入读取并没有太大差异**，换句话说就是创建套接字的同时将生成I/O缓冲，IO缓冲存在两个可选项：
+在实现TCP以及UDP的服务器端/客户端通信的过程中，我们已经了解到，**Linux系统中针对套接字的写入读取与针对一般文件的写入读取并没有太大差异**，换句话说就是创建套接字时像创建普通的文件描述符一样，将会生成I/O缓冲，IO缓冲存在两个可选项：
 
 - `SO_SNDBUF`：输入缓冲大小相关的可选项；
 - `SO_RCVBUF`：输出缓冲大小相关的可选项；
 
-## Time-wait状态
+### Time-wait状态介绍
 
 这部分主要介绍可选项SO_REUSEADDR，顾名思义可以了解到这是一个重用地址的选项，何时重用，TCP本身是面向连接的，当两个地址正处于TCP连接的过程中，该地址是无法被重用的；
 
 在前面的实现迭代服务器端/客户端部分，我们通过让客户端控制台输入Q消息，或者通过CTRL+C快捷键终止程序，但是几种方式存在的区别是：
 
-- Q消息输入后会调用close函数关闭套接字，然后向服务器端发送FIN消息并经过四次握手过程，正常断开，不会发生"bind() error"；
+- Q消息输入后会调用close函数关闭套接字，然后向服务器端发送FIN消息并经过四次握手过程，正常断开，不会发生`bind() error`；
 - "CTRL+C"则直接向服务端发送FIN消息，后续由操作系统关闭文件以及套接字，也是正常断开，不会发生错误；
-- 但如果直接向服务器端控制台输入CTRL+C，则服务端重新运行将产生问题，会输出"bind() error"，要过3分钟后才可重运行(<font color=red>2MSL</font>)时间；
+- 但如果直接向服务器这端控制台输入CTRL+C，则服务端重新运行将产生问题，会输出`bind() error`，要过3分钟后才可重运行(<font color=red>2MSL</font>)时间；
+  - 因为这将是一个强制终止的过程，不会经过TCP断开连接过程的规范处理； 
 
 以上的区别大体可以归结为一个原因: **先断开连接的套接字必然要经过time-wait过程**；
 
 - 对于服务器而言，先发送FIN断开连接，那么后续服务器会进入time-wait，而这个时长按照现在TCP协议的规定约为3分钟；
 - 客户端之所以不需要考虑这些，是因为客户端的套接字是任意指定的，也没有bind过程；
 
-Time-wait是个好东西，但是有时候不一定符号实际的需求，比如因系统故障而紧急停止，**这时候需要尽快重启服务器端以提供服务**；此时：
+从上面的例子我们可以看出，Time-wait是个好东西，但是有时候不一定符号实际的需求，比如因系统故障而紧急停止，**这时候需要尽快重启服务器端以提供服务**；此时：
 
 - 我们可以在套接字的可选项中更改SO_REUSEADDR的状态，适当调整该参数，通过该参数可以将处于Time-wait状态下的套接字端口号重新分配给新的套接字；
   
@@ -940,18 +971,18 @@ Time-wait是个好东西，但是有时候不一定符号实际的需求，比�
   setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR, (void*) &option, optlen);
   ```
 
-## Nagle算法
+### Nagle算法
 
 Nagle算法为了防止因数据包过多而发生网络负载，该算法运用于TCP层，比较简单；
 
 TCP套接字默认使用Nagle算法交换数据，因此**最大限度进行缓冲**，直到收到ACK，接下来以发送"Nagle"为例，分析使用以及不使用该算法的过程：
 
-- 使用算法时，发送放先输入'N'，然后收到接收方返回的确认，该确认字段也会告知自身的接收缓冲区的大小，然后发送方最大限度利用缓冲，发送"agle"字段，接收方再针对此返回ACK；
-- 不使用算法时，发送方直接依序传'N'到'e'到输出缓冲，这个过程与是否接收到对方发来的ACK无关，此情况下会对网络流量有异常影响，因为来来回回交换的东西太多了；
+- 使用算法时，发送放先输入`N`，然后收到接收方返回的确认，该确认字段也会告知自身的接收缓冲区的大小，然后发送方最大限度利用缓冲，发送`agle`字段，接收方再针对此返回ACK；
+- 不使用算法时，发送方直接依序传`N`到`e`到输出缓冲，这个过程与是否接收到对方发来的ACK无关，此情况下会对网络流量有异常影响，因为来来回回交换的东西太多了；
 
 是否需要启用该算法，要考虑数据传输的特性以及网络流量的状态，当传输大文件数据时，我们想要的就是尽快将文件传输出去，而不需要等待ACK报文返回再发送，从而提升效率；
 
-控制该算法是否启用的套接字可选项为**TCP_NODELAY**：
+而控制该算法是否启用的套接字可选项为**TCP_NODELAY**：
 
 ```c
 // 设置Nagle算法的启用状态
@@ -967,9 +998,9 @@ setsockopt(sock, IPPROTO_TCP, TCP_NODELY, (void *)&opt_val, &opt_len);
 
 以上的所有介绍只是针对一些比较常见的套接字可选项，[源码中](https://github.com/Wind134/TCP-IP-Programming/tree/main/6-%E6%9F%A5%E7%9C%8B%E5%92%8C%E8%AE%BE%E7%BD%AE%E5%A5%97%E6%8E%A5%E5%AD%97%E5%8F%AF%E9%80%89%E9%A1%B9)针对如何get以及如何set都有着较为清晰的描述；
 
-# 多进程服务器端
+## 多进程服务器端
 
-## 进程概念及应用
+### 进程概念及应用
 
 考虑服务端对每个客户端的平均服务时间，如果时间过长，那么后面的客户端会相当不满于这一点；
 
@@ -1000,7 +1031,8 @@ setsockopt(sock, IPPROTO_TCP, TCP_NODELY, (void *)&opt_val, &opt_len);
 ```c
 #include <unistd.h>
 
-pid_t fork(void);    // 成功时返回进程ID，失败时返回-1
+// 成功时返回进程ID，失败时返回-1
+pid_t fork(void);
 ```
 
 fork函数将创建调用的进程副本(概念上如何理解)：
@@ -1028,9 +1060,9 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
 
 向exit函数传递的参数值和main函数产生的return语句返回的值都会传递给操作系统，而操作系统本身不会销毁子进程，要等到那些值传递给产生该子进程的父进程，处在这种状态下的进程就是僵尸进程；
 
-因此问题的根源在于:** 操作系统本身不会把子进程的那些值传递给父进程**；
+因此问题的根源在于:**操作系统本身不会把子进程的那些值传递给父进程**；
 
-因此:** 需要父进程去主动要求获得子进程的结束状态值**，父母要负责收回自己生的孩子；
+因此:**需要父进程去主动要求获得子进程的结束状态值**，父母要负责收回自己生的孩子；
 
 如前所述，为了销毁子进程，父进程应主动请求获取子进程的返回值，而发起请求有两种方式：
 
@@ -1041,7 +1073,9 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   ```c
   #include <sys/wait.h>
   
-  pid_t wait(int* statloc);    // 若成功则返回终止的子进程ID，失败时返回-1
+  // statloc 子进程的终止状态信息存储在改指针指向的整数变量中
+  // 若成功则返回终止的子进程ID，失败时返回-1
+  pid_t wait(int* statloc);
   ```
   
   调用该函数时如果已有子进程终止，那么子进程终止时传递的返回值(exit函数的参数值、main函数的return返回值)将保存到参数statloc所指的内存空间。
@@ -1054,17 +1088,17 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   也就是说，向wait函传递变量status的地址时，调用wait函数后应编写如下代码：
   
   ```c
-  wait(&status);            // wait函数返回了子进程的ID
+  wait(&status);  // wait函数返回了子进程的ID
   
   // 接下来确定status的状态即可
-  if(WIFEXITED(status))    // 如果是正常终止
+  if(WIFEXITED(status)) // 如果是正常终止(该宏表示正常终止)
   {
       puts("Normal termination!");
-      printf("Child pass num: %d", WEXITSTATUS(status));    // 那么返回值是多少
+      printf("Child pass num: %d", WEXITSTATUS(status));  // WEXITSTATUS是一个宏定义
   }
   ```
   
-  **Notes：调用wait函数时，如果没有已终止的子进程，那么程序将阻塞(Blocking)直到有子进程时终止；**
+  **Notes:** 调用wait函数时，如果没有已终止的子进程，那么程序将阻塞(Blocking)直到有子进程时终止；
 
 - **销毁僵尸进程方法2**
   
@@ -1073,10 +1107,11 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   ```c
   #include <sys/wait.h>
   
-  // pid是等待终止的目标子进程的ID，若传递-1，则与wait函数相同，可以等待任意子进程的终止
-  // statloc，与wait中的statloc参数具有相同含义
-  // 传递头文件sys/wait.h中声明的常量WNOHANG(NO HANG-没有挂起)，即使没有终止的子进程也不会进入阻塞状态，而是返回0并退出函数
-  pid_t waitpid(pid_t pid, int * statloc, int options)    // 成功时返回终止的子进程ID，如果子进程还在运行，返回0，失败时返回-1
+  // pid 等待终止的目标子进程的ID，若传递-1，则与wait函数相同，可以等待任意子进程的终止
+  // statloc 与wait中的statloc参数具有相同含义
+  // options 传值，传递头文件sys/wait.h中声明的常量WNOHANG(NO HANG-没有挂起)，即使没有终止的子进程也不会进入阻塞状态，而是返回0并退出函数
+  // return 成功时返回终止的子进程ID，如果子进程还在运行，返回0，失败时返回-1
+  pid_t waitpid(pid_t pid, int * statloc, int options)
   ```
 
 两种方式的具体应用[详见源码](https://github.com/Wind134/TCP-IP-Programming/tree/main/7-%E5%A4%9A%E8%BF%9B%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF/%E7%88%B6%E8%BF%9B%E7%A8%8B%E5%AF%B9%E5%AD%90%E8%BF%9B%E7%A8%8B%E7%9A%84%E7%AE%A1%E7%90%86)；
@@ -1109,24 +1144,31 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   ```c
   #include <signal.h>
   
-  // signo是特殊情况信息，第二个参数为特殊情况下将要调用的函数的地址值(指针)
+  // 整体是一个信号处理的函数: void (*)(int)
   void (*signal(int signo, void (*func)(int)))(int);
   
   // 下面是拆分写法：
-  typedef void (*SignalHandler)(int);    // 将一个void (*)(int)，一个接受int参数，返回void类型的函数指针命名为SignalHandler类型
-  SignalHandler signal(int signo, SignalHandler func);    // 而signal函数返回这个类型，signal从来就是一个函数，而不是指针，只是返回的是指针
+  // 第一行将一个void (*)(int)，一个接受int参数，返回void类型的函数指针命名为SignalHandler类型
+  // 第二行表明而signal函数返回这个类型，signal从来就是一个函数，而不是指针，只是返回的是指针
+  // signo 特殊情况信息
+  // func 信号处理函数
+  // return 传入一个信号处理函数，同时又返回一个信号处理函数
+  typedef void (*SignalHandler)(int);
+  SignalHandler signal(int signo, SignalHandler func);
   ```
   
   该函数是一个典型的函数指针，先从C语言的角度对该函数做分析：
   
-  - 首先，signal是一个函数声明，该signal函数的参数有两个：(int signo, void (*func)(int);)
-    - 其中第二个参数也是一个指向函数的指针，指针名为func，这个指针指向的函数接受一个整型参数并返回void
-  - 把signal(int signo, void (*func)(int))看成一个整体，即void (\*)(int);
-    - (\*)代表这又是一个指向函数的指针，名为signal(int signo, void (*func)(int))，该指针指向的函数也接受一个整型参数，返回void
-    - 该指针本身的返回类型也是void*；
+  - 首先，signal是一个函数声明，该`signal`函数的参数有两个：`(int signo, void (*func)(int);)`
+    - 其中第二个参数也是一个指向函数的指针，指针名为`func`，这个指针指向的函数接受一个整型参数并返回`void`
+  - 把`signal(int signo, void (*func)(int))`看成一个整体，即`void (\*)(int)`;
+    - (\*)代表这又是一个指向函数的指针，名为`signal(int signo, void (*func)(int))`，该指针指向的函数也接受一个整型参数，返回`void`
+    - 该指针本身的返回类型也是`void*`；
     - 返回的指针地址指向的函数本身会不会就是之前的func呢？
   
-  **signo的部分注册的特殊情况信息**：
+  **signo的部分注册的特殊情况信息**
+
+  也就是上面的`signo`参数：
   
   - SIGALRM：已到通过调用alarm函数注册的时间；
   - SIGINT：输入CTRL+C，即强行终止；
@@ -1135,11 +1177,9 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   接下来编写调用signal函数的语句完成请求：子进程终止时则调用mychild函数：
   
   ```c
-  signal(SIGCHLD, mychild);    // 子进程终止时调mychild函数
-  
-  signal(SIGALRM, timeout);    // 已到通过alarm函数注册的时间，请调用timeout函数
-  
-  signal(SIGINT, keycontrol);    // CTRL+C调用keycontrol函数
+  signal(SIGCHLD, mychild);   // 子进程终止时调mychild函数
+  signal(SIGALRM, timeout);   // 已到通过alarm函数注册的时间，请调用timeout函数
+  signal(SIGINT, keycontrol); // CTRL+C调用keycontrol函数
   ```
   
   以上就是**信号注册**部分，即执行signal函数的部分；
@@ -1149,9 +1189,10 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   ```c
   #include <unistd.h>
   
-  // 正整数参数seconds传递过去之后，相应时间后(秒)将产生SIGALRM信号
+  // seconds 传递过去之后，相应时间后(秒)将产生SIGALRM信号
   // 若向该参数传递0，则之前对SIGALRM信号的预约将取消
-  unsigned int alarm(unsigned int seconds);    // 返回0或以秒为单位的距SIGNAL信号发生所剩时间
+  // return 返回0或以秒为单位的距SIGNAL信号发生所剩时间
+  unsigned int alarm(unsigned int seconds);
   ```
   
   如果通过该函数预约信号后未指定该信号对应的处理函数，则终止进程，不做任何处理；
@@ -1167,23 +1208,26 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   ```c
   #include <signal.h>
   
-  // signo-传递信号信息
-  // act-对于第一个参数信号处理函数信息
-  // oldact-通过此函数获取之前注册的信号处理函数指针，若不需要则传递0
-  int sigaction(int signo, const strcut sigaction * act, struct sigaction * oldact);    // 成功返回0，失败返回-1
+  // signo 传递信号信息
+  // act 对于第一个参数信号处理函数信息
+  // oldact 通过此函数获取之前注册的信号处理函数指针，若不需要则传递0
+  // 成功返回0，失败返回-1
+  int sigaction(int signo, const struct sigaction * act, struct sigaction * oldact);
   
   // 声明并初始化sigaction结构体变量以调用上述函数
+  // sa_handler 保存信号处理函数的指针值
+  // 下面两个参数初始化为0，这两个成员用于指定信号相关的选项和特性，后面介绍这些参数
   struct sigaction
   {
-      void (*sa_handler)(int);    // sa_handler成员保存信号处理函数的指针值
-      sigset_t sa_mask;            // 初始化为0，这两个成员用于指定信号相关的选项和特性，后面介绍这些参数
+      void (*sa_handler)(int);
+      sigset_t sa_mask;
       int sa_flags;
   };
   ```
 
 以上代码的具体运用[详见源码](https://github.com/Wind134/TCP-IP-Programming/tree/main/7-%E5%A4%9A%E8%BF%9B%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BF%A1%E5%8F%B7%E6%9C%BA%E5%88%B6)；
 
-### 基于多任务的并发服务器
+### 基于多进程的并发服务器
 
 基于上述的学习，我们可以准备利用fork函数编写并发服务器了，基于之前的echo服务器端做拓展，使其可以同时向多个客户端提供服务，具体思路：
 
@@ -1205,7 +1249,7 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
 
   <img src="/assets/img/TCP-IP/fork.svg"  />
 
-- 父进程和子进程都会有各自的套接字描述符，为了使得程序结束之后，操作系统能正常回收套接字，子进程需要终止套接字描述符：
+- 父进程和子进程都会有各自的套接字描述符，为了使得程序结束之后，操作系统能正常回收套接字，**子进程同样需要终止套接字描述符**：
   
   ```c
   if (pid == 0)   // 子进程执行的部分
@@ -1240,11 +1284,9 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
 
 ```c
 while ((str_len = read(clnt_sock, buf, BUF_SIZE)) != 0)
-                write(clnt_sock, buf, str_len); // 将读取到的信息写回
+  write(clnt_sock, buf, str_len); // 将读取到的信息写回
 ```
-
 实现了边界的处理，即让所有发送于客户端的数据在服务器端能够按序接收，这是服务器本身的操作策略；
-
 <font color=red>上面这段话只是额外插进去的，与我们下面要说的没太大关联；</font>
 
 而分割TCP的I/O程序是客户端部分应该使用的内容；
@@ -1255,28 +1297,28 @@ while ((str_len = read(clnt_sock, buf, BUF_SIZE)) != 0)
 while (recv_len < str_len)
 {
     read_len = read(sock, message, BUF_SIZE - 1);
-
     if (read_len == -1) error_handling("read() error!");
-
     recv_len += read_len;
 }
 ```
 
 只要没有接收完服务器端的回声数据，就无条件等待，接收完之后接着准备下一轮的数据写入，也就是说，**一定要等接收完之后才进行下一批数据的传输**；
 
-因此我们可以考虑在客户端层面将数据的读取和发送交给父进程和子进程来做，这样无论客户端是否从服务端接收完数据都可以进程传输；
+因此我们可以考虑在客户端层面将**数据的读取和发送交给父进程和子进程来做**，这样无论客户端是否从服务端接收完数据都可以进程传输；
 
-分割I/O程序的另一个好处就是:** 可以提高频繁交换数据的程序性能**；
+分割I/O程序的另一个好处就是:**可以提高频繁交换数据的程序性能**；
 
-# 进程间的通信
+## 进程间的通信
+
+通过上面一个章节的学习，我们对多进程在网络编程中的运用有了初步的了解，多进程的运用难以避免涉及到进程之间的通信，而这部分就是我们需要讲解的内容；
 
 进程间通信意味着两个不同进程间可以交换数据，为了完成这一点，**操作系统应提供**两个进程可以同时访问的内存空间；
 
 **对进程间通信的基本理解**：进程A有一个面包，变量bread的值为1，如果吃掉这个面包，bread的值又变回0，进程B可以通过bread的值判断A的状态；
 
-## 进程间通信的方式
+### 进程间通信的方式
 
-### 通过管道实现进程间的通信
+#### 通过管道实现进程间的通信
 
 先画一个模型：
 
@@ -1289,10 +1331,11 @@ while (recv_len < str_len)
 ```c
 #include <unistd.h>
 
-// filedes是一个数组，有两个元素：
+// filedes 一个数组，有两个元素：
 // filedes[0]是通过管道接收数据时使用的文件描述符，即管道出口
 // filedes[1]是通过管道传输数据时使用的文件描述符，即管道入口
-int pipe(int filedes[2]);    // 成功返回0，失败返回-1
+// 成功返回0，失败返回-1
+int pipe(int filedes[2]);
 ```
 
 通过上述的函数可以看出，对于单个进程而言，它**可以读写同一管道**，但是父进程的目的是与子进程进行数据交换，因此需要将入口或出口的中的一个文件描述符传递给子进程；
@@ -1318,11 +1361,12 @@ int pipe(int filedes[2]);    // 成功返回0，失败返回-1
 
 我们希望将echo客户端传输的字符串按序保存到文件中，详细内容见源码；
 
+在服务端源码中，子进程设定了一个循环，将客户端传输的字符串保存到文件中，父进程则仍然是负责数据的发送以及数据向管道的写入，很好的展示了两个进程间的通信；
 ### 运用案例源码
 
 [详见github](https://github.com/Wind134/TCP-IP-Programming/tree/main/8-%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1%E7%9A%84%E8%BF%90%E7%94%A8)；
 
-# I/O复用
+## I/O复用
 
 I/O复用是实现并发服务器方式的一种延申；
 
@@ -1343,7 +1387,6 @@ I/O复用是实现并发服务器方式的一种延申；
 
 - 从这个例子上，可以看到的是，教师需要确认有无举手的学生，那么针对I/O复用服务器端的进程需要确认举手(收数据)的套接字，并通过举手的套接字接收数据；
 
-## I/O复用功能实现
 
 服务器端的进程确认举手的套接字，通过select函数来实现；
 
@@ -1394,11 +1437,8 @@ select函数的使用方法与一般函数区别较大，比较难使用，接�
     int main()
     {
         fd_set set;    // 设置一个结构体变量
-    
         FD_ZERO(&set);    // 清零
-    
         FD_SET(1, &set);    // 设置文件描述符号1为1，表明要监视
-    
         FD_CLR(1, &set);    // 清除文件描述符号1，表明不监视
     }
     ```
@@ -1411,12 +1451,12 @@ select函数的使用方法与一般函数区别较大，比较难使用，接�
   #include <sys/select.h>
   #include <sys/time.h>
   
-  // maxfd监视对象文件描述符数量
-  // readset将所有关注"是否存在待读取数据"的文件描述符注册到fd_set型变量，并传递其地址值
-  // writeset将所有关注"是否可以传输无阻塞数据"的文件描述符注册到fd_set型变量，并传递其地址值
-  // exceptset将所有关注"是否发生异常"的文件描述符注册到fd_set型变量，并传递其地址值
-  // timeout调用select函数后，为了防止陷入无限阻塞的状态，会传输超时信息，此时返回0
-  // 发生错误返回-1，超时返回0，因发生关注的事件返回时，返回大于0的值，该值时发生事件的文件描述符数
+  // maxfd 监视对象文件描述符数量
+  // readset 所有关注"是否存在待读取数据"的文件描述符注册到fd_set型变量，并传递其地址值
+  // writeset 所有关注"是否可以传输无阻塞数据"的文件描述符注册到fd_set型变量，并传递其地址值
+  // exceptset 所有关注"是否发生异常"的文件描述符注册到fd_set型变量，并传递其地址值
+  // timeout 调用select函数后，为了防止陷入无限阻塞的状态，会传输超时信息，此时返回0
+  // return 发生错误返回-1，超时返回0，因发生关注的事件返回时，返回大于0的值，该值时发生事件的文件描述符数
   int select(
   int maxfd, fd_set * readset, fd_set * writeset, fd_set * exceptset,
       const struct timeval * timeout);    // 成功返回正值，失败则返回-1
@@ -1471,8 +1511,6 @@ select函数的使用方法与一般函数区别较大，比较难使用，接�
 - 由于一切都在服务器程序中的while循环里进行，最终从一个宏观的角度来看，这个服务端的程序实现了同时为多个客户端提供服务的功能；
 - 而起初的程序是不具备的，它完成了对一个客户端的服务之后就会结束运行；
 
-## 更优实现
-
 实现I/O复用的传统方法除了select函数之外，在Linux系统下还有一个效率更高的复用技术：epoll；
 
 ### epoll介绍
@@ -1508,7 +1546,8 @@ select函数有其自身的限制，它无论如何优化性能，也无法同�
   #include <sys/epoll.h>
   
   // size表示的是epoll实例的大小(供操作系统参考)，2.6.8后的内核会完全忽略size参数，内核会自行调整大小
-  int epoll_create(int size);	// 成功时返回epoll文件描述符，失败返回-1，需要终止时，也调用close函数
+  // return 成功时返回epoll文件描述符，失败返回-1，需要终止时，也调用close函数
+  int epoll_create(int size);
   ```
 
   - select方式通过fd_set数组保存监视对象文件描述符；
@@ -1519,10 +1558,11 @@ select函数有其自身的限制，它无论如何优化性能，也无法同�
   ```c
   #include <sys/epoll.h>
   
-  // epfd用于注册监视对象的epoll例程的文件描述符
-  // op用于指定监视对象的添加、删除或更改操作，各操作通过宏定义(int类型)
-  // fd需要注册的监视对象文件描述符
-  // 监视对象的事件类型
+  // epfd 用于注册监视对象的epoll例程的文件描述符
+  // op 用于指定监视对象的添加、删除或更改操作，各操作通过宏定义(int类型)
+  // fd 需要注册的监视对象文件描述符
+  // event 监视对象的事件类型
+  // return 成功返回0，失败返回-1
   int epoll_ctl(int epfd, int op, int fd, struct epoll_event * event);
   
   // 理解该函数
@@ -1540,13 +1580,14 @@ select函数有其自身的限制，它无论如何优化性能，也无法同�
   ```c
   #include <sys/epoll.h>
   
-  // epfd用于注册监视对象的epoll例程的文件描述符
-  // events保存发生事件的文件描述符集合的结构体数组的地址
-  // maxevents代表第二个参数中可以保存的最大事件数
-  // timeout以1ms为单位的等待时间，传递-1时，一直等待直到发生事件
-  int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout);// 成功时返回发生事件的文件描述符数，失败返回-1
+  // epfd 用于注册监视对象的epoll例程的文件描述符
+  // events 保存发生事件的文件描述符集合的结构体数组的地址
+  // maxevents 代表第二个参数中可以保存的最大事件数
+  // timeout 以1ms为单位的等待时间，传递-1时，一直等待直到发生事件
+  // return 成功时返回发生事件的文件描述符数，失败返回-1
+  int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout);
   
-  // 第二个参数所指的缓冲需要动态分配
+  // 第二个参数所指的缓冲需要动态分配空间
   int event_cnt;
   struct epoll_event * ep_events;
   // ...
@@ -1571,8 +1612,8 @@ struct epoll_event
 
 typedef union epoll_data	// 这是一个union联合体
 {
-    void * ptr;		// 这个是(可能是一个指向文件的指针)
-    int fd;			// 文件描述符
+    void * ptr; // 这个是(可能是一个指向文件的指针)
+    int fd;     // 文件描述符
     __uint32_t u32;
     __uint64_t u64;
 } epoll_data_t;
@@ -1599,7 +1640,7 @@ epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
 
 上述内容有点多，结合回声客户端的具体实现理解epoll，[源码已上传Github](https://github.com/Wind134/TCP-IP-Programming/blob/main/9-IO%E5%A4%8D%E7%94%A8/%E5%9F%BA%E4%BA%8Eepoll%E7%9A%84%E5%9B%9E%E5%A3%B0%E5%AE%A2%E6%88%B7%E7%AB%AF/echo_epollserv.c)；
 
-### 两种触发模式
+### Epoll的两种触发模式
 
 真正理解了条件(水平)触发(Level Trigger)和边缘触发(Edge Trigger)，才算是完整掌握了epoll；
 
@@ -1626,13 +1667,13 @@ epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
     #include <fcntl.h>
     
     // filedes代表更改目标的文件描述符
-    // cmd表示函数调用的目的
+    // cmd表示函数调用的目的(是获取状态标志还是设置状态标志)
     // 参数是可变参数的形式
-    int fcntl(int filedes, int cmd, ...);	// 成功时返回cmd参数相关值，失败返回-1
+    int fcntl(int filedes, int cmd, ...); // 成功时返回cmd参数相关值，失败返回-1
     
     // 使用
-    int flag = fcntl(fd, F_GETFL, 0);		// 获取第一个参数所指的文件描述符属性，如果是F_SETFL则是更改文件描述符属性
-    fcntl(fd, F_SETFL, flag|O_NONBLOCK);	// 通过位运算在flag基础上添加非阻塞O_NONBLOCK标志
+    int flag = fcntl(fd, F_GETFL, 0);     // 获取第一个参数所指的文件描述符属性，如果是F_SETFL则是更改文件描述符属性
+    fcntl(fd, F_SETFL, flag|O_NONBLOCK);  // 通过位运算在flag基础上添加非阻塞O_NONBLOCK标志
     ```
 
   - 通过以上设置就可以将read&write函数设置为非阻塞形式；
@@ -1643,11 +1684,11 @@ epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
   - 边缘触发则是只在一开始收到数据时告知操作系统，而接下来到底缓冲区到底还有没有数据是未知的，如果没有数据read函数会陷入阻塞，导致长时间没反应，这个时候就需要通过一个循环，去不断的读取数据，等最终读取完毕，由于是非阻塞方式，我们可以通过一些信息知道数据读取完了，退出循环，关闭对套接字的监视；
   - <font color=red>但是条件触发本身也会面临阻塞的可能，所以其实第一点的理解不是那么的准确。</font>
 
-# 多种I/O函数
+## 多种I/O函数
 
 之前的示例中，基于Linux的操作系统一般是使用`read&write`函数进行I/O，在Windows下则是`send&recv`函数，而事实上，在Linux中也存在`send&recv`函数，接下来针对这部分内容进行介绍，并与`read&write`进行对比；
 
-## send & recv函数
+### send & recv函数
 
 使用方式如下：
 
@@ -1658,19 +1699,21 @@ epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
 // buf-保存待传输数据的缓冲地址值
 // nbytes-待传输的字节数
 // flags-传输数据时指定的可选项信息
-ssize_t send(int sockfd, const void * buf, size_t nbytes, int flags);    // 成功时返回发送的字节数，失败时返回-1
+// return 成功时返回发送的字节数，失败时返回-1
+ssize_t send(int sockfd, const void * buf, size_t nbytes, int flags);
 ```
 
 send函数对应于之前所学习的write函数，表明往缓冲区写入数据，而recv函数则类似read函数：
 
-```c++
+```c
 #include <sys/socket.h>
 
 // sockfd-与数据传输对象的连接的套接字文件描述符
 // buf-保存接收数据的缓冲地址值
 // nbytes-可接收的最大字节数
 // flags-接收数据时指定的可选项信息
-ssize_t recv(int sockfd, void * buf, size_t nbytes, int flags);	// 成功时返回接收的字节数(收到EOF返回0)，失败时返回-1 
+// return 成功时返回接收的字节数(收到EOF返回0)，失败时返回-1 
+ssize_t recv(int sockfd, void * buf, size_t nbytes, int flags);
 ```
 
 send函数以及recv函数的最后一个参数是收发数据时的可选项，利用**位或bit OR**运算同时传递多个信息：
@@ -1755,7 +1798,7 @@ send函数以及recv函数的最后一个参数是收发数据时的可选项，
 
   [这份源码是](https://github.com/Wind134/TCP-IP-Programming/blob/main/10-%E5%A4%9A%E7%A7%8DIO%E5%87%BD%E6%95%B0/Send-Recv%E6%94%B6%E5%8F%91%E6%95%B0%E6%8D%AE%E7%9A%84%E5%8F%AF%E9%80%89%E9%A1%B9/peek_recv.c)结合这两者的使用；
 
-## readv & writev函数
+### readv & writev函数
 
 **readv & writev函数的功能**可概括如下：对数据进行整合传输及发送的函数；
 
@@ -1810,9 +1853,9 @@ readv的功能与之类似，只是一个读取一个写入而已，给出源码
 
 暂时略过
 
-# 多播与广播
+## 多播与广播
 
-## 多播的介绍
+### 多播的介绍
 
 考虑一种1000个站点向10000个用户发送信息的情况，如果是单一的发送，不论是UDP还是TCP都将是巨大的开销，UDP得多次向不同IP去传输数据，TCP更是需要建立很多的连接；
 
@@ -1881,7 +1924,7 @@ struct ip_mreq
 
 [这里是源码](https://github.com/Wind134/TCP-IP-Programming/tree/main/11-%E5%A4%9A%E6%92%AD%E4%B8%8E%E5%B9%BF%E6%92%AD/%E5%A4%9A%E6%92%AD)；
 
-## 广播的介绍
+### 广播的介绍
 
 **广播**(Broadcast)与多播类似，但传输数据的范围有区别，多播即使在跨越不同网络的情况下，只要加入多播组就能接收到数据，而广播只能向同一网络中的主机传输数据；
 
@@ -1906,9 +1949,9 @@ setsockopt(send_sock, SOL_SOCKET, SO_BROADCAST, (void*) *bcast, sizeof(bcast));
 
 [这里是源码；](https://github.com/Wind134/TCP-IP-Programming/tree/main/11-%E5%A4%9A%E6%92%AD%E4%B8%8E%E5%B9%BF%E6%92%AD/%E5%B9%BF%E6%92%AD)
 
-# 套接字和标准I/O
+## 套接字和标准I/O
 
-## 标准I/O函数
+### 标准I/O函数
 
 使用标准I/O主要有两大优点：
 
@@ -1945,10 +1988,12 @@ setsockopt(send_sock, SOL_SOCKET, SO_BROADCAST, (void*) *bcast, sizeof(bcast));
 
 // fildes是需要转换的文件描述符
 // mode将要创建的FILE结构体的模式信息
-FILE * fdopen(int fildes, const char * mode);	// 成功时返回转换的FILE结构体指针，失败时返回NULL
+// return 成功时返回转换的FILE结构体指针，失败时返回NULL
+FILE * fdopen(int fildes, const char * mode);
 
 // stream代表文件流，即指向文件的指针
-int fileno(FILE * stream);	// 成功时返回转换后的文件描述符，失败时返回-1，是上述函数功能的逆向实现：FILE指针->文件描述符
+// return 成功时返回转换后的文件描述符，失败时返回-1，是上述函数功能的逆向实现：FILE指针->文件描述符
+int fileno(FILE * stream);
 ```
 
 函数使用[看源码](https://github.com/Wind134/TCP-IP-Programming/tree/main/12-%E5%A5%97%E6%8E%A5%E5%AD%97%E5%92%8C%E6%A0%87%E5%87%86IO/%E6%A0%87%E5%87%86IO%E5%87%BD%E6%95%B0%E7%9A%84%E4%BD%BF%E7%94%A8)；
@@ -1957,7 +2002,7 @@ int fileno(FILE * stream);	// 成功时返回转换后的文件描述符，失�
 
 具体使用[看源码](https://github.com/Wind134/TCP-IP-Programming/tree/main/12-%E5%A5%97%E6%8E%A5%E5%AD%97%E5%92%8C%E6%A0%87%E5%87%86IO/%E5%9F%BA%E4%BA%8E%E5%A5%97%E6%8E%A5%E5%AD%97%E7%9A%84%E6%A0%87%E5%87%86IO%E5%87%BD%E6%95%B0%E4%BD%BF%E7%94%A8)；
 
-# I/O流分离的其他内容
+## I/O流分离的其他内容
 
 **对流的理解:** 调用fopen函数打开文件后可以与文件交换数据，因此说调用fopen函数后创建了"流"(Stream)，此处的"流"是指"数据流动"，但通常可以比喻为"以数据收发为目的的一种桥梁"，可以理解为"数据收发路径"；
 
@@ -2015,9 +2060,9 @@ int fileno(FILE * stream);	// 成功时返回转换后的文件描述符，失�
 
 // fildes是需要复制的文件描述符
 // fildes2是明确指定的复制出的文件描述符整数值，传递的应该是大于0且小于进程能生成的最大文件描述符值
+// return 两个函数返回值一致，成功时返回复制的文件描述符，失败时返回-1
 int dup(int fildes);
 int dup2(int fildes, int fildes2);
-// 上面两个函数，成功时返回复制的文件描述符，失败时返回-1
 ```
 
 dup & dup2的使用[看源码](https://github.com/Wind134/TCP-IP-Programming/tree/main/13-%E5%85%B3%E4%BA%8EIO%E6%B5%81%E5%88%86%E7%A6%BB%E7%9A%84%E5%85%B6%E4%BB%96%E5%86%85%E5%AE%B9/%E5%A4%8D%E5%88%B6%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6)；
@@ -2026,9 +2071,9 @@ dup & dup2的使用[看源码](https://github.com/Wind134/TCP-IP-Programming/tre
 
 源码中**使用了shutdown函数**，无论复制出多少文件描述符，均应调用shutdown函数发送EOF并进入半关闭状态；
 
-# 多线程服务器端
+## 多线程服务器端
 
-## 理解线程
+### 理解线程
 
 创建进程的工作本身会给操作系统带来相当沉重的负担，此外每个进程都会有自身独立的内存空间，[进程间通信](#进程间的通信)的实现难度也会随之提高；
 
@@ -2056,7 +2101,7 @@ dup & dup2的使用[看源码](https://github.com/Wind134/TCP-IP-Programming/tre
 
 操作系统中存在多个进程，而每个进程又有各自的多个线程；
 
-## 线程创建与运行
+### 线程创建与运行
 
 线程的创建基于POSIX标准，即可移植操作系统接口，这是一个为了提升UNIX系列操作系统的可移植性而制定的API规范；
 
@@ -2067,14 +2112,13 @@ dup & dup2的使用[看源码](https://github.com/Wind134/TCP-IP-Programming/tre
 ```c
 #include <pthread.h>
 
-// thread保存新创建线程ID的变量地址值
-// attr用于传递线程属性的参数，传递NULL时，创建默认属性的线程
-// start_routine相当于线程main函数、在单独执行流中执行的函数地址值(函数指针)
-// arg通过第三个参数传递调用函数时包含传递参数信息的变量地址值(C语言中真的超级多指针用法)
-int pthread_create(
-	pthread_t * restrict thread, const pthread_attr_t * restrict attr,
-	void * (* start_routine)(void *), void * restrict arg
-);	// 成功时返回0，失败时返回其他值
+// thread 保存新创建线程ID的变量地址值
+// attr 用于传递线程属性的参数，传递NULL时，创建默认属性的线程
+// start_routine 相当于线程main函数、在单独执行流中执行的函数地址值(函数指针)
+// arg 通过第三个参数传递调用函数时包含传递参数信息的变量地址值(C语言中真的超级多指针用法)
+// return 成功时返回0，失败时返回其他值
+int pthread_create(pthread_t * restrict thread, const pthread_attr_t * restrict attr,
+	            void * (* start_routine)(void *), void * restrict arg);
 ```
 
 要理解上述函数，需要熟练掌握restrict关键字和函数指针相关语法，我们首先关注使用方法：[看源码](https://github.com/Wind134/TCP-IP-Programming/blob/main/14-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF/%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E8%BF%90%E8%A1%8C/thread1.c)；
@@ -2084,10 +2128,11 @@ int pthread_create(
 ```c
 #include <pthread.h>
 
-// thread代表一个线程ID
-// status保存线程的main函数返回值的指针变量地址值
+// thread 代表一个线程ID
+// status 保存线程的main函数返回值的指针变量地址值
 // 调用该函数的进程将进入等待状态，直到第一个参数代表的线程终止为止，而且可以得到线程的main函数返回值
-int pthread_join(pthread_t thread, void ** status);	// 成功返回0，失败返回其他值
+// return 成功返回0，失败返回其他值
+int pthread_join(pthread_t thread, void ** status);
 ```
 
 利用该函数实现的线程[源码](https://github.com/Wind134/TCP-IP-Programming/blob/main/14-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF/%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E8%BF%90%E8%A1%8C/thread2.c)；
@@ -2109,9 +2154,11 @@ int pthread_join(pthread_t thread, void ** status);	// 成功返回0，失败返
 
 为了确保线程安全，应尽量使用线程安全函数，或者在调用线程不安全函数时采取适当的同步措施，如使用互斥锁或其他线程同步机制来保护共享资源的访问。
 
-回忆之前所学内容，学过一个根据域名获取IP信息的函数gethostbyname，该函数在现如今的2023年已经过时，但是这里需要提及的是这就是个线程不安全函数；
+回忆之前所学内容，学过一个根据域名获取IP信息的函数`gethostbyname`，该函数在现如今的2023年已经过时，但是这里需要提及的是这就是个线程不安全函数；
 
-相对应的线程安全函数是：gethostbyname_r，书中说的是可以通过宏`_REENTRANT`自动将gethostbyname->gethostbyname_r；
+相对应的线程安全函数是：`gethostbyname_r`；
+
+可以通过宏`_REENTRANT`自动将`gethostbyname`->`gethostbyname_r`；
 
 **工作线程模型**
 
@@ -2146,7 +2193,7 @@ void * thread_des(void * arg)
 }
 ```
 
-## 线程同步
+### 线程同步
 
 之前内容探讨了线程中所存在的问题，接下来就要去讨论解决办法；
 
@@ -2170,10 +2217,13 @@ void * thread_des(void * arg)
 
 // mutex是创建互斥量时传递保存互斥量的变量地址值，销毁时传递需要销毁的互斥量地址值
 // attr传递即将创建的互斥量属性，没有特别需要指定的属性时传递NULL
-int pthread_mutex_init(pthread_mutex_t * mutex, const pthread_mutexattr_t * attr);	// 创建，成功返回0，失败返回其他值
-int pthread_mutex_destory(pthread_mutex_t * mutex);	// 销毁，成功返回0，失败返回其他值
+// return 函数一，成功返回0，失败返回其他值
+// return 函数二，成功返回0，失败返回其他值
+int pthread_mutex_init(pthread_mutex_t * mutex, const pthread_mutexattr_t * attr);
+int pthread_mutex_destory(pthread_mutex_t * mutex);
 
-pthread_mutex_t mutex;	// 声明pthread_mutex_t型变量，即声明信号量
+// 声明pthread_mutex_t型变量，即声明信号量
+pthread_mutex_t mutex;
 ```
 
 利用互斥量锁住或释放临界区使用的函数：
@@ -2184,25 +2234,26 @@ pthread_mutex_t mutex;	// 声明pthread_mutex_t型变量，即声明信号量
 int pthread_mutex_lock(pthread_mutex_t * mutex);	// 成功时返回0，失败返回其他值
 int pthread_mutex_unlock(pthread_mutex_t * mutex);	// 同上
 
-pthread_mutex_lock(&mutex);		// 当线程没有没有获取到锁，则会进入阻塞状态
+pthread_mutex_lock(&mutex); // 当线程没有没有获取到锁，则会进入阻塞状态
 // 临界区的开始
 // ....
 // 临界区的结束
-pthread_mutex_unlock(&mutex);	// 因此需要unlock进行解锁，让被阻塞的进程获得锁
+pthread_mutex_unlock(&mutex); // 因此需要unlock进行解锁，让被阻塞的进程获得锁
 ```
 
 使用[互斥量的源码](https://github.com/Wind134/TCP-IP-Programming/blob/main/14-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF/%E8%BF%9B%E7%A8%8B%E5%90%8C%E6%AD%A5%E7%AD%96%E7%95%A5/thread4_error_correct_mutex.c)；
 
 **信号量**
 
-信号量与互斥量的机制较为相似，这部分只涉及利用"二进制信号量"(0和1)完成"控制线程顺序"的同步方法；
+信号量与互斥量的机制较为相似，这部分只涉及利用二进制信号量(0和1)完成控制线程顺序的同步方法；
 
 ```c
 #include <semaphore.h>
 
-// sem创建的信号量的地址值，销毁时则传递需要销毁的信号量变量地址值
-// pshared创建可由多个进程共享的信号量；传递0时，创建只允许1个进程内部使用的信号量
-// value创建新创建的信号量初始值
+// sem 创建的信号量的地址值，销毁时则传递需要销毁的信号量变量地址值
+// pshared 创建可由多个进程共享的信号量；传递0时，创建只允许1个进程内部使用的信号量
+// value 创建新创建的信号量初始值
+// return 两个函数成功都返回0，失败都返回-1
 int sem_init(sem_t * sem, int pshared, unsigned int value);
 int sem_destory(sem_t * sem);
 ```
@@ -2212,9 +2263,11 @@ int sem_destory(sem_t * sem);
 ```c
 #include <semaphore.h>
 
-// sem传递保存信号量读取值的变量地址值，传递给sem_wait时信号减1，传递给sem_post信号增1
+// sem 传递保存信号量读取值的变量地址值
+// 传递给sem_wait时信号减1，传递给sem_post信号增1
+// 成功时返回0，失败时返回其他值
 int sem_wait(sem_t * sem);
-int sem_post(sem_t * sem);	// 成功时返回0，失败时返回其他值
+int sem_post(sem_t * sem);
 
 
 sem_wait(&sem);		// 信号量(初始值为1)变为0
@@ -2226,15 +2279,16 @@ sem_post(&sem);		// 信号量增1
 
 [使用信号量的源码](https://github.com/Wind134/TCP-IP-Programming/blob/main/14-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF/%E8%BF%9B%E7%A8%8B%E5%90%8C%E6%AD%A5%E7%AD%96%E7%95%A5/semaphore.c)；
 
-## 线程销毁
+### 线程销毁
 
 上面所提及的pthread_join函数会等待线程终止，还会引导线程销毁，但是该函数面对的一个问题是，线程终止前，**调用该函数的线程**将进入阻塞状态，因此我们通常而言会用如下函数调用引导线程销毁：
 
 ```c
 #include <pthread.h>
 
-// thread代表终止的同时需要销毁的线程ID
-int pthread_detach(pthread_t thread);	// 成功时返回0，失败时返回其他值
+// thread 终止的同时需要销毁的线程ID
+// return 成功时返回0，失败时返回其他值
+int pthread_detach(pthread_t thread);
 ```
 
 该函数不会引起线程终止或者进入阻塞状态，可以通过该函数引导销毁线程创建的内存空间；
