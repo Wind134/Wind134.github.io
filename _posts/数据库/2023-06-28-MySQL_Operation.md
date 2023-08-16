@@ -163,7 +163,7 @@ LIMIT永远都要放在最后；
 
 **GROUP BY子句**
 
-这部分通常会结合[聚合函数](###聚合函数(Aggregate Functions))一起使用：
+这部分通常会结合聚合函数一起使用：
 
 ```sql
 SELECT 
