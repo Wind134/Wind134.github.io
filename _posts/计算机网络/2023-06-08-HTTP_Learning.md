@@ -6,8 +6,6 @@ categories: [Network]
 tags: [NetWork, Linux, 网络编程]
 ---
 
-# HTTP概述
-
 HTTP(Hypertext Transfer Protocol)是一种用于传输超文本的协议，它是在Web上进行数据交换的基础；
 
 HTTP是一个无状态的协议，即它不会保留之前请求和响应之间的任何状态信息，HTTP是基于TCP的协议；
@@ -57,7 +55,7 @@ HTTP是Web开发中非常重要的协议，它提供了一种标准的方式来�
 
 我来列举一段请求报文：
 
-```txt
+```
 GET /path/to/resource HTTP/1.1		-- 请求行，包含请求方法GET，URL: /path/to/resource，HTTP协议版本：1.1
 Host: example.com					-- 从这里开始的3行是请求头部，包含了一系列的键值对
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36
@@ -69,7 +67,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/a
 
 接下来再看一段不同的请求报文，该段请求报文请求行使用了POST方法，而POST以及PUT请求方法，通常需要在请求体中包含数据；
 
-```txt
+```
 POST /path/to/resource HTTP/1.1		-- 请求行，包含了请求方法、URL、HTTP协议版本
 Host: example.com					-- 从这里开始的3行是请求头部
 Content-Type: application/json
