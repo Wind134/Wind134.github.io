@@ -248,4 +248,216 @@ void backtrace(vector<int>& nums, int index)
 
 至此，排列问题同样得到了解决；
 
-（未完待续）    
+### 组合问题
+
+从两个简单问题类型开头，接下来我们要准备去处理组合问题了，请看题：
+```
+题目：
+- 给你一个无重复元素的整数数组candidates和一个目标整数target；
+- 找出candidates中可以使数字和为目标数target的所有不同组合，
+- 并以列表形式返回，你可以按任意顺序返回这些组合。
+
+注意：
+- candidates中的同一个数字可以无限制重复被选取。
+- 但如果至少一个数字的被选数量不同，则两种组合是不同的。
+- 1 <= candidates.length <= 30
+- 2 <= candidates[i] <= 40
+```
+
+具体思路：
+- 这道题还是比较简单的，首先明确回溯的目标，选中某些数，使得这些数的和是target，一旦满足，就将这些数组成的集合仍进结果集；
+- 由于回溯树的枝叶繁茂，对于它的多种路径而言，都有可能符合结果的要求，但是一定需要每条路径都搜索到底吗？
+- 这就涉及到剪枝，搜索满足一定条件的时候，我们就可以知道，不必再向后递归了，因为没有意义了；
+- 而这个剪枝，可以通过预排序来进行；
+- 之所以能使用预排序进行，是因为题目已经明确告知所有元素都是正整数；
+
+代码：
+```cpp
+vector<vector<int>> result;
+vector<int> elem_of_result;
+void traceback(const vector<int>& candidates, int target, int index)
+{
+    if(target == 0)
+    {
+        result.push_back(elem_of_result);   // 加入result的二维数组即可
+        return;
+    }
+
+    for (int i = index; i < candidates.size() && target - candidates[i] >= 0; i++)
+    {
+        elem_of_result.push_back(candidates[i]);
+        traceback(candidates, target - candidates[i], i);   // 发现了吗，索引没有改变
+        elem_of_result.pop_back();
+    }
+}
+
+vector<vector<int>> combinationSum(vector<int>& candidates, int target)
+{
+    // 预先排序，为了那个target - candidates[i] >= 0的条件；
+    sort(candidates.begin(), candidates.end()); 
+    traceback(candidates, target, 0);
+    return result;
+}
+```
+
+我们预先排序了数组，因此可以利用`target - candidates[i] >= 0`来剪枝，不符合这个条件说明回溯到底，可以返回了；
+
+接下来再看看一道变种的题，相对上题也就是简单增加了一点限制：
+```
+题目：
+- 给定一个候选人编号的集合candidates和一个目标数target；
+- 找出candidates中所有可以使数字和为target的组合；
+- candidates中的每个数字在每个组合中只能使用一次；
+- 仍然全为正数；
+
+注意：解集不能包含重复的组合。
+```
+
+这道题需要注意到的一个细节问题是：数组中可能存在多个相同的元素，这种情况下，要处理掉同样的元素，这一点直接类比子集问题去做就够了；
+
+解决方案：
+```cpp
+vector<vector<int>> result;
+vector<int> elem_of_result;
+void traceback(const vector<int>& candidates, int target, int index)
+{
+    if(target == 0)
+    {
+        result.push_back(elem_of_result);   // 加入result的二维数组即可
+        return;
+    }
+
+    for (int i = index; i < candidates.size() && target - candidates[i] >= 0; i++)
+    {
+        if (i > index && candidates[i] == candidates[i - 1])    continue;   // 剪枝
+        elem_of_result.push_back(candidates[i]);
+        traceback(candidates, target - candidates[i], i + 1);
+        elem_of_result.pop_back();
+    }
+}
+
+vector<vector<int>> combinationSum(vector<int>& candidates, int target)
+{
+    sort(candidates.begin(), candidates.end()); // 排序
+    traceback(candidates, target, 0);
+    return result;
+}
+```
+
+讲完这两道题，有心人完全可以再看看这道题，基本一致的类型，请看[LeetCode 216](https://leetcode.cn/problems/combination-sum-iii/description/)；
+
+组合问题解决完之后，其实对于回溯的思想基本有个比较全面的了解了，但是接下来还有两个类型的问题会进行拓展讲述，分别是**海岛问题**和**划分K个子集问题**，他们属于相对比较高阶的回溯思想(其实还有N皇后的问题)；
+
+### 进阶一 海岛问题
+
+海岛问题的一个大致描述是这样的：
+
+```
+题目：
+- 给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。
+- 岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
+- 举例：
+  ["1","1","1","1","0"],
+  ["1","1","0","1","0"],
+  ["1","1","0","0","0"],
+  ["0","0","0","0","0"]
+- 像这种情况，岛屿数量为1，比较显然；
+- 我们假设这个矩阵周围所围绕的都是水；
+```
+
+题目需要我们去计算海岛的个数，这是我们的目的，对于这个问题，自然而然的分析思路：
+- 找到一个1，这个1必然是海岛的一部分，我们向这个1的上，下，左，右几个方向做搜索；
+- 也就是说，一个结点，正常来说他有四个选择的方向，只要有一个方向有水，也就是0，代表这个点就是岛的某个边界；
+- 那么边界这个位置方向，就不必再回溯了，因为回溯的目的就是不断延申岛屿的陆地部分，直到遇到了水，也就是0；
+- 由于我们需要计算的是岛屿的个数，而回溯的作用在于，不断朝各个方向延申，直到延申完所有的岛屿；
+- 而统计岛屿的个数的任务，交给处理这个问题的函数去做即可；
+
+代码：
+```cpp
+void dfs(vector<vector<char>>& grid, int i, int j) {
+    int row = grid.size();
+    int col = grid[0].size();
+    // (i, j)是一个点，我们要访问且访问过，将该点置为0；
+    grid[i][j] = '0';
+    if (i - 1 >= 0 && grid[i - 1][j] == '1')    dfs(grid, i - 1, j);    // 上
+    if (i + 1 < row && grid[i + 1][j] == '1')  dfs(grid, i + 1, j);    // 下
+    if (j - 1 >= 0 && grid[i][j - 1] == '1')    dfs(grid, i, j - 1);    // 左
+    if (j + 1 < col && grid[i][j + 1] == '1')  dfs(grid, i, j + 1);    // 右
+}
+
+int numIslands(vector<vector<char>>& grid) {
+    if(grid.empty())    return 0;
+    int res = 0;
+    for (int i = 0; i < grid.size(); i++)
+    {
+        for (int j = 0; j < grid[0].size(); j++)
+        {
+            if (grid[i][j] == '1') {
+                ++res;
+                dfs(grid, i, j);
+            }
+        }
+    }
+    return res;
+}
+```
+函数只要遇到一个1，就会将岛屿数量增1，其后让回溯去不断拓展这个岛屿的范围，回溯的过程中，将所有处理过的结点置0，一来是为了避免重复回溯，二来则是将所有延展开来的岛屿都化为水，这样在主函数的循环中，属于一个岛屿范围的1不会再被统计进岛屿的数量当中；
+
+### 进阶二 划分K个子集问题
+
+划分K个子集的问题也是值得好好深思的一个问题：
+```
+题目：
+ - 给定一个整数数组nums和一个正整数k，找出是否有可能把这个数组分成k个非空子集，其总和都相等。
+```
+
+预处理部分是比较常规的做法，先不讲了，我们回到后部分，假设每个子集要求的目标值是`target`，看看能否找到k个这样的子集，子集内元素之和为`target`；
+- k个这样的子集，我们可以认为是有k个桶；
+- 对于每个元素，他都有k个选择，也就是说每个回溯树的结点都有k条路径；
+- 但是对于桶的选择，我们需要注意的是：加上该元素之后，桶中的元素之和大于目标值`target`，就只能选择另外的桶；
+- 而对于另外的桶，同样遵循这个原则；
+- 还有一个细节，比如说存在多个桶，多个桶此刻的元素和是相等的，那么显然，处理过桶1，就没有必要再处理桶2了，可以直接跳过，实现了剪枝；
+
+因此，看代码：
+```cpp
+bool backtrace(const vector<int>& nums, int index, int k, int target, vector<int>& v) { // 数组传引用
+    if (index == nums.size())   return true;    // 一定能放置，因为这个时候说明每个球都放进了对应的桶(都传到最后的索引了，说明桶放好了)
+    for (int i = 0; i < k; i++) // 对每个桶做判断
+    {
+        if (i > 0 && v[i] == v[i - 1])  continue;   // 一些已经处理过的桶不必再放了，因此已经放过了，不必重复了
+        if (v[i] + nums[index] > target)    continue;   // 看下一个桶
+
+        v[i] += nums[index];    // 放进去
+
+        // 在这个基础上去判断下一个位置的元素能否处理，能处理，皆大欢喜，直接返回信息
+        // 如果不行，那就只能尝试看放下一个桶了，就继续循环
+        // 如果放进每个桶都不行，那说明根本就无法满足题目的要求
+        if (backtrace(nums, index + 1, k, target, v))   return true;
+
+        v[i] -= nums[index];
+    }
+    
+    return false;
+}
+
+bool canPartitionKSubsets(vector<int>& nums, int k) {
+    int sum = 0;
+    int maxValue = 0;
+    for (int i = 0; i < nums.size(); ++i) {
+        sum += nums[i];
+        maxValue = max(maxValue, nums[i]);
+    }
+    if (sum % k)    return false;
+    else if (maxValue > sum / k)    return false;
+    
+    int target_value = sum / k;
+
+    // 上面是预处理，很简单
+    vector<int> barrel(k);
+    sort(nums.rbegin(), nums.rend());   // 为剪枝而增加的排序，这是数学层面的剪枝，大的在前，让回溯尽快返回；
+
+    return backtrace(nums, 0, k, target_value, barrel);
+}
+```
+
+以上就是针对回溯思想的一些个人总结，后续如果有更好的案例，会不断更新这篇文章；
