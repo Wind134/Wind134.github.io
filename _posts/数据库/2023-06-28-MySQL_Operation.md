@@ -3,7 +3,7 @@ title: MySQL学习笔记-操作部分
 author: Ping
 math: true
 date: 2023-05-27 14:33:00 +0800
-categories: [数据库学习]
+categories: [数据库]
 tags: [MySQL, 数据库]
 ---
 

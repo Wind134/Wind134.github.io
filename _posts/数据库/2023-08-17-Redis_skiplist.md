@@ -3,7 +3,7 @@ title: Redis学习笔记-跳表
 author: Ping
 math: true
 date: 2023-08-17 17:22:00 +0800
-categories: [数据库学习]
+categories: [数据库]
 tags: [Redis, 数据库, 数据结构]
 ---
 
