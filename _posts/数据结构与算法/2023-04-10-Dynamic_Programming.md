@@ -112,6 +112,7 @@ int knapsack_problem1(const vector<int>& values, const vector<int>& weights, int
 
 至此，01背包问题得到了解决；
 
+<a name="anchor-1"></a>
 ### 完全背包问题
 
 请看题：
@@ -219,7 +220,7 @@ dp[i][j] = max{(dp[i-1][j − k * w[i]] + k * v[i]) for every k}
 
 那么，<font color=red>看到这里有没有什么想法？</font>应该是要有点想法的；
 
-是的，[完全背包](###完全背包问题)也可以用这个方式解决，但是这样难以避免要新增一个循环，因此完全背包问题我们还是采用之前的策略；
+是的，[完全背包](#anchor-1)也可以用这个方式解决，但是这样难以避免要新增一个循环，因此完全背包问题我们还是采用之前的策略；
 
 接下来上代码：
 ```cpp
