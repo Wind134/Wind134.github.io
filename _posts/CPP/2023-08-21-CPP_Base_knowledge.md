@@ -1,5 +1,5 @@
 ---
-title: 02-CPP的基础知识
+title: 02-基础知识
 author: Ping
 date: 2022-10-21 11:33:00 +0800
 categories: [CPP]
