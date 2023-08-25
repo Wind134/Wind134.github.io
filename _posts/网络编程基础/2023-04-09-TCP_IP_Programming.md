@@ -1,6 +1,7 @@
 ---
 title: 网络编程基础
 author: Ping
+img_path: /assets/img/TCP-IP/
 date: 2023-04-09 22:33:00 +0800
 categories: [网络编程]
 tags: [网络编程, Linux, socket, IO复用]
@@ -478,7 +479,7 @@ TCP/IP协议栈共分4层，以一个表格展示：
 
 展示**TCP服务端的默认的函数调用顺序:** 
 
-<img title="" src="/assets/img/TCP-IP/调用顺序.svg" alt="" data-align="center">
+<img title="" src="调用顺序.svg" alt="" data-align="center">
 
 创建套接字以及向套接字分配网络地址的过程在上一章节已经进行过详细讲解，接下来针对后续的几个过程进行讲解；
 
@@ -557,7 +558,7 @@ int connect(int sock, struct sockaddr * servaddr, socklen_t addrlen);
 
 下面详细列出TCP服务端/客户端之间的实现顺序：
 
-<img src="/assets/img/TCP-IP/服务端-客户端.svg"  />
+<img src="服务端-客户端.svg"  />
 
 客户端在调用connect函数之前，服务器可能率先调用了accept函数，在这种情况下服务器端进入了阻塞状态，直到客户端调用connect；
 
@@ -569,7 +570,7 @@ int connect(int sock, struct sockaddr * servaddr, socklen_t addrlen);
 
 基于之前实现的服务器端的代码逻辑，实质上是处理完一个客户端连接即退出，要想继续受理后续的客户端连接请求，需要插入循环语句反复调用accept函数；
 
-<img src="/assets/img/TCP-IP/迭代服务器.svg"  />
+<img src="迭代服务器.svg"  />
 
 现在暂时还未涉及到**线程与进程**，也就是说现在在同一个时刻服务端只能服务于一个客户端；
 
@@ -1247,7 +1248,7 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
 
 - 对于一个父进程以及fork出的子进程，具体关系如下：
 
-  <img src="/assets/img/TCP-IP/fork.svg"  />
+  <img src="fork.svg"  />
 
 - 父进程和子进程都会有各自的套接字描述符，为了使得程序结束之后，操作系统能正常回收套接字，**子进程同样需要终止套接字描述符**：
   
@@ -1322,7 +1323,7 @@ while (recv_len < str_len)
 
 先画一个模型：
 
-<img title="" src="/assets/img/TCP-IP/基于管道.svg" alt="" data-align="center">
+<img title="" src="基于管道.svg" alt="" data-align="center">
 
 为了完成进程间的通信，我们需要创建一个管道，管道并非属于进程的资源，而是和套接字一样，**属于操作系统**，因此也就不是fork函数的复制对象；
 
@@ -1402,7 +1403,7 @@ select函数可以将多个文件描述符集中到一起统一监视，监视�
 
 select函数的使用方法与一般函数区别较大，比较难使用，接下来以一张图片介绍select函数的调用方法和顺序：
 
-<img title="" src="/assets/img/TCP-IP/select.svg" alt="" data-align="center">
+<img title="" src="select.svg" alt="" data-align="center">
 
 接下来按步骤介绍相关的内容：
 
@@ -1419,7 +1420,7 @@ select函数的使用方法与一般函数区别较大，比较难使用，接�
   
   存储这些集中在一起的变量为一个结构体：
   
-  <img title="" src="/assets/img/TCP-IP/fd_set.svg" alt="" data-align="center">
+  <img title="" src="fd_set.svg" alt="" data-align="center">
   
   上图展示的是结构体中的**位数组**，该数组存有0或者1，其中最左边的是文件描述符0，该位设置为0，表明该文件描述符并非监视对象，在上述的数组中，可以很清晰看到的是文件描述符1和3是监视对象；
   
@@ -1780,7 +1781,7 @@ send函数以及recv函数的最后一个参数是收发数据时的可选项，
 
   对缓冲区举例：
 
-  ![](/assets/img/TCP-IP/紧急消息输出缓冲.svg)
+  ![](紧急消息输出缓冲.svg)
 
   如上图所示，字符0右侧偏移量为3的位置就存有紧急指针，该指针指向紧急消息的下一个位置，即0右边的位置(偏移量+1)，同时告知对方主机紧急指针指向的偏移量为3之前的部分就是紧急消息；
 
@@ -1834,7 +1835,7 @@ struct iovec
 
 再次用图片展示这个功能：
 
-![](/assets/img/TCP-IP/功能展示.svg)
+![](功能展示.svg)
 
 如图所示：一个缓冲区数组，ptr指向数组的首地址；
 
@@ -1882,7 +1883,7 @@ readv的功能与之类似，只是一个读取一个写入而已，给出源码
 
 为了传递多播数据包，必需设置TTL，决定"数据包传送距离"，每经过一个路由器TTL就减1，TTL为0时该数据包无法再被传递，只能销毁；
 
-![](/assets/img/TCP-IP/TTL和多播路由器.svg)
+![](TTL和多播路由器.svg)
 
 TTL的设置是通过[套接字可选项](#套接字的多种可选项)来完成的，使用到的协议层是：`IPPROTO_IP`，对应的选项名：`IP_MULTICAST_TTL`：
 
@@ -2025,13 +2026,13 @@ int fileno(FILE * stream);
 
 终止"流"时无法半关闭的原因，用一张图详细展示：
 
-![](/assets/img/TCP-IP/FILE指针.svg)
+![](FILE指针.svg)
 
 如图所示，两种模式的指针都是基于同一文件描述符创建的，因此针对任意一个FILE指针调用fclose函数时都会关闭文件描述符；
 
 而解决这个问题的方案，我们可以参照此图例：
 
-![](/assets/img/TCP-IP/FILE半关闭模型.svg)
+![](FILE半关闭模型.svg)
 
 上述形式就为半关闭准备好了环境，**但只是准备好了环境**，要真正进入半关闭还需要特殊处理：
 
@@ -2089,11 +2090,11 @@ dup & dup2的使用[看源码](https://github.com/Wind134/TCP-IP-Programming/tre
 
 对于进程间内存，我们通过一个图例展示：
 
-![](/assets/img/TCP-IP/进程间独立的内存.svg)
+![](进程间独立的内存.svg)
 
 而对于线程而言，其内存结构：
 
-![](/assets/img/TCP-IP/线程的内存结构.svg)
+![](线程的内存结构.svg)
 
 **进程:** 在操作系统构成单独执行流的单位；
 
@@ -2320,7 +2321,7 @@ HTTP又称为"无状态的Stateless"协议，服务器端响应客户端请求�
 
 客户端向服务端发送的请求消息的结构称为Request Message结构，以图片形式展示：
 
-![](/assets/img/TCP-IP/HTTP请求头.svg)
+![](HTTP请求头.svg)
 
 - 请求头含有请求方式(目的)等信息，典型包含GET和POST，GET主要用于请求数据，POST主要用于传输数据，后续的实现都是基于GET而不涉及POST；
 - 消息头包含发送请求的浏览器信息，用户认证信息等关于HTTP消息的附加信息；
@@ -2330,7 +2331,7 @@ HTTP又称为"无状态的Stateless"协议，服务器端响应客户端请求�
 
 这部分是Web服务器->客户端传递的响应信息的结构，图示如下：
 
-![](/assets/img/TCP-IP/HTTP响应头.svg)
+![](HTTP响应头.svg)
 
 - 请求行中，会包含响应结果，表示该结果的数字称为状态码，典型状态码有以下几种：
   - 200 OK：成功处理；

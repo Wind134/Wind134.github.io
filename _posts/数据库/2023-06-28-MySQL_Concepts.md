@@ -2,6 +2,7 @@
 title: MySQL学习笔记-概念部分
 author: Ping
 math: true
+img_path: /assets/img/SQL/
 date: 2023-05-27 14:33:00 +0800
 categories: [数据库]
 tags: [MySQL, 数据库]
@@ -195,7 +196,7 @@ SET properties = JSON_REMOVE(
 
 这部分结合图表来进行学习：
 
-<img src="/assets/img/SQL/列属性.png" alt="image-20230317164552473" style="zoom:50%;" />
+<img src="列属性.png" alt="image-20230317164552473" style="zoom:50%;" />
 
 - **列名(Column)**-每一列详细的名字信息；
 - **数据类型(Datatype)**-每一列数据中的数据类型：

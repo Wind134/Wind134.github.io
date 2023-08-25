@@ -18,9 +18,9 @@ TCP是TCP/IP体系中非常复杂的一个协议，TCP的主要特点：
 
 - 这个端点有一个名字，名称为**套接字(socket)或插口**。
   - 根据RFC 793的定义，**端口号拼接(concatenated with)IP地址**即构成了**套接字**。
-    - <font color="green">套接字socket=(IP地址:端口号)</font>
+    - 套接字socket = `(IP地址:端口号)`
   - **每一条TCP连接唯一地被通信两端地两个端点(即两个套接字)所确定**。
-    - <font color="green">TCP连接 ::= {socket1, socket2} = {(IP1:port1), (IP2:port2)}</font>
+    - TCP连接 ::= `{socket1, socket2}` = `{(IP1:port1), (IP2:port2)}`
 
 3、TCP提供**可靠交付**的服务，该层传输的数据，无差错、不丢失、不重复，并且按序到达。
 

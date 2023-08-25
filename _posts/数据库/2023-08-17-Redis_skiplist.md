@@ -2,6 +2,7 @@
 title: Redis学习笔记-跳表
 author: Ping
 math: true
+img_path: /assets/img/redis/
 date: 2023-08-17 17:22:00 +0800
 categories: [数据库]
 tags: [Redis, 数据库, 数据结构]
@@ -16,9 +17,10 @@ Redis中使用跳表(Skip List)作为有序集合(Sorted Set)的底层数据结�
 在Redis中，有序集合使用跳表来实现，其中每个元素都有一个对应的分值score(key)和成员值member(value)。
 
 跳表按照分值(key)进行排序(**要求链表key值有序**)，可以快速根据分值范围或者成员值查找元素。
+
 <a id="image-reference-1"></a>
-![](/assets/img/redis/跳表.svg)
-<center style="font-size:10px;color:brown;">1. 跳表的数据结构</center> 
+![](跳表.svg)
+_1. 跳表的数据结构_
 
 会结合这张图，进行详细的分析：
 
@@ -67,9 +69,11 @@ Node<K,V>::Node(const K k, const V v, int level)
     - 比如[图片](#image-reference-1)中存储`2: 计算机网络`、`4: 组成原理`、`6: 编译原理`的结点；
 
 基于上面的分析，我们再结合原图，可以将每个结点进行标注：
+
 <a id="image-reference-2"></a>
-![](/assets/img/redis/跳表-标注.svg)
-<center style="font-size:10px;color:brown;">2. 标注版</center>
+![](跳表-标注.svg)
+_2. 标注版_
+
 需要注意的几个细节问题：
 - 跳表中每个结点所存储的指针是一个数组，数组的长度等于跳表的层数；
 - 为什么叫跳表，就是我们只要指定了某一层，比如`index`层，我们能根据这个信息快速定位到我们要找到的结点；
@@ -81,7 +85,7 @@ Node<K,V>::Node(const K k, const V v, int level)
 我们对之前的跳表略加修改，以便展示跳表中节点的插入过程：
 
 <a id="image-reference-3"></a>
-![](/assets/img/redis/跳表-插入.svg)
+![](跳表-插入.svg)
 
 
 我们接下来要插入`2: 计算机网络`、`4: 组成原理`、`6: 编译原理`三个课程节点，且看我们应该怎么做：
@@ -98,7 +102,7 @@ Node<K,V>::Node(const K k, const V v, int level)
     最终得到这一个图：
 
     <a id="image-reference-3"></a>
-    ![](/assets/img/redis/跳表-插入2.svg)
+    ![](跳表-插入2.svg)
 
     虽然图片中是只在最底层插入了，但其实其他层同样有可能插入该图片，我们我们采取的是一个随机策略，随机策略的主代码：
     ```c
