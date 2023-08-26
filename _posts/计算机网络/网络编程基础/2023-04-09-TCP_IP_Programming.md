@@ -3,7 +3,7 @@ title: 网络编程基础
 author: Ping
 img_path: /assets/img/TCP-IP/
 date: 2023-04-09 22:33:00 +0800
-categories: [网络编程]
+categories: [计算机网络, 网络编程基础]
 tags: [网络编程, Linux, socket, IO复用]
 ---
 

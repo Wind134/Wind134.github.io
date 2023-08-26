@@ -4,7 +4,7 @@ author: Ping
 math: true
 img_path: /assets/img/redis/
 date: 2023-08-17 17:22:00 +0800
-categories: [数据库]
+categories: [数据库, Redis]
 tags: [Redis, 数据库, 数据结构]
 ---
 

@@ -2,7 +2,7 @@
 title: 06-函数的全面介绍
 author: Ping
 date: 2022-10-21 11:37:00 +0800
-categories: [CPP]
+categories: [CPP, C++_Primer]
 tags: [Programming, C++/C, cpp]
 ---
 

@@ -2,7 +2,7 @@
 title: 01-CPP的计算机学习之旅
 author: Ping
 date: 2022-10-21 10:33:00 +0800
-categories: [CPP]
+categories: [CPP, C++_Primer]
 tags: [Programming, C++/C, cpp]
 ---
 

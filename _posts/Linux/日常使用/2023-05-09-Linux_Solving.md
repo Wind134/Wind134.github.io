@@ -2,7 +2,7 @@
 title: Linux问题处理
 author: Ping
 date: 2023-05-09 14:33:00 +0800
-categories: [Linux]
+categories: [Linux, 日常使用]
 tags: [Debian, Arch Linux, shell, tools]
 ---
 

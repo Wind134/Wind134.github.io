@@ -3,7 +3,7 @@ title: 08-类的进阶及运用
 author: Ping
 img_path: /assets/img/CPP/
 date: 2022-10-21 11:41:00 +0800
-categories: [CPP]
+categories: [CPP, C++_Primer]
 tags: [Programming, C++/C, cpp]
 ---
 

@@ -65,6 +65,10 @@ layout: compress
       </div>
     {% endif %}
 
+    {% if site.backgroud_animation %}
+      {% include animated-background.html %}
+    {% endif %}
+
     {% include js-selector.html %}
 
     {% if page.mermaid %}

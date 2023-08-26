@@ -2,7 +2,7 @@
 title: 05-引用的介绍
 author: Ping
 date: 2022-10-21 11:36:00 +0800
-categories: [CPP]
+categories: [CPP, C++_Primer]
 tags: [Programming, C++/C, cpp]
 ---
 

@@ -2,7 +2,7 @@
 title: 02-基础知识
 author: Ping
 date: 2022-10-21 11:33:00 +0800
-categories: [CPP]
+categories: [CPP, C++_Primer]
 tags: [Programming, C++/C, cpp]
 ---
 

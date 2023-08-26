@@ -2,7 +2,7 @@
 title: 03-表达式类型推断
 author: Ping
 date: 2022-10-21 11:34:00 +0800
-categories: [CPP]
+categories: [CPP, C++_Primer]
 tags: [Programming, C++/C, cpp]
 ---
 

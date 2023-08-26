@@ -4,7 +4,7 @@ author: Ping
 math: true
 img_path: /assets/img/SQL/
 date: 2023-05-27 14:33:00 +0800
-categories: [数据库]
+categories: [数据库, MySQL]
 tags: [MySQL, 数据库]
 ---
 

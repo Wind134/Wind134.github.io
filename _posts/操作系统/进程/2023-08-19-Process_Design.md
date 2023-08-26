@@ -4,7 +4,7 @@ author: Ping
 math: true
 img_path: /assets/img/OS/
 date: 2023-08-19 10:33:00 +0800
-categories: [操作系统]
+categories: [操作系统, 进程]
 tags: [操作系统]
 ---
 

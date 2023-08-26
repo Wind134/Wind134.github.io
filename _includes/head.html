@@ -87,6 +87,10 @@
 
   <!-- JavaScript -->
 
+  {% if site.mouse_click_effect %}
+    <script async src="/assets/js/lib/fireworks.js"></script>
+  {% endif %}
+
   {% unless site.theme_mode %}
     {% include mode-toggle.html %}
   {% endunless %}
