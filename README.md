@@ -1,3 +1,11 @@
+无限套娃hhhhhh，基于[Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy)定制化[主题](https://github.com/NichtsHsu/nichtshsu.github.io)再定制的个人博客，这是我的[博客地址](https://wind134.github.io/)；
+
+感谢作者的辛勤工作！
+
+
+
+---
+
 基于 [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 主题定制化的个人博客，博客内容已转移到 `blog` 分支，`master` 将作为模板使用。[此处进入我的博客](https://nihil.cc/)。
 
 [![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
