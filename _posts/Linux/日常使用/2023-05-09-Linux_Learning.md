@@ -6,101 +6,130 @@ categories: [Linux, 日常使用]
 tags: [Debian, Arch Linux, shell, tools]
 ---
 
-# Linux学习
-
 ## 用户层
 
-### 一、desktop文件的参数
+### desktop文件的参数
 
-在自编辑desktop文件的过程中遇到固定到任务栏(Dock栏)后，在任务栏点开程序运行发现不会基于我固定的那个图标启动，经资料查询发现与StartupWMClass参数有关系，如果desktop文件中的StartupWMClass参数与程序真实的StartupWMClass参数不同就会另起一图标。解决方案如下：
+在自编辑desktop文件的过程中遇到固定到任务栏(Dock栏)后，在任务栏点开程序运行发现不会基于我固定的那个图标启动，经资料查询发现与`StartupWMClass`参数有关系，如果desktop文件中的`StartupWMClass`参数与程序真实的`StartupWMClass`参数不同就会另起一图标。解决方案如下：
 
 ```shell
 xprop WM_CLASS # 获取WM_CLASS名，获取方法，在终端输入之后将鼠标放置于对应窗口上点击，即可获取。
 ```
 
-### 二、更改某文件类型在系统中的图标显示
+### Linux文件图标
 
-以xmind为例，查阅其xml文件，我们进行对照：
+1. **更改某文件类型在系统中的显示图标**
 
-```shell
-cat /usr/share/mime/packages/xmind.xml	# 也可以修改对应的xml文件
-#--------------------------------------------------------------------------
-<?xml version="1.0" encoding="utf-8"?>
-<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-<mime-type type="application/xmind">	# xmind文件的打开类型
-  <glob pattern="*.xmind"/>	# 文件后缀格式
-    <comment>Xmind Workbook</comment>
-  <icon name="xmind" />	# 文件类型图标
-</mime-type>
-</mime-info>
-#--------------------------------------------------------------------------
-sudo update-mime-database /usr/share/mime # 刷新数据库，或者说同步数据库。生效。
-```
+    以xmind为例，查阅其xml文件，我们进行对照：
 
-### 三、配置oh my zsh
+    ```shell
+    cat /usr/share/mime/packages/xmind.xml	# 也可以修改对应的xml文件
+    #--------------------------------------------------------------------------
+    <?xml version="1.0" encoding="utf-8"?>
+    <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/xmind">	# xmind文件的打开类型
+      <glob pattern="*.xmind"/>	# 文件后缀格式
+        <comment>Xmind Workbook</comment>
+      <icon name="xmind" />	# 文件类型图标
+    </mime-type>
+    </mime-info>
+    #--------------------------------------------------------------------------
+    sudo update-mime-database /usr/share/mime # 刷新数据库，或者说同步数据库。生效。
+    ```
 
-主要是各类插件的总结
+### Shell相关
 
-- 安装zsh-syntax-highlighting语法高亮插件
+1. **常用插件配置**
+  主要介绍`oh my zsh`的插件安装及使用：
 
-```shell
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
-echo "source $ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
-source ~/.zshrc
-```
+    - 安装zsh-syntax-highlighting语法高亮插件
 
-- 安装zsh-autosuggestions语法历史记录插件
+      ```shell
+      git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
+      echo "source $ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
+      source ~/.zshrc
+      ```
 
-```shell
-git clone https://github.com/zsh-users/zsh-autosuggestions.git $ZSH_CUSTOM/plugins/zsh-autosuggestions 
-echo "source $ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc 
-source ~/.zshrc
-```
+    - 安装zsh-autosuggestions语法历史记录插件
 
-### 四、跳过Grub引导，直接进入系统
+      ```shell
+      git clone https://github.com/zsh-users/zsh-autosuggestions.git $ZSH_CUSTOM/plugins/zsh-autosuggestions 
+      echo "source $ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc 
+      source ~/.zshrc
+      ```
 
-主要grub有各种各样的问题，因此我换成了refind引导
+2. **文件重定向指令**
 
-首先编辑grub文件
+    当测试程序时，反复从键盘敲入一些信息作为程序的输入，是非常乏味且低效的，这时候就可以用到操作系统的文件重定向功能，这种机制允许我们将标准输入和标准输出与命名文件关联起来：
 
-```shell
-sudo gedit /etc/default/grub
-```
+    ```shell
+    addItems <infile >outfile
+    ```
 
-将代码GRUB_TIMEOUT参数改为0
+    `addItems`是我们执行的程序，`infile`是我们的要读取信息的文件，最终要输出的信息会被保存到文件`outfile`中。
 
-然后编辑30_os-prober 文件
+    在Linux中，`>`、`>>`、`>!`表示输出重定向：
 
-```shell
-sudo gedit /etc/grub.d/30_os-prober   
-```
+    ```shell
+    echo "123" > test.txt	# 将123输入到文件test.txt中，覆盖输入
 
-找到这一串C代码
+    echo "123" >> test.txt	# 将123输入到文件test.txt中，追加输入
 
-```shell
-if [ "\${timeout}" = 0 ]; then
+    echo "123" >! test.txt	# 将123输入到文件test.txt中，强行覆盖输入
+    ```
 
-set timeout=10
+3. **后台运行程序**
 
-fi
-```
+    如果想要从后台启动进程，可以在命令的结尾加上`&`符号，这样就可以在不阻塞当前终端的情况下启动一个新的进程。
 
-将这三行都注释掉，保存，最后：
+    例如，执行命令`python script.py &` 就可以在后台启动一个Python脚本。    
 
-```shell
-sudo update-grub
-```
+### Linux引导
 
-**补充：使grub自动记忆上次的启动选项**
+1. **跳过Grub引导，直接进入系统**
 
-在grub文件中添加如下参数：
+    主要grub有各种各样的问题，因此我换成了refind引导
 
-```
-GRUB_DEFAULT=saved
-GRUB_SAVEDEFAULT=true
-```
+    首先编辑grub文件
 
-### 五、tar命令的使用
+    ```shell
+    sudo gedit /etc/default/grub
+    ```
+
+    将代码`GRUB_TIMEOUT`参数改为0
+
+    然后编辑30_os-prober文件
+
+    ```shell
+    sudo gedit /etc/grub.d/30_os-prober   
+    ```
+
+    找到这一串代码
+
+    ```shell
+    if [ "\${timeout}" = 0 ]; then
+
+    set timeout=10
+
+    fi
+    ```
+
+    将这三行都注释掉，保存，最后：
+
+    ```shell
+    sudo update-grub
+    ```
+
+    **补充：使grub自动记忆上次的启动选项**
+
+    在grub文件中添加如下参数：
+
+    ```shell
+    GRUB_DEFAULT=saved
+    GRUB_SAVEDEFAULT=true
+    ```
+
+### tar命令的使用
 
 tar命令可以用来压缩打包单文件、多个文件、单个目录、多个目录。
 
@@ -151,9 +180,9 @@ tar xzvf my.tar.gz
 
 ## 底层
 
-### 一、双系统下（Windows、Linux）实现蓝牙鼠标（键盘）自动连接
+### 蓝牙配置
 
-原理，主要是两个OS上对于鼠标的信息生成不一致导致连接需要频繁切换，解决方案如下：
+之前遇到的第一个需求就是双系统下（Windows、Linux）实现蓝牙鼠标（键盘）自动连接，不然两个OS上对于鼠标的信息生成不一致导致连接需要频繁切换，解决方案如下：
 
 - 先在Windows下配对，配对好了会在注册表下生成蓝牙设备相关信息
 - 在Linux上同样连接上你的蓝牙设备，然后我们获取Linux下的相关参数
@@ -197,53 +226,45 @@ HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\BTHPORT\Parameters\Keys\
 
 OK，Reboot，Solved。
 
-### 二、整理Linux内核
+### Linux内核相关
 
-查看你现在所有已安装的内核：
+1. **整理Linux内核**
 
-```shell
-dpkg --get-selections | grep linux
-```
+    查看你现在所有已安装的内核(debian系)：
 
-进行卸载的命令
+    ```shell
+    dpkg --get-selections | grep linux
+    ```
 
-```shell
-sudo apt purge ***
-```
+    进行卸载的命令
 
-### 三、清除网络缓存
+    ```shell
+    sudo apt purge ***
+    ```
 
-首先安装nscd
+### 网络配置相关
 
-```shell
-sudo apt-get install nscd
-```
+1. **清除网络缓存**
 
-再执行命令
+    首先安装nscd
 
-```shell
-service nscd restart
-```
+    ```shell
+    sudo apt-get install nscd
+    ```
 
-或者一个更简单的命令
+    再执行命令
 
-```shell
-sudo /etc/init.d/networking restart
-```
+    ```shell
+    service nscd restart
+    ```
 
-### 四、UNIX类系统中的文件重定向
+    或者一个更简单的命令
 
-当测试程序时，反复从键盘敲入一些信息作为程序的输入，是非常乏味且低效的，这时候就可以用到操作系统的文件重定向功能，这种机制允许我们将标准输入和标准输出与命名文件关联起来：
+    ```shell
+    sudo /etc/init.d/networking restart
+    ```
 
-```shell
-addItems <infile >outfile
-```
-
-`addItems`是我们执行的程序，`infile`是我们的要读取信息的文件，最终要输出的信息会被保存到文件`outfile`
-
-中。
-
-### 五、文件权限问题
+### 文件权限
 
 普通用户通过`su`命令切换到root用户，使用`sudo`则短暂提权；
 
@@ -253,23 +274,38 @@ addItems <infile >outfile
 
 文件按访问者可分为三类：
 
-- 拥有者：文件的拥有者user，在系统用u表示。
-- 所属组：文件属于哪个组的group，在系统用g表示。
-- 其他用户：other，在系统用o表示。
-- 所有用户，在系统用a表示。
+- 拥有者：文件的拥有者`user`，在系统用`u`表示。
+- 所属组：文件属于哪个组的`group`，在系统用`g`表示。
+- 其他用户：`other`，在系统用`o`表示。
+- 所有用户，在系统用`a`表示。
 
-以上三者更多的是一种角色，而root用户、普通用户则是具体的人。
+以上三者更多的是一种角色，而`root`用户、普通用户则是具体的人。
 
 | 第1位：文件类型 | 第2-10位：权限 | 连接数 | 文件拥有者 | 文件所属组 | 文件大小 | 文件最新修改时间 | 文件名 |
 | --------------- | :------------: | :----: | :--------: | :--------: | -------- | ---------------- | ------ |
 
 这是通过`ll`命令列出的文件详情信息，以此参照，一一做说明。
 
-- **文件类型的详细说明：**d：目录文件(文件夹)；-：普通文件；l：软链接(类似Windows的快捷方式)；b：块设备文件；p：管道文件；c：字符设备文件(如屏幕等串口设备)；s：套接口文
+- **文件类型的详细说明:** 
+  - `d`：目录文件(文件夹)；
+  - `-`：普通文件；
+  - `l`：软链接(类似Windows的快捷方式)；
+  - `b`：块设备文件；
+  - `p`：管道文件；
+  - `c`：字符设备文件(如屏幕等串口设备)；
+  - `s`：套接口文件
 
-- **第2-10位的权限：**r代表读权限，w代表写权限，x代表执行权限。前3位：文件拥有者的权限；中间3位：文件所属组的权限；后3位：其他用户的权限。
+- **第2-10位的权限:**
+  - `r`代表读权限；
+  - `w`代表写权限；
+  - `x`代表执行权限；
+  - 前3位：文件拥有者的权限；
+  - 中间3位：文件所属组的权限；
+  - 后3位：其他用户的权限；
 
-  - **字符表示**
+上述信息有两种表现形式：
+
+- **字符表示**
 
   | linux表示 |      说明      | linux表示 |    说明    |
   | :-------: | :------------: | :-------: | :--------: |
@@ -278,7 +314,7 @@ addItems <infile >outfile
   |    -wx    |   可写可执行   |    r-x    | 可读可执行 |
   |    rwx    | 可读可写可执行 |    ---    |   无权限   |
 
-  - **八进制表示**
+- **八进制表示**
 
   | 权限符号 | 8进制 |
   | :------: | :---: |
@@ -291,6 +327,8 @@ addItems <infile >outfile
   |   rwx    |   7   |
   |   ---    |   0   |
 
+代码展示：
+
   ```shell
   chmod u-rwx 文件名		# 去掉文件拥有者的所有权限
   chmod g-rwx	文件名		# 去掉文件所属组的所有权限
@@ -300,7 +338,7 @@ addItems <infile >outfile
   chmod u-x,g+x 文件名	# 去掉拥有者的执行权限，增加所属组的读权限
   ```
 
-  同时也可以用八进制也可以更改相应的权限，这就是常用的`chmod 777、666 `一类的由来。
+  同时也可以用八进制也可以更改相应的权限，这就是常用的`chmod 777`以及`chmod 666`一类的由来。
   
   同时，也可以改变文件的拥有者和所有组，不需要更改其他用户，因为文件拥有者和所属组的改变就会改变其他用户。
   
@@ -325,13 +363,13 @@ addItems <infile >outfile
   #用法：chown king:king 文件名
   ```
   
-  - **默认权限：**在Linux中，文件的起始权限：普通文件：0666；目录文件：0777。此外还涉及到掩码umask，真实默认的文件起始权限是~umask&文件的起始权限而得。
+  - **默认权限:** 在Linux中，文件的起始权限：普通文件：`0666`；目录文件：`0777`。此外还涉及到掩码umask，真实默认的文件起始权限是`~umask&`文件的起始权限而得。
   
   上述举例都是针对文件，针对目录而言，稍微不同，具体如下：
   
-  - 可读权限：如果目录没有可读权限，则无法使用ls等命令查看目录中的文件内容。
+  - 可读权限：如果目录没有可读权限，则无法使用`ls`等命令查看目录中的文件内容。
   - 可写权限：如果没有可写权限，则无法在目录中创建文件，也无法在目录中删除文件。
-  - 可执行权限：如果目录没有可执行权限，则无法cd到目录中。
+  - 可执行权限：如果目录没有可执行权限，则无法`cd`到目录中。
   
   在上述问题中，我们可以看到一个bug，那就是，如果一个目录的拥有者对目录中任意文件(包括文件夹)进行读写删，而不论该用户是否具有文件的相应的权限，因此，针对这样的问题，linux引入了粘滞位：
   
@@ -340,154 +378,197 @@ addItems <infile >outfile
   # t即为粘滞位，代替了x
   ```
   
-  当一个目录被设置粘滞位时，该目录下的文件只能由root用户删除、该文件的拥有者删除、目录的拥有者删除。
+  当一个目录被设置粘滞位时，该目录下的文件只能由`root`用户删除、该文件的拥有者删除、目录的拥有者删除。
 
-### 六、自定义SSH的端口号
+### SSH配置
 
-这个问题出现的原因主要是在自行架设VPS主机的时候，遇到了在clash的TUN模式下默认的22端口无法连接的问题，因此有了这部分记录，[参考链接](https://news.sangniao.com/p/933687883)！
+1. **自定义ssh的端口号**
 
-- **SSH端口的选择**
+    这个问题出现的原因主要是在自行架设VPS主机的时候，遇到了在clash的TUN模式下默认的22端口无法连接的问题，因此有了这部分记录，[参考链接](https://news.sangniao.com/p/933687883)！
 
-  当选择一个新的SSH端口时，要注意端口号0-1023是为各种服务保留的，只能通过root访问来绑定，以下列举一些常用的特权服务以及相关端口和功能的列表：
+    **首先是SSH端口的选择**
 
-  |    端口     |  协议   |                服务                |
-  | :---------: | :-----: | :--------------------------------: |
-  |     20      |   TCP   |      文件传输协议（FTP）数据       |
-  |     21      |   TCP   |             FTP服务器              |
-  |     22      |   TCP   |                SSH                 |
-  |     23      |   TCP   |            Telnet服务器            |
-  |     25      |   TCP   |   Simple Mail Transfer Protocol    |
-  |     53      | TCP/UDP |           域名系统(DNS)            |
-  |    67/68    |   UDP   |       动态主机配置协议(DHCP)       |
-  |     69      |   UDP   |         Trivial FTP (TFTP)         |
-  |     80      |   TCP   | Hypertext Transfer Protocol (HTTP) |
-  |     110     |   TCP   |    Post Office Protocol3(POP3)     |
-  |     123     |   UDP   |         网络时间协议(NTP)          |
-  | 137/138/139 | TCP/UDP |              NetBIOS               |
-  |     143     |   TCP   |    Internet信息访问协议（IMAP）    |
-  |   161/162   | TCP/UDP |      简单网络管理协议（SNMP）      |
-  |     179     |   TCP   |     Border边界网关协议（BGP）      |
-  |     389     | TCP/UDP |     轻量级目录访问协议（LDAP）     |
-  |     443     |   TCP   |      HTTP over SSL/TLS(HTTPS)      |
-  |     636     | TCP/UDP |     LDAP over SSL/TLS (LDAPS)      |
-  |   989/990   |   TCP   |      FTP over SSL/TLS (FTPS)       |
+    当选择一个新的SSH端口时，要注意端口号0-1023是为各种服务保留的，只能通过root访问来绑定，以下列举一些常用的特权服务以及相关端口和功能的列表：
 
-  以上这些都是为了专用的服务而特定保留，因此不建议在0~1023范围选择新端口！
+    |    端口     |  协议   |                服务                |
+    | :---------: | :-----: | :--------------------------------: |
+    |     20      |   TCP   |      文件传输协议（FTP）数据       |
+    |     21      |   TCP   |             FTP服务器              |
+    |     22      |   TCP   |                SSH                 |
+    |     23      |   TCP   |            Telnet服务器            |
+    |     25      |   TCP   |   Simple Mail Transfer Protocol    |
+    |     53      | TCP/UDP |           域名系统(DNS)            |
+    |    67/68    |   UDP   |       动态主机配置协议(DHCP)       |
+    |     69      |   UDP   |         Trivial FTP (TFTP)         |
+    |     80      |   TCP   | Hypertext Transfer Protocol (HTTP) |
+    |     110     |   TCP   |    Post Office Protocol3(POP3)     |
+    |     123     |   UDP   |         网络时间协议(NTP)          |
+    | 137/138/139 | TCP/UDP |              NetBIOS               |
+    |     143     |   TCP   |    Internet信息访问协议（IMAP）    |
+    |   161/162   | TCP/UDP |      简单网络管理协议（SNMP）      |
+    |     179     |   TCP   |     Border边界网关协议（BGP）      |
+    |     389     | TCP/UDP |     轻量级目录访问协议（LDAP）     |
+    |     443     |   TCP   |      HTTP over SSL/TLS(HTTPS)      |
+    |     636     | TCP/UDP |     LDAP over SSL/TLS (LDAPS)      |
+    |   989/990   |   TCP   |      FTP over SSL/TLS (FTPS)       |
 
-- **改变SSH默认的22端口**
+      以上这些都是为了专用的服务而特定保留，因此不建议在0~1023范围选择新端口！
 
-  - 连接到服务器，并修改sshd_config文件
+    - **更改SSH端口**
+
+      - 连接到服务器，并修改sshd_config文件
+
+        ```shell
+        # 默认root用户
+        vim /etc/ssh/sshd_config
+        
+        # 将
+        # Port 22这一行的注释去掉
+        # 改为1099
+        Port 1099
+        
+        # 退出，保存
+        ```
+
+      - 如果有防火墙的话，配置防火墙
+
+        以`firewalld`为例：
+        - 永久添加端口号：`firewall-cmd --zone=public --add-port=1099/tcp --permanent`；
+
+        - 重新加载防火墙：`firewall-cmd --reload`；
+
+      - 测试新的端口是否开放
+
+        测试命令：`netstat -tulpn | grep 1026`;
+     
+2. **ssh免密登录**
+
+    网上教程良莠不齐，写一篇新的吧....
+
+    分两端介绍，客户端和服务端；
+    - 客户端
+
+      主要做的就两件事：生成公玥和私钥，指定ssh登录的私玥文件；
+
+      - 生成密钥：
+        ```shell
+        ssh-keygen
+        ```
+        生成的应该是两份rsa密钥文件，分别对应公玥和私玥；
+
+      - 指定文件
+      
+        修改：`C:\Users\Ping\.ssh\config`配置文件(Windows)，修改内容：
+        ```markdown
+        Host your_host_name
+        HostName Your_IP
+        User your_user
+        Port your_port
+        IdentityFile C:\Users\****\.ssh\id_rsa(your_position)
+        ```
+      
+      这样客户端这边就做完了，最后还需要将密钥文件传到服务器：
+      ```shell
+      scp your_key_position your_user@your_ip:~/.ssh/file_name
+      ```  
+
+    - 服务端
+
+      也需要做好两件事：保证`ssh`服务的正常运行、指定信任的私钥文件； 
+
+      - 保证ssh服务的正常运行
+      
+        ```shell
+        # 安装openssh-server openssh-client
+        # 根据发行版来
+        
+        # 查询工作状态
+        sudo systemctl status sshd
+        ```
+
+      - 指定信任的私玥文件
+      
+        ```shell
+        vim /etc/ssh/ssh_config
+        ```
+
+        找到这么一行信息
+        ```markdown
+        # IdentityFile ~/.ssh/isa**
+        ```
+
+        如果有注释`#`，将之去掉，后面的路径填传过来的公玥路径；一般是放在`~/.ssh/`目录；
+
+### 文本处理三剑客
+
+1. **grep的基本使用**
+
+    `grep`是Linux下常用的查找字符串工具，它的功能是**搜索**文本内容中符合某种模式或规则的字符串。
+
+    **基本语法：**`grep pattern file`-在file文件中查找与pattern模式所匹配的字符串；
 
     ```shell
-    # 默认root用户
-    vim /etc/ssh/sshd_config
-    
-    # 将
-    # Port 22这一行的注释去掉
-    # 改为1099
-    Port 1099
-    
-    # 退出，保存
+    grep "linux" test.txt	# 在test文本文件中查找含有Linux字段的行
+    grep "c*" test.txt		# 匹配以c开头的行(通配符)
+    grep "o+d" test.txt		# 匹配至少包含'o'或'd'的行(正则表达式)
     ```
 
-  - 如果有防火墙的话，配置防火墙
+    **常用选项：**
 
-    以firewalld为例，永久添加端口号：`firewall-cmd --zone=public --add-port=1099/tcp --permanent`；
+    - `-i`：忽略大小写；
 
-    重新加载防火墙：`firewall-cmd --reload`；
+    - `-n`：打印行号；
 
-  - 测试新的端口是否开放
+    - `-v`：只打印不匹配的行；
 
-    测试命令：`netstat -tulpn | grep 1026`;
+    - `-r`：递归搜索多级目录；
 
-### 七、Linux下的文本处理工具
+2. **sed的基本使用**
 
-#### grep的基本使用
+    `sed`是用于文本的流编辑器，可以实现如插入、删除、替换等高级编辑功能；
 
-`grep`是Linux下常用的查找字符串工具，它的功能是**搜索**文本内容中符合某种模式或规则的字符串。
+    **基本语法：**`sed 's/pattern/replacement/' file`—在file文件中查找`pattern`并替换为`replacement`；
 
-**基本语法：**`grep pattern file`-在file文件中查找与pattern模式所匹配的字符串；
+    ```shell
+    sed 's/hello/hi/' test.txt	# 将test文本文件中的hello替换成hi
+    ```
 
-```shell
-grep "linux" test.txt	# 在test文本文件中查找含有Linux字段的行
-grep "c*" test.txt		# 匹配以c开头的行(通配符)
-grep "o+d" test.txt		# 匹配至少包含'o'或'd'的行(正则表达式)
-```
+3. **awk的基本使用**
 
-**常用选项：**
+    `awk`用于文本分析和提取，相比`grep`和`sed`，`awk`的文本处理语言更为强大，可以实现比较复杂的文本分析功能；
 
-`-i`：忽略大小写；
+    **基本语法：**`awk 'pattern {action}' file`—用于找到file文件中符合pattern的<font color=red>行</font>，执行action指定的操作；
 
-`-n`：打印行号；
+    ```shell
+    awk '/linux/ {print $3}' test.txt	# 将找到包含linux的行,并打印第3个字段。
+    ```
 
-`-v`：只打印不匹配的行；
-
-`-r`：递归搜索多级目录；
-
-#### sed的基本使用
-
-`sed`是用于文本的流编辑器，可以实现如插入、删除、替换等高级编辑功能；
-
-**基本语法：**`sed 's/pattern/replacement/' file`-在file文件中查找pattern并替换为replacement；
-
-```shell
-sed 's/hello/hi/' test.txt	# 将test文本文件中的hello替换成hi
-```
-
-#### awk的基本使用
-
-`awk`用于文本分析和提取，相比`grep`和`sed`，`awk`的文本处理语言更为强大，可以实现比较复杂的文本分析功能；
-
-**基本语法：**`awk 'pattern {action}' file`-用于找到file文件中符合pattern的<font color=red>行</font>，执行action指定的操作；
-
-```shell
-awk '/linux/ {print $3}' test.txt	# 将找到包含linux的行,并打印第3个字段。
-```
-
-### 八、输入输出重定向
-
-在Linux中，`>`、`>>`、`>!`表示输出重定向：
-
-```shell
-echo "123" > test.txt	# 将123输入到文件test.txt中，覆盖输入
-
-echo "123" >> test.txt	# 将123输入到文件test.txt中，追加输入
-
-echo "123" >! test.txt	# 将123输入到文件test.txt中，强行覆盖输入
-```
-
-### 九、后台运行进程
-
-如果想要从后台启动进程，可以在命令的结尾加上`&`符号，这样就可以在不阻塞当前终端的情况下启动一个新的进程。
-
-例如，执行命令`python script.py &` 就可以在后台启动一个Python脚本。
-
-### 十、可移植操作系统接口(POSIX)
+### 可移植操作系统接口(POSIX)
 
 POSIX互斥锁是指统一接口的互斥锁，它有一些相关的函数：
 
 ```shell
-pthread_mutex_init 		# 初始化一个互斥量      
-pthread_mutex_lock  	# 给一个互斥量加锁      
-pthread_mutex_trylock	# 加锁，如果失败不阻塞      
-pthread_mutex_unlock 	# 解锁      
-pthread_mutex_destroy 	# 销毁互斥锁     
+pthread_mutex_init    # 初始化一个互斥量      
+pthread_mutex_lock    # 给一个互斥量加锁      
+pthread_mutex_trylock # 加锁，如果失败不阻塞      
+pthread_mutex_unlock  # 解锁      
+pthread_mutex_destroy # 销毁互斥锁     
 ```
 
-### 十一、文件描述符
+### 文件描述符
 
 在Linux系统中，一切设备都看作文件，每打开一个文件,就有一个代表该打开文件的文件描述符。
 
 程序启动时默认打开三个I/O设备文件：标准输入文件stdin，标准输出文件stdout，标准错误输出文件stderr： 
 
-- 文件描述符0：标准输入文件stdin；
+- 文件描述符0：标准输入文件`stdin`；
 
-- 文件描述符1：标准输出文件stdout；
+- 文件描述符1：标准输出文件`stdout`；
 
-- 文件描述符2：标准错误输出文件stder；
+- 文件描述符2：标准错误输出文件`stder`；
 
-### 十二、Linux的底层服务
+### 底层服务
 
-**Samba服务：**主要用来实现Linux系统的文件和打印服务，SMB(Server Messages Block，信息服务块)是一种在局域网上共享文件和打印机的一种通信协议。 
+**Samba服务:** 主要用来实现Linux系统的文件和打印服务，SMB(Server Messages Block，信息服务块)是一种在局域网上共享文件和打印机的一种通信协议。 
 
 ---
