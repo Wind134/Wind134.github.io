@@ -20,6 +20,7 @@ layout: compress
   {% include head.html %}
 
   <body>
+    {% include js-selector.html %}
     {% include sidebar.html lang=lang %}
 
     <div id="main-wrapper" class="d-flex justify-content-center">
@@ -35,7 +36,7 @@ layout: compress
     <div id="mask"></div>
 
     <button id="back-to-top" aria-label="back-to-top" class="btn btn-lg btn-box-shadow">
-      <i class="fas fa-angle-up"></i>
+      <i class="iconfont icon-angle-up"></i>
     </button>
 
     {% if site.pwa.enabled %}
@@ -68,8 +69,6 @@ layout: compress
     {% if site.backgroud_animation %}
       {% include animated-background.html %}
     {% endif %}
-
-    {% include js-selector.html %}
 
     {% if page.mermaid %}
       {% include mermaid.html %}

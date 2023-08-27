@@ -40,9 +40,9 @@
 
   <title>
     {%- unless page.layout == 'home' -%}
-      {{ page.title | append: ' | ' }}
+    {{ page.title | flatify | append: ' | '}}
     {%- endunless -%}
-    {{ site.title }}
+    {{ site.title | flatify }}
   </title>
 
   {% include_cached favicons.html %}
@@ -76,7 +76,17 @@
 
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 
-  {% if site.toc and page.toc %}
+  <!-- icon font -->
+  {% if site.data.origin[type].iconfont.css %}
+  {% for css in site.data.origin[type].iconfont.css %}
+  <link rel="stylesheet" href="{{ css | relative_url }}">
+  {% endfor %}
+  {% endif %}
+  
+  <!-- Fira Code -->
+  <link rel="stylesheet" href="{{ site.data.origin[type].firacode.css | relative_url }}">
+
+  {% if site.panel.post.toc and page.toc %}
     <link rel="stylesheet" href="{{ site.data.origin[type].toc.css | relative_url }}">
   {% endif %}
 
@@ -86,6 +96,8 @@
   {% endif %}
 
   <!-- JavaScript -->
+
+  <script async src="{{ site.data.origin[type].socket-io-client.js | relative_url }}"></script>
 
   {% if site.mouse_click_effect %}
     <script async src="/assets/js/lib/fireworks.js"></script>

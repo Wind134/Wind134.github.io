@@ -11,7 +11,7 @@
   /* Common color */
   --text-color: rgb(175, 176, 177);
   --text-muted-color: rgb(125, 136, 146);
-  --heading-color: #019e16;
+  --heading-color: #cccccc;
   --label-color: #a4a4c2;
   --blockquote-border-color: rgb(105, 105, 105);
   --blockquote-text-color: #868686;
@@ -153,22 +153,22 @@
 
   #core-wrapper {
     strong {
-      text-shadow: 0 0 0.05rem var(--text-color), 0 0 0.1rem var(--text-muted-color);
+      text-shadow: 0 0 0.1rem var(--text-color), 0 0 0.1rem var(--text-muted-color);
       code {
         text-shadow: none;
       }
     }
 
     h1 {
-      text-shadow: 0 0 0.05rem var(--text-color), 0 0 0.1rem var(--text-muted-color);
+      text-shadow: 0 0 0.1rem var(--text-color), 0 0 0.7rem var(--text-muted-color);
     }
 
     h2 {
-      text-shadow: 0 0 0.05rem var(--text-color), 0 0 0.2rem var(--text-muted-color);
+      text-shadow: 0 0 0.1rem var(--text-color), 0 0 0.7rem var(--text-muted-color);
     }
 
     h3 {
-      text-shadow: 0 0 0.05rem var(--text-color), 0 0 0.25rem var(--text-muted-color);
+      text-shadow: 0 0 0.1rem var(--text-color), 0 0 0.5rem var(--text-muted-color);
     }
 
     h4 {

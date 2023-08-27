@@ -45,6 +45,8 @@
         @extend %text-clip;
 
         font-size: 1.25rem;
+        display: flex;
+        align-items: center;
       }
 
       %muted {

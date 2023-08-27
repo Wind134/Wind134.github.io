@@ -18,19 +18,21 @@ layout: default
 
     <div class="post {{ padding | strip }} px-md-2">
       {% capture _content %}
-      {% if layout.refactor or page.layout == 'page' %}
-        {% include refactor-content.html content=content lang=lang %}
-      {% else %}
-        {{ content }}
-      {% endif %}
-    {% endcapture %}
+        {% if layout.refactor or page.layout == 'page' and page.permalink != '/404.html' %}
+          {% include refactor-content.html content=content lang=lang %}
+        {% else %}
+          {{ content }}
+        {% endif %}
+      {% endcapture %}
 
-      {% if page.layout == 'page' or page.collection == 'tabs' %}
+      {% if page.layout == 'page' or page.collection == 'tabs' and page.no_post != true %}
         {% assign tab_key = page.title | downcase %}
         {% assign title = site.data.locales[lang].tabs[tab_key] | default: page.title %}
-        <h1 class="dynamic-title">
-          {{ title }}
-        </h1>
+        {% if page.no_title == false %}
+          <h1 class="dynamic-title">
+            {{ title }}
+          </h1>
+        {% endif %}
         <div class="post-content">
           {{ _content }}
         </div>
@@ -44,8 +46,15 @@ layout: default
   <!-- panel -->
   <div id="panel-wrapper" class="col-xl-3 ps-2 text-muted">
     <div class="access">
-      {% include_cached update-list.html lang=lang %}
-      {% include_cached trending-tags.html lang=lang %}
+      {% if page.layout != "post" or site.panel.post.lastmod %}
+        {% include_cached update-list.html lang=lang  %}
+      {% endif %}
+      {% if page.layout != "post" or site.panel.post.trending_tags %}
+        {% include_cached trending-tags.html lang=lang %}
+      {% endif %}
+      {% if page.layout != "post" or site.panel.post.external_links %}
+        {% include_cached external-links.html lang=lang %}
+      {% endif %}
     </div>
 
     {% for _include in layout.panel_includes %}
@@ -60,7 +69,7 @@ layout: default
   <div class="row">
     <div id="tail-wrapper" class="col-12 col-lg-11 col-xl-9 px-3 pe-xl-4 mt-5">
       {% for _include in layout.tail_includes %}
-        {% assign _include_path = _include | append: '.html' %}
+        {% assign _include_path = _include | flatify | append: '.html' %}
         {% include {{ _include_path }} lang=lang %}
       {% endfor %}
     </div>
