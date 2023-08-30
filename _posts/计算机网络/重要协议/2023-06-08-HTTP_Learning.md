@@ -1,8 +1,9 @@
 ---
 title: HTTP概述
 author: Ping
+img_path: /assets/img/TCP-IP
 date: 2023-06-08 14:33:00 +0800
-categories: [计算机网络]
+categories: [计算机网络, 重要协议]
 tags: [NetWork, Linux, 网络编程]
 ---
 
@@ -64,6 +65,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/a
 ```
 
 从上面的报文可以看到的是，如果请求报文中使用了`GET`方法，一般不会包含请求体；
+
 
 接下来再看一段不同的请求报文，该段请求报文请求行使用了`POST`方法，而`POST`以及`PUT`请求方法，通常需要在请求体中包含数据；
 
