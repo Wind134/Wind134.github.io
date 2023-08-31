@@ -1054,12 +1054,12 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
 
 **产生僵尸进程的原因分析**
 
-一般而言，调用fork函数产生子进程的终止方式主要有两种：
+一般而言，调用`fork`函数产生子进程的终止方式主要有两种：
 
-- 传递参数并调用exit函数；
-- main函数中执行return语句并返回值；
+- 传递参数并调用`exit`函数；
+- `main`函数中执行`return`语句并返回值；
 
-向exit函数传递的参数值和main函数产生的return语句返回的值都会传递给操作系统，而操作系统本身不会销毁子进程，要等到那些值传递给产生该子进程的父进程，处在这种状态下的进程就是僵尸进程；
+向`exit`函数传递的参数值和`main`函数产生的`return`语句返回的值都会传递给操作系统，而操作系统本身不会销毁子进程，要等到那些值传递给产生该子进程的父进程，处在这种状态下的进程就是僵尸进程；
 
 因此问题的根源在于:**操作系统本身不会把子进程的那些值传递给父进程**；
 
@@ -1074,19 +1074,22 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   ```c
   #include <sys/wait.h>
   
-  // statloc 子进程的终止状态信息存储在改指针指向的整数变量中
+  // statloc子进程的终止状态信息存储在该指针指向的整数变量中
   // 若成功则返回终止的子进程ID，失败时返回-1
+  // wait顾名思义，会一直等待子进程的返回结果
   pid_t wait(int* statloc);
   ```
   
-  调用该函数时如果已有子进程终止，那么子进程终止时传递的返回值(exit函数的参数值、main函数的return返回值)将保存到参数statloc所指的内存空间。
+  调用该函数时如果已有子进程终止，那么子进程终止时传递的返回值(`exit`函数的参数值、`main`函数的`return`返回值)将保存到参数`statloc`所指的内存空间。
   
   但函数参数指向的单元中还包含其他信息，因此需要通过下列宏进行分离：
   
-  - WIFEXITED：子进程正常终止时返回true；
-  - WEXITSTATUS：返回子进程的返回值；
+  - `WIFEXITED`：子进程正常终止时返回true；
+  - `WEXITSTATUS`：返回子进程的返回值；
+
+  <font color=red>注意：上面两个宏执行的应该都是类似函数的功能，而非变量；</font>
   
-  也就是说，向wait函传递变量status的地址时，调用wait函数后应编写如下代码：
+  也就是说，向`wait`函传递变量`status`的地址时，调用`wait`函数后应编写如下代码：
   
   ```c
   wait(&status);  // wait函数返回了子进程的ID
@@ -1095,15 +1098,17 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   if(WIFEXITED(status)) // 如果是正常终止(该宏表示正常终止)
   {
       puts("Normal termination!");
-      printf("Child pass num: %d", WEXITSTATUS(status));  // WEXITSTATUS是一个宏定义
+
+      // WEXITSTATUS是一个宏定义，打印子进程的返回值
+      printf("Child pass num: %d", WEXITSTATUS(status));
   }
   ```
   
-  **Notes:** 调用wait函数时，如果没有已终止的子进程，那么程序将阻塞(Blocking)直到有子进程时终止；
+  **Notes:** 调用`wait`函数时，如果没有已终止的子进程，那么程序将<font color=red>阻塞</font>直到有子进程时终止；
 
 - **销毁僵尸进程方法2**
   
-  由于wait函数会引起程序阻塞，还可以考虑调用waitpid函数，可以防止阻塞：
+  由于`wait`函数会引起程序阻塞，还可以考虑调用`waitpid`函数，可以防止阻塞：
   
   ```c
   #include <sys/wait.h>
@@ -1121,11 +1126,12 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
 
 经过上面的学习已经知道了进程创建以及销毁办法，但还有一个没有解决的问题：
 
-- 子进程究竟何时终止，调用waitpid函数后要无休止地等待吗？
+- 子进程究竟何时终止，调用`waitpid`函数后要无休止地等待吗？
+- 是的，`waitpid`可以不进入阻塞状态，但是僵尸进程的问题还是没有解决；
 
-父进程有自己的任务，因此不能只调用waitpid函数以等待子进程终止；
+父进程有自己的任务，因此不能只调用`waitpid`函数以等待子进程终止；
 
-针对这种情况，一般有一下的解决方案：
+针对这种情况，一般有以下的解决方案：
 
 - **向操作系统求助**
   
@@ -1139,8 +1145,10 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   
   - **进程:** 操作系统，如果我之前创建的子进程终止，就帮我调用zombie_handler函数；
   - **操作系统:** 好，如果你的子进程终止，我就帮你调用，但你要先把该函数要执行的语句写好；
+
+  操作系统的哪部分执行这个任务呢？显然，应该由操作系统内核来处理；
   
-  这个过程即为**注册信号**的过程，进程发现自己的子进程结束，请求操作系统调用特定函数，实现这一过程的函数：
+  上述过程即为**注册信号**的过程，进程发现自己的子进程结束，请求操作系统调用特定函数，实现这一过程的函数：
   
   ```c
   #include <signal.h>
@@ -1149,31 +1157,33 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   void (*signal(int signo, void (*func)(int)))(int);
   
   // 下面是拆分写法：
-  // 第一行将一个void (*)(int)，一个接受int参数，返回void类型的函数指针命名为SignalHandler类型
+  // 第一行本质上是一个void (*)(int)，接受int参数，返回void类型的函数指针，我们可以将之命名为SignalHandler类型
   // 第二行表明而signal函数返回这个类型，signal从来就是一个函数，而不是指针，只是返回的是指针
   // signo 特殊情况信息
-  // func 信号处理函数
-  // return 传入一个信号处理函数，同时又返回一个信号处理函数
+  // func 操作系统帮助父进程执行的函数
+  // 总之就是，传入一个信号处理函数SignalHandler，同时又返回一个信号处理函数SignalHandler
   typedef void (*SignalHandler)(int);
   SignalHandler signal(int signo, SignalHandler func);
   ```
   
   该函数是一个典型的函数指针，先从C语言的角度对该函数做分析：
   
-  - 首先，signal是一个函数声明，该`signal`函数的参数有两个：`(int signo, void (*func)(int);)`
+  - 首先，`signal`是一个函数声明，该`signal`函数的参数有两个：`(int signo, void (*func)(int);)`
     - 其中第二个参数也是一个指向函数的指针，指针名为`func`，这个指针指向的函数接受一个整型参数并返回`void`
   - 把`signal(int signo, void (*func)(int))`看成一个整体，即`void (\*)(int)`;
     - (\*)代表这又是一个指向函数的指针，名为`signal(int signo, void (*func)(int))`，该指针指向的函数也接受一个整型参数，返回`void`
     - 该指针本身的返回类型也是`void*`；
-    - 返回的指针地址指向的函数本身会不会就是之前的func呢？
+    - 返回的指针地址指向的函数本身会不会就是之前的func呢？应该是不会的吧。
   
   **signo的部分注册的特殊情况信息**
 
   也就是上面的`signo`参数：
   
-  - SIGALRM：已到通过调用alarm函数注册的时间；
-  - SIGINT：输入CTRL+C，即强行终止；
-  - SIGCHLD：子进程终止；
+  - `SIGALRM`：已到通过调用`alarm`函数注册的时间；
+  - `SIGINT`：`CTRL+C`，即强行终止；
+  - `SIGCHLD`：子进程终止；
+
+  这三个参数代表了子进程的三种终止方式，每一种方式用一个宏定义；
   
   接下来编写调用signal函数的语句完成请求：子进程终止时则调用mychild函数：
   
@@ -1183,7 +1193,7 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   signal(SIGINT, keycontrol); // CTRL+C调用keycontrol函数
   ```
   
-  以上就是**信号注册**部分，即执行signal函数的部分；
+  以上就是**信号注册**部分，即执行`signal`函数的部分；
   
   注册好后，发生注册信号时，操作系统将调用该信号对应的函数：
   
@@ -1195,16 +1205,20 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   // return 返回0或以秒为单位的距SIGNAL信号发生所剩时间
   unsigned int alarm(unsigned int seconds);
   ```
+
+  `alarm`函数是一个在Unix-like操作系统中提供的计时器功能函数，它用于在一定时间之后发送一个`SIGALRM`信号给当前进程。通常用于实现定时操作，例如在一定时间后执行某个特定的任务。
   
   如果通过该函数预约信号后未指定该信号对应的处理函数，则终止进程，不做任何处理；
   
-  这部分的理解给出源码示例，已经上传到Github；
+  这部分的理解给出源码示例，已经上传到[Github](https://github.com/Wind134/TCP-IP-Programming/blob/main/7-%E5%A4%9A%E8%BF%9B%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E4%BF%A1%E5%8F%B7%E6%9C%BA%E5%88%B6/signal.c)；
 
 - **利用sigaction函数进行信号处理**
   
-  sigaction函数功能类似于signal函数，而且可以完全代替后者，且更稳定，因为signal函数在不同的UNIX系列OS中可能存在区别，但sigaction函数则完全相同；
+  `sigaction`函数功能类似于`signal`函数，而且可以完全代替后者，且更稳定，因为`signal`函数在不同的UNIX系列OS中可能存在区别，但`sigaction`函数则完全相同；
+
+  还有一点则是`sigaction`的声明看着也更顺眼一点；
   
-  以下针对sigaction函数的介绍只限于可替换signal函数功能的部分：
+  以下针对`sigaction`函数的介绍只限于可替换`signal`函数功能的部分：
   
   ```c
   #include <signal.h>
@@ -1216,7 +1230,7 @@ fork函数的具体运用，[详见源码](https://github.com/Wind134/TCP-IP-Pro
   int sigaction(int signo, const struct sigaction * act, struct sigaction * oldact);
   
   // 声明并初始化sigaction结构体变量以调用上述函数
-  // sa_handler 保存信号处理函数的指针值
+  // sa_handler 保存信号处理函数的指针
   // 下面两个参数初始化为0，这两个成员用于指定信号相关的选项和特性，后面介绍这些参数
   struct sigaction
   {
