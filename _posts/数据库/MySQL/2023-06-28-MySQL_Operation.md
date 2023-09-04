@@ -159,7 +159,7 @@ FROM customers
 LIMIT 3 OFFSET 1   -- OFFSET表示跳过一条数据，从第二条数据开始读取，读取3条
 ```
 
-LIMIT永远都要放在最后；
+`LIMIT`永远都要放在最后；
 
 **GROUP BY子句**
 
@@ -187,7 +187,7 @@ GROUP BY client_id	-- 以client_id进行组合
 
 **HAVING字句**
 
-HAVING子句的功能于WHERE类似，但是where使用会受到一些限制，比如语句执行位置的限制，而HAVING子句刚好可以处理这些限制。
+`HAVING`子句的功能于`WHERE`类似，但是`WHERE`使用会受到一些限制，比如语句执行位置的限制，而`HAVING`子句刚好可以处理这些限制。
 
 ```sql
 SELECT 
@@ -205,7 +205,7 @@ HAVING numbers > 2
 
 <font color="red">WHERE与HAVING的区分：</font>
 
-- HAVING子句所接的条件必须是SELECT中所存在的，WHERE子句只要满足表中存在该条件即可；
+- `HAVING`子句所接的条件必须是`SELECT`中所存在的，`WHERE`子句只要满足表中存在该条件即可；
 - 所处位置不同，以`GROUP BY`为例做区分；
 
 **WHERE与HAVING的结合使用**
@@ -278,7 +278,7 @@ JOIN customer c    -- 别名为c
   SELECT *
   FROM orders o, customers c
   -- WHERE o.customer_id = c.customer_id
-      USING (custom_id)
+      USING (customer_id)
   
   -- 这种写法只能应用于where左右两边子项是一致的情况
   
@@ -940,13 +940,13 @@ GROUP BY client_id, name
 看代码：
 
 ```sql
-delimiter $$	-- 定界符，这一步很重要
+delimiter $$	-- (自定义的)定界符，这一步很重要，避免与默认的';'相互冲突
 CREATE PROCEDURE get_clients()
 begin
 	SELECT * FROM  clients c;
-END$$
+END $$
 
-DELIMITER;	 -- 改回来
+DELIMITER ;	 -- 将定界符改回来
 ```
 
 还可以直接在编辑器那边进行创建；
@@ -954,7 +954,7 @@ DELIMITER;	 -- 改回来
 - **删除存储过程**
 
   ```sql
-  DROP PROCEDURE IF exists get_payments；	-- 删除的语法
+  DROP PROCEDURE IF exists get_payments;	-- 删除的语法
   ```
 
 ### 存储过程的参数
@@ -1768,7 +1768,7 @@ MySQL中可以为主键标识*自动递增*；
 
 在MySQL Workbench中，设置外键约束的方式主要是通过Foreign Key标签页来实现：
 
-- 在==删除==的时候，外键怎么处理？
+- 在删除的时候，外键怎么处理？
 
   - `RESTRICT`-限制，该选项会拒绝删除；
 
@@ -1776,7 +1776,7 @@ MySQL中可以为主键标识*自动递增*；
   - `SET NULL`-设为空值，如果ID变了就设置为空值，会导致子表失去了父表，一般不选；
   - `NO ACTION`-无操作，和`RESTRICT`几乎一致；
 
-- 在信息==更新==的时候，外键又怎么处理？、
+- 在信息更新的时候，外键又怎么处理？、
 
   - `RESTRICT`-限制，该选项会拒绝更新；
   - `CASCADE`-级联，主键更改，MySQL会自动更新<font color=red>子表</font>中的记录；
@@ -1948,7 +1948,7 @@ WHERE title LIKE '%react redux%' OR
 -- 此外仅仅返回这两个单词顺序排列的关键词的文章
 ```
 
-<font color=red>全文搜索不在乎顺序</font>，只要有我们所需包含的单词就会返回相关结果；
+全文搜索<font color=red>不在乎顺序</font>，只要有我们所需包含的单词就会返回相关结果；
 
 全文搜索有两种模式：自然语言模式以及布尔模式：
 
