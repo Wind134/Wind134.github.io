@@ -3,7 +3,7 @@ title: 算法思想-回溯
 author: Ping
 math: true
 date: 2023-04-01 14:33:00 +0800
-categories: [数据结构与算法]
+categories: [数据结构与算法, 算法思想]
 tags: [数据结构，算法]
 ---
 
