@@ -450,7 +450,7 @@ ilist.resize(5);	// 从ilist末尾删除20个元素
 每个适配器都定义两个构造函数：默认构造函数创建一个空对象，接受一个容器的构造函数拷贝该容器来初始化适配器。
 
 ```c++
-stack<int> stk(deq);	//从deq拷贝元素带stk
+stack<int> stk(deq);	// 从deq拷贝元素带stk
 ```
 
 默认情况下，`stack`和`queue`是基于`deque`实现的，`priority_queue`是在`vector`之上实现的。
@@ -474,7 +474,7 @@ while (!intStack.empty()) {
     int value = intStack.top();
     intStack.pop();	
 }
-//弹出顺序与弹入顺序是完全相反的
+// 弹出顺序与弹入顺序是完全相反的
 ```
 
 **队列适配器**
