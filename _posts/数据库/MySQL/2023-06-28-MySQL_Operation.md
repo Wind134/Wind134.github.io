@@ -37,7 +37,7 @@ ORDER BY first_name;        -- 按first_name排序
 
 **选择子句(The SELECT Clause)**
 
-即SELECT的用法：
+即`SELECT`的用法：
 
 ```sql
 SELECT 
@@ -50,7 +50,7 @@ FROM customers
 
 上述新列，如果我们想要命名为discount factor，则需要在该名称两端加上双引号，表示是一个字符串形式；
 
-同时，如果我们想展示某列中的内容，但内容存在重复，这时候可以使用DISTINCT关键字去重；
+同时，如果我们想展示某列中的内容，但内容存在重复，这时候可以使用`DISTINCT`关键字去重；
 
 ```sql
 SELECT DISTINCT state    -- 获取无重复内容
@@ -59,7 +59,7 @@ FROM customers
 
 **WHERE子句(The WHERE Clause)**
 
-即WHERE用法：
+即`WHERE`用法：
 
 ```sql
 SELECT *
@@ -71,7 +71,7 @@ WHERE points > 3000;    -- WHERE的作用就是处理条件
 WHERE birth_date > '1990-01-01';    -- 日期在这里直接看成字符串是吗？所以可以比较大小。
 ```
 
-MySQL中表达不等于的符号：'<>'或者'$!=$';
+MySQL中表达不等于的符号：`<>`或者`!=`;
 
 - **WHERE中运算符的使用**
   
@@ -118,7 +118,7 @@ MySQL中表达不等于的符号：'<>'或者'$!=$';
 
 **OREDER BY子句**
 
-WHERE之后列出的数据默认是按**主键列(primary key column)**排序的，通过OREDER BY字句可以自定义排序方式。
+`WHERE`之后列出的数据默认是按**主键列(primary key column)**排序的，通过`OREDER BY`字句可以自定义排序方式。
 
 ```sql
 ORDER BY first_name;    -- 按照first_name排序
@@ -132,8 +132,8 @@ ORDER BY state DESC, first_name DESC;    -- 优先按照state字段的字典序�
 -- 
 ```
 
-- 在MySQL中，即便我们选择排序的列没有被SELECT，也不会影响到ORDER的选择，同样会依据ORDER中的选择列出SELECT出来的结果；
-- 用于OREDR BY子句的表达式不一定得是一个列名称，可以是别名或者算术表达式；
+- 在MySQL中，即便我们选择排序的列没有被`SELECT`，也不会影响到`ORDER`的选择，同样会依据`ORDER`中的选择列出`SELECT`出来的结果；
+- 用于`OREDR BY`子句的表达式不一定得是一个列名称，可以是别名或者算术表达式；
 
 **LIMIT子句**
 
@@ -151,7 +151,7 @@ LIMIT 6, 3    -- 从6开始(不包括6)，返回接下来3行的信息
 -- 
 ```
 
-LIMIT常与OFFSET配合使用：
+`LIMIT`常与`OFFSET`配合使用：
 
 ```sql
 SELECT *
@@ -302,7 +302,7 @@ join employees m     -- 代表管理人员
     on e.reports_to = m.employee_id;
 ```
 
-怎么理解上面最后一行的等于呢，比如e的reports_to等于001，而m即便是管理层也是公司的员工，也会有employee_id，我们需要列出编号为001的管理层，就能很清楚的显示employee与manager的信息；
+怎么理解上面最后一行的等于呢，比如e的`reports_to`等于001，而m即便是管理层也是公司的员工，也会有`employee_id`，我们需要列出编号为001的管理层，就能很清楚的显示employee与manager的信息；
 
 **多表连接(Joining Multiple Tables)**
 
@@ -447,10 +447,13 @@ CROSS JOIN products p
 
 **总结四种连接的特点**
 
-内连接：返回两个表中存在连接匹配的记录；
-左连接：返回左表全部记录和右表符合连接条件的记录；
-右连接：返回右表全部记录和左表符合连接条件的记录；
-外连接：返回两个表全部记录，不匹配的记录对应值为NULL；
+**内连接**：返回两个表中存在连接匹配的记录；
+
+**左连接**：返回左表全部记录和右表符合连接条件的记录；
+
+**右连接**：返回右表全部记录和左表符合连接条件的记录；
+
+**外连接**：返回两个表全部记录，不匹配的记录对应值为`NULL`；
 
 ### 跨数据库查询
 
@@ -469,7 +472,7 @@ join products p     -- products是sql_inventory中的列
 
 ### 联合(Unions)
 
-前面所述基本都是关于多张表中列的连接，但是在SQL中我们也可以结合多张表的行去进行连接，这个时候就需要用到Unions语法了；
+前面所述基本都是关于多张表中列的连接，但是在SQL中我们也可以结合多张表的行去进行连接，这个时候就需要用到`Unions`语法了；
 
 ```sql
 select 
@@ -509,7 +512,7 @@ WHERE invoice_date > '2019-07-01'
 
 ### ROLLUP运算符
 
-官方说明：ROLLUP运算符应用于聚合值的列，那么<font color="red">何为聚合值？</font>
+官方说明：`ROLLUP`运算符应用于聚合值的列，那么<font color="red">何为聚合值？</font>
 
 以代码举例：
 
@@ -524,7 +527,7 @@ FROM invoices i
 GROUP BY client_id WITH ROLLUP 
 ```
 
-上面的示例代码会自动聚合total_sales；
+上面的示例代码会自动聚合`total_sales`；
 
 考虑多列表连接的情况：
 
@@ -541,7 +544,7 @@ GROUP BY state, city WITH ROLLUP 	-- 根据每一个state的数据做汇总，�
 
 ### 数值函数(Numeric Function)
 
-mysql中的内置函数，用以应对数值、日期和字符串值；
+`mysql`中的内置函数，用以应对数值、日期和字符串值；
 
 ```sql
 SELECT ROUND(5.73, 1)	-- 四舍五入，这里的范例是保留一位小数
@@ -593,7 +596,7 @@ SELECT RAND()			-- 返回0-1之间的随机数
 
   - **格式化日期和时间(Formatting)**
 
-    在数据库中的默认形式是："2023-03-29"，将之格式化为用户所能看懂的形式：
+    在数据库中的默认形式是：`2023-03-29`，将之格式化为用户所能看懂的形式：
 
     ```sql
     SELECT date_format(now(), '%m %d %Y'), time_format(now(), "%H:%i:%s")	-- 格式转化 
@@ -604,9 +607,10 @@ SELECT RAND()			-- 返回0-1之间的随机数
     列举一些常用函数：
 
     ```sql
-    SELECT date_add(now(), INTERVAL -1 year) AS last_year,	-- 今年的基础上减一年 
-    	datediff('2019-01-05 09:00', '2019-01-01 01:00'),	-- 两个日期的差
-    	time_to_sec('09:00') - time_to_sec('09:02')  		-- 两个时间相差的 秒数
+    SELECT
+    date_add(now(), INTERVAL -1 year) AS last_year, -- 今年的基础上减一年 
+    datediff('2019-01-05 09:00', '2019-01-01 01:00'), -- 两个日期的差
+    time_to_sec('09:00') - time_to_sec('09:02')       -- 两个时间相差的 秒数
     ```
 
 - **IFNULL函数和COALESCE函数**
@@ -617,10 +621,10 @@ SELECT RAND()			-- 返回0-1之间的随机数
   USE sql_store;
   
   SELECT 
-  	order_id,
-  	ifnull(shipper_id, "Not assigned") AS shippers,	-- ID为空则用"Not assigned"填充
-  	-- 对于shipper_id，为空则用comments填充，comments还为空就用最后一个'Not assigned'填充
-  	COALESCE(shipper_id, comments, 'Not assigned') AS shippers 
+    order_id,
+    ifnull(shipper_id, "Not assigned") AS shippers,	-- ID为空则用"Not assigned"填充
+    -- 对于shipper_id，为空则用comments填充，comments还为空就用最后一个'Not assigned'填充
+    COALESCE(shipper_id, comments, 'Not assigned') AS shippers 
   FROM orders o 
   ```
 
@@ -638,7 +642,7 @@ SELECT RAND()			-- 返回0-1之间的随机数
 
 - **CASE运算符**
 
-  IF运算符只能满足单一的测试表达式，因此引入CASE运算符，应对单一运算符无法处理的情况，此外，CASE运算符一般与WHEN配个使用：
+  IF运算符只能满足单一的测试表达式，因此引入`CASE`运算符，应对单一运算符无法处理的情况，此外，`CASE`运算符一般与`WHEN`配合使用：
 
   ```sql
   USE sql_store;
@@ -720,7 +724,7 @@ WHERE unit_price > (	-- 以下为子查询
 
 - **ANY关键字**
 
-  可以对比*ALL关键字*一起理解，ALL是必须大于所有，而ANY则是满足某一个即可：
+  可以对比`ALL`关键字一起理解，`ALL`是必须大于所有，而`ANY`则是满足某一个即可：
   
   ```sql
   SELECT client_id, COUNT(*) AS numbers
@@ -737,7 +741,7 @@ WHERE unit_price > (	-- 以下为子查询
 
   引出这个问题的几个原因是：
 
-  - 这里可以看出的是SELECT语句也可以有子查询；
+  - 这里可以看出的是`SELECT`语句也可以有子查询；
 
   - 其次是在语句：
 
@@ -751,7 +755,7 @@ WHERE unit_price > (	-- 以下为子查询
 
     这部分一位会<font color="red">出现每一invoice_id的的avg信息，但是只有一行，因此产生了一些疑问</font>；
 
-    针对这个问题的解释是，逻辑上而言，平均值确实是每一列只有一个值，因此id以及total也跟着只出现一行，这时候就用到SELECT的子查询了；
+    针对这个问题的解释是，逻辑上而言，平均值确实是每一列只有一个值，因此`id`以及`total`也跟着只出现一行，这时候就用到`SELECT`的子查询了；
 
   子查询示例：
 
@@ -779,7 +783,7 @@ WHERE unit_price > (	-- 以下为子查询
   FROM clients c 
   ```
 
-  这样就会对invoice_id, invoice_total每一行做AVG；
+  这样就会对`invoice_id`, `invoice_total`每一行做AVG；
 
 - **FROM子句的子查询**
 
@@ -800,7 +804,7 @@ WHERE unit_price > (	-- 以下为子查询
   ) AS summary_sales	-- 一个子查询范例，这部分子查询可以当作一个视图来进行处理，这部分后面学习
   ```
 
-  从上可以看出，我们SELECT出来的一张表格，即便是在数据库中不存在的，我们也可以把它当作一张普通表格进行我们所学的操作；
+  从上可以看出，我们`SELECT`出来的一张表格，即便是在数据库中不存在的，我们也可以把它当作一张普通表格进行我们所学的操作；
 
 ### 子查询与连接的对比
 
@@ -854,13 +858,13 @@ WHERE salary > (
   )
   ```
 
-  会更建议使用EXISTS运算符，因为<font color="red">他只返回一个结果(True Or False)给外查询，而不是像IN直接返回一整个列表</font>；
+  会更建议使用`EXISTS`运算符，因为<font color="red">他只返回一个结果(True Or False)给外查询，而不是像IN直接返回一整个列表</font>；
 
 ## 视图(Views)
 
 ### 视图的定义
 
-视图不存储数据，数据存储在表中，视图可以认为是表的一个虚拟存在，可以简化我们书写，不必每次都写一大串SELECT语句；
+视图不存储数据，数据存储在表中，视图可以认为是表的一个虚拟存在，可以简化我们书写，不必每次都写一大串`SELECT`语句；
 
 创建视图代码：
 
@@ -886,7 +890,7 @@ GROUP BY client_id, name
 
 - 删除再重建
 
-- 使用REPLACE方法
+- 使用`REPLACE`方法
 
   ```sql
   USE sql_invoicing;
@@ -919,7 +923,7 @@ GROUP BY client_id, name
 
 - **WITH OPTION CHECK子句**
 
-  教程中用的是MySQL自带编辑器，在进行UPDATE的过程中，相应的行会消失；为了避免这种情况，可以在创建视图的源码中加入：`WITH OPTION CHECK`子句；
+  教程中用的是MySQL自带编辑器，在进行`UPDATE`的过程中，相应的行会消失；为了避免这种情况，可以在创建视图的源码中加入：`WITH OPTION CHECK`子句；
 
   但经我测试，DBeaver是不存在这种情况的，而且<font color="red">而且加了这行会报错</font>；
 
@@ -978,7 +982,7 @@ CALL get_clients_by_state("CA") 	-- 参数不能为空，一定得有东西，�
 
 - **带默认值的参数**
 
-  即便是带默认值的参数，也就是说存储过程不需要任何参数，你也得告诉MySQL参数是NULL，否则SQL会不高兴；
+  即便是带默认值的参数，也就是说存储过程不需要任何参数，你也得告诉MySQL参数是`NULL`，否则SQL会不高兴；
 
   ```sql
   DROP PROCEDURE IF exists get_clients_by_state;
@@ -1213,10 +1217,10 @@ END $$
 
 事务的几个属性：
 
-- 事务具有原子性(Atomicity)，不可分割，不论它包含多少语句；
-- 事务具有一致性(Consistency)，意思就是说事务中(表格)内容的变化是一致的；
-- 事务具有隔离性(Isolation)，比如说多个事务想要修改一张表，那么每个事务对其的操作是互不影响的；
-- 事务具有永久性(Durability)，事务对数据的改变时永久的；
+- 事务具有**原子性**(Atomicity)，不可分割，不论它包含多少语句；
+- 事务具有**一致性**(Consistency)，意思就是说事务中(表格)内容的变化是一致的；
+- 事务具有**隔离性**(Isolation)，比如说多个事务想要修改一张表，那么每个事务对其的操作是互不影响的；
+- 事务具有**永久性**(Durability)，事务对数据的改变时永久的；
 
 即ACID；
 
@@ -1233,10 +1237,10 @@ INSERT INTO orders (customer_id, order_date, status)
 VALUES (1, '2019-01-01', 1);
 
 INSERT INTO order_items
-VALUES (last_insert_id(), 1, 1, 1);		-- 上面每一步都需要执行完成，才能保证该事务被提交
+VALUES (last_insert_id(), 1, 1, 1); -- 上面每一步都需要执行完成，才能保证该事务被提交
 
-COMMIT;		-- 当MySQL看到该指令，会将所有更改保存，但如果有执行失败的，它会退回所有的更改
-ROLLBACK;	-- 当我们想要执行一些错误检查，可以使用ROLLBACK手动退回所有的更改
+COMMIT;   -- 当MySQL看到该指令，会将所有更改保存，但如果有执行失败的，它会退回所有的更改
+ROLLBACK; -- 当我们想要执行一些错误检查，可以使用ROLLBACK手动退回所有的更改
 ```
 
 ***Notes:***我们写这些代码的那个窗口就是通过MySQL中的事务来控制的；
@@ -1254,7 +1258,7 @@ ROLLBACK;	-- 当我们想要执行一些错误检查，可以使用ROLLBACK手�
 - **脏读(Dirty Reads)：**事件B读取了事务A的修改，但是事务A对这部分修改并未做提交，万一退回，就形成了**Dirty Reads**；
   - **解决方案：**建立隔离级别，即在A未做提交时不可读，SQL定义了四个事务隔离级别；(<font color=red>后面会学</font>)
 - **不可重复读(Non-repeating Reads)：**事务A在先前读写某项信息，而此时事务B更新了那部分信息，事务A又读这部分信息，读出不一样的信息，即导致了不可重复(不一致)读的结果；
-  - **解决方案：**按照最新的读；此外SQL定义了另一个隔离级别，"可重复读"，即会在最先读取的部分形成一个快照，保证一致！
+  - **解决方案：**按照最新的读；此外SQL定义了另一个隔离级别，**可重复读**，即会在最先读取的部分形成一个快照，保证一致！
 
 - **幻读(Phantom Reads)：**事务A需要读取顾客某范围内的信息，但在这个过程中事务B更新了一条符合这个范围的新信息，但是最终事务B的这部分信息没读到；
   - **解决方案：**保证事务A在读取的过程中没有其他事务在更新<font color=red>影响这部分读取</font>的信息；SQL中有一个"序列化"隔离级别；这是可以应用于一个事务的最高隔离级别；
@@ -1384,7 +1388,7 @@ WHERE client_id IN (3, 4)	-- IN表示一种可迭代的操作，即client_id为3
 
 - **在UPDATE中用子查询**
 
-  通俗来说就是，对WHERE中条件的指定：
+  通俗来说就是，对`WHERE`中条件的指定：
 
   ```sql
   UPDATE invoices 

@@ -10,7 +10,9 @@ tags: [MySQL, 数据库]
 
 ## MySQL介绍
 
-MySQL是一个关系型数据库管理系统，由瑞典MySQL AB公司开发，属于Oracle旗下产品。MySQL 是最流行的关系型数据库管理系统之一，在 WEB应用方面，MySQL是最好的RDBMS(Relational Database Management System，关系数据库管理系统)应用软件之一。在Linux上进行学习的是MySQL的开源版本MariaDB。
+MySQL是一个关系型数据库管理系统，由瑞典MySQL AB公司开发，属于Oracle旗下产品。MySQL是最流行的关系型数据库管理系统之一，在WEB应用方面，MySQL是最好的RDBMS(Relational Database Management System，关系数据库管理系统)应用软件之一。
+
+在Linux上进行学习的是MySQL的开源版本`MariaDB`。
 
 ## 层次模型
 
@@ -44,11 +46,11 @@ MySQL是一个关系型数据库管理系统，由瑞典MySQL AB公司开发，�
 
 关系模式本质上是对关系的描述，关系即一张表，一张二维表；
 
-关系中需要描述的部分：R(U, D, DOM, F)
+关系中需要描述的部分：`R(U, D, DOM, F)`
 
-- 关系中有哪些属性(U即为属性名，F为属性间的依赖关系)；
-- 这些属性来自哪些域(D代表域)；
-- 属性与域之间的映射关系(DOM代表映射关系)；
+- 关系中有哪些属性(`U`即为属性名，`F`为属性间的依赖关系)；
+- 这些属性来自哪些域(`D`代表域)；
+- 属性与域之间的映射关系(`DOM`代表映射关系)；
 
 ### 关系语言
 
@@ -80,23 +82,23 @@ MySQL是一个关系型数据库管理系统，由瑞典MySQL AB公司开发，�
 
 ### 字符串类型
 
-- **CHAR**
+- `CHAR`
 
   固定长度字符串；
 
-- **VARCHAR**
+- `VARCHAR`
 
   可编入索引，可变长度字符串，最大大小64KB，最多字符个数65535，超过这个部分将会被截断；
 
-- **MEDIUMTEXT**
+- `MEDIUMTEXT`
 
   可变字符长，最大大小16MB；
 
-- **LONGTEXT**
+- `LONGTEXT`
 
   可变字符长，最大大小4GB；
 
-- **TINYTEXT**
+- `TINYTEXT`
 
   可变字符长，最大大小255 bytes；
 
@@ -104,23 +106,23 @@ MySQL是一个关系型数据库管理系统，由瑞典MySQL AB公司开发，�
 
 ### 整数类型
 
-- **TINYINT：**1B
-- **UNSIGNED TINYINT：**1B，[0, 255]
-- **SMALLINT：**2B
-- **MEDIUMINT：**3B
-- **INT：**4B
-- **BIGINT：**8B
+- `TINYINT`：1B
+- `UNSIGNED TINYINT`：1B，[0, 255]
+- `SMALLINT`：2B
+- `MEDIUMINT`：3B
+- `INT`：4B
+- `BIGINT`：8B
 
-INT(4)==>0001，这是一种存储方式，代表4位长度的整数；
+`INT(4)==>0001`，这是一种存储方式，代表4位长度的整数；
 
 尽量用符合实际的长度去存储信息，节约空间以及提升效率；
 
 ### 定点数类型和浮点数类型
 
-- **DECIMAL(p, s)：**定点数，比如DECIMAL(9, 2) => 1234567.89
-- **DEC、NUMERIC、FIXED：**同上类型
-- **FLOAT：**4B，单精度浮点数
-- **DOUBLE：**8B，双精度浮点数
+- `DECIMAL(p, s)`：定点数，比如DECIMAL(9, 2) => 1234567.89
+- `DEC、NUMERIC、FIXED`：同上类型
+- `FLOAT`：4B，单精度浮点数
+- `DOUBLE`：8B，双精度浮点数
 
 ### 布尔类型
 
@@ -128,8 +130,8 @@ INT(4)==>0001，这是一种存储方式，代表4位长度的整数；
 
 ### 枚举和集合类型
 
-- **ENUM(..,..,....)：**枚举类型应用于某列中仅支持固定类型值的情况，有一个缺陷就是不好拓展，新增或减少一部分枚举内容需要对整张表进行重建；
-- **SET(...)：**表格内容允许多个值的存储；
+- `ENUM(..,..,....)`：枚举类型应用于某列中仅支持固定类型值的情况，有一个缺陷就是不好拓展，新增或减少一部分枚举内容需要对整张表进行重建；
+- `SET(...)`：表格内容允许多个值的存储；
 
 ### 日期和时间类型
 
@@ -156,7 +158,7 @@ JSON类型的文档是一种通过网络存储和传输数据的轻量级文件�
 
 ```json
 {
-    "key": value
+    "key": "value"
 }
 ```
 
@@ -204,6 +206,6 @@ SET properties = JSON_REMOVE(
   - `VARCHAR(50)`-代表可变长度的Char类型，最长50位，与之对应的是`CHAR`类型，如果没有满足相应长度，会填满那个长度；
   - `DATE`-日期的数据格式；
 - **主键PK(Primary Keys)**-是<font color=red>表格中的唯一标识给定表中每条记录的列</font>，以图表中数据为例，customer_id即为主键；
-- **NN(Not NULL)**-该列是否可以写空值，像上表中customer_id、first_name、last_name就不能写空值；
+- **NN(Not NULL)**-该列是否可以写空值，像上表中`customer_id`、`first_name`、`last_name`就不能写空值；
 - **AL(Auto-Increment)**-一般用在主键列，当新增一条记录的时候，该主键列会递增；
 - **Default/Expression**-标明了每列的默认值；
