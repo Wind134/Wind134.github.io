@@ -33,11 +33,11 @@ tags: [Programming, C++/C, cpp]
 - `string`、`vector`访问快，因为是连续存储，计算下标是非常迅速的；添加元素慢主要是因为在一次插入或删除操作之后，需要移动插入/删除位置之后的所有元素。
 - `list`、`forward_list`则是针对上述问题的缺点而提出的一种新的数据结构，使插入删除操作更为便捷；但作为代价，不支持元素的随机访问，内存开销大。
 - `deque`是一个更为复杂的数据结构，同样支持快速随机访问。但是在`deque`两端添加或删除元素都是很快的。
-- `forward_list`的设计目标是达到与最好的手写的单向链表数据结构相当的性能。因此，`forward_list`没有size操作。
+- `forward_list`的设计目标是达到与最好的手写的单向链表数据结构相当的性能。因此，`forward_list`没有`size`操作。
 
-*Notes：现代C++程序应该使用标准库容器，而不是更原始的数据结构，如内置数组！因为标准库容器的性能几乎肯定与最精心优化过的同类数据结构一样好(通常会更好！)*
+**Notes：**现代C++程序应该使用标准库容器，而不是更原始的数据结构，如内置数组！因为标准库容器的性能几乎肯定与最精心优化过的同类数据结构一样好(通常会更好！)
 
-**确定使用哪种顺序容器：**通常，使用vector是最好的选择，除非你有很好的理由选择其他容器！
+**确定使用哪种顺序容器：**通常，使用`vector`是最好的选择，除非你有很好的理由选择其他容器！
 
 ### 容器库概览
 
@@ -50,7 +50,9 @@ tags: [Programming, C++/C, cpp]
 顺序容器几乎可以保存任意类型的元素。我们甚至可以定义一个容器，其元素类型是另一个容器。
 
 ```c++
-vector<vector<string>> lines;	// vector的vector(可以理解为一段句子)(较旧的编译器可能需要在两个尖括号之间键入空格，不然会误认为移位操作)
+// vector的vector(可以理解为一段句子)
+// (较旧的编译器可能需要在两个尖括号之间键入空格，不然会误认为移位操作)
+vector<vector<string>> lines;
 ```
 
 我们需要考虑的一个问题是，某些容器操作对元素类型有其自己的特殊要求。我们可以为不支持特定操作需求的类型定义容器，但此情况下就只能使用没有特殊要求的容器操作。
@@ -67,38 +69,38 @@ vector<noDefault> v2(10);		// 错误：必须提供一个元素初始化器
 
 |                  类型别名                  |                           具体意义                           |
 | :----------------------------------------: | :----------------------------------------------------------: |
-|                  iterator                  |                     容器类型的迭代器类型                     |
-|               const_iterator               |           可以读取元素，但不能修改元素的迭代器类型           |
-|                 size_type                  |      无符号整数类型，保存此种容器类型最大可能容器的大小      |
-|              difference_type               |         带符号整数类型，足够保存两个迭代器之间的距离         |
-|                 value_type                 |                           元素类型                           |
-|                 reference                  |           元素的左值类型(引用)，等价于value_type&            |
-|              const_reference               |          元素的const左值类型(即，const value_type&)          |
+|                  `iterator`                  |                     容器类型的迭代器类型                     |
+|               `const_iterator`               |           可以读取元素，但不能修改元素的迭代器类型           |
+|                 `size_type`                  |      无符号整数类型，保存此种容器类型最大可能容器的大小      |
+|              `difference_type`               |         带符号整数类型，足够保存两个迭代器之间的距离         |
+|                 `value_type`                 |                           元素类型                           |
+|                 `reference`                  |           元素的左值类型(引用)，等价于`value_type&`            |
+|              `const_reference`               |          元素的`const`左值类型(即，`const value_type&`)          |
 |                **构造函数**                |                         **具体意义**                         |
-|                    C c;                    |                   默认构造函数，构造空容器                   |
-|                 C c1(c2);                  |                       构造c2的拷贝-c1                        |
-|                 C c(b, e);                 |         构造c，将迭代器b和e指定的范围内的元素拷贝到c         |
-|              C c{a, b, c...}               |                         列表初始化c                          |
+|                    `C c;`                    |                   默认构造函数，构造空容器                   |
+|                 `C c1(c2);`                  |                       构造c2的拷贝-c1                        |
+|                 `C c(b, e);`                 |         构造c，将迭代器b和e指定的范围内的元素拷贝到c         |
+|              `C c{a, b, c...};`               |                         列表初始化c                          |
 |               **赋值与swap**               |                         **具体意义**                         |
-|                   c1=c2;                   |                 将c1中的元素替换为c2中的元素                 |
-|              c1={a, b, c...};              |          将c1中的元素替换为列表中元素(array不支持)           |
-|                 a.swap(b);                 |                        交换a和b的元素                        |
-|                swap(a, b);                 |                           同上等价                           |
+|                   `c1=c2;`                   |                 将c1中的元素替换为c2中的元素                 |
+|              `c1={a, b, c...};`              |          将c1中的元素替换为列表中元素(`array`不支持)           |
+|                 `a.swap(b);`                 |                        交换a和b的元素                        |
+|                `swap(a, b);`                 |                           同上等价                           |
 |                  **大小**                  |                         **具体意义**                         |
-|                 c.size();                  |           c中元素的数目(不支持单链表forward_list)            |
-|               c.max_size();                |                  c中可保存的最大元素的数目                   |
-|                 c.empty();                 |                         判断是否为空                         |
+|                 `c.size();`                  |           c中元素的数目(不支持单链表`forward_list`)            |
+|               `c.max_size();`                |                  c中可保存的最大元素的数目                   |
+|                 `c.empty();`                 |                         判断是否为空                         |
 |       **添加删除元素(不适用array)**        |                         **具体意义**                         |
-|             c.insert(*args*);              |                    将args中的元素拷贝进c                     |
-|            c.emplace(*inits*);             |                  使用inits构造c中的一个元素                  |
-|              c.erase(*args*);              |                      删除args指定的元素                      |
-|                 c.clear();                 |           清空，**返回**void           |
+|             `c.insert(*args*);`              |                    将`args`中的元素拷贝进c                     |
+|            `c.emplace(*inits*);`             |                  使用`inits`构造c中的一个元素                  |
+|              `c.erase(*args*);`              |                      删除`args`指定的元素                      |
+|                 `c.clear();`                 |           清空，**返回**`void`           |
 |               **获取迭代器**               |                         **具体意义**                         |
-|          c.(c)begin(),c.(c)end();          |                          显然，不表                          |
+|          `c.(c)begin(),c.(c)end();`          |                          显然，不表                          |
 | **反向容器的额外成员**(不支持forward_list) |                         **具体意义**                         |
-|             reverse_iterator;              |                    按逆序寻址元素的迭代器                    |
-|          const_reverse_iterator;           |                   不能修改元素的逆序迭代器                   |
-|         c.(c)rbegin(),c.(c)rend();         | **返回**尾元素以及首元素之前位置的迭代器 |
+|             `reverse_iterator;`              |                    按逆序寻址元素的迭代器                    |
+|          `const_reverse_iterator;`           |                   不能修改元素的逆序迭代器                   |
+|         `c.(c)rbegin(),c.(c)rend();`         | **返回**尾元素以及首元素之前位置的迭代器 |
 
 以上是涉及到一些经常使用的类型成员以及构造函数信息。
 
@@ -159,11 +161,21 @@ auto it4 = a.crbegin();	//const_reverse_iterator，总之就是这四种迭代�
 
 ```c++
 list<string> authors = {"Milton", "Shakespeare", "Austen"};
-vector<const char*> articles = {"a", "an", "the"};  // 容器内元素类型为const char*，指向char数组的首地址
-list<string> list2(authors);        // 类型匹配，没问题
-deque<string> authList(authors);    // 错误：容器类型不匹配
-vector<string> words(articles);     // 错误：容器元素类型不匹配
-forward_list<string> words(articles.begin(), articles.end());   // 迭代器范围可以整成拷贝
+
+// 容器内元素类型为const char*，指向char数组的首地址
+vector<const char*> articles = {"a", "an", "the"};
+
+// 类型匹配，没问题
+list<string> list2(authors);
+
+// 错误：容器类型不匹配
+deque<string> authList(authors);
+
+// 错误：容器元素类型不匹配
+vector<string> words(articles);
+
+// 迭代器范围可以整成拷贝
+forward_list<string> words(articles.begin(), articles.end());
 ```
 
 *可以利用迭代器拷贝一个容器中的子序列*。
@@ -173,14 +185,14 @@ forward_list<string> words(articles.begin(), articles.end());   // 迭代器范�
 新标准中，我们可以对一个容器进行列表初始化：
 
 ```c++
-//通过给定的列表进行初始化
+// 通过给定的列表进行初始化
 list<string> authors = {"Milton", "Shakespeare", "Austen"};
 vector<const char*> articles = {"a", "an", "the"};
 ```
 
 **与顺序容器大小相关的构造函数**
 
-除了与<font color = "red">关联容器</font>相同的构造函数外，顺序容器还提供一个接受容器大小和一个(可选的)元素初始值的构造函数(即<font color = "red">关联容器</font>不支持大小参数)，如没有元素初始值，那么*标准库会创建一个值初始化器*；
+除了与<font color = "red">关联容器</font>相同的构造函数外，顺序容器还提供一个接受容器大小和一个(可选的)元素初始值的构造函数(即<font color = "red">关联容器</font>不支持大小参数)，如没有元素初始值，那么**标准库会创建一个值初始化器**；
 
 ```c++
 vector<int> ivec(10, -1);
@@ -214,7 +226,10 @@ array<int, 10> copy = digits;   // array容器支持拷贝以及赋值操作，�
 
 **容器大小操作**
 
-除了一个例外外(该例外指的是`forward_list`)，每个容器类型都有三个与大小相关的操作：`empty`检测是否为空、`size`返回容器中元素数目、`max_size`返回一个大于或等于该类型容器所能容纳的最大元素数的值；
+除了一个例外外(该例外指的是`forward_list`)，每个容器类型都有三个与大小相关的操作：
+- `empty`检测是否为空；
+- `size`返回容器中元素数目；
+- `max_size`返回一个大于或等于该类型容器所能容纳的最大元素数的值；
 
 ### 赋值和swap操作
 
@@ -252,14 +267,15 @@ list<string> names;
 vector<const char*> oldstyle;
 names = oldstyle;   // 错误，类型不匹配
 names.assign(oldstyle.cbegin(), oldstyle.cend());   // 两个参数为迭代器类型
+
 // assign的另一个版本，接受一个整型值和一个元素值。
 list<string> slist1(1); // 一个元素，为空string
-slist1.assign(10, "Hiya!")
+slist1.assign(10, "Hiya!");
 ```
 
 **使用swap**
 
-swap操作交换两个相同类型容器的内容。调用swap之后，两个容器中的元素将会交换：
+`swap`操作交换两个相同类型容器的内容。调用`swap`之后，两个容器中的元素将会交换：
 
 ```c++
 vector<string> svec1(10);	// 10个元素的vector
@@ -267,7 +283,7 @@ vector<string> svec1(24);	// 24个元素的vector
 swap(svec1, svec2);
 ```
 
-swap操作很快，因为元素本身并未交换，swap只是交换了两个容器的内部数据结构(<font color = "red">这意思有点类似浅拷贝？</font>)
+`swap`操作很快，因为元素本身并未交换，`swap`只是交换了两个容器的内部数据结构(<font color = "red">这意思有点类似浅拷贝？</font>)
 
 - 对于`string`而言，`swap`之后指向容器的迭代器、引用和指针在`swap`操作之后会失效。
 - `string`和`array`之所以会失效，是因为空间分配的策略原因；
@@ -293,11 +309,11 @@ swap操作很快，因为元素本身并未交换，swap只是交换了两个容
 
 除array外，所有标准库容器都提供灵活的内存管理。在运行时可以动态添加或删除元素来改变容器大小。向顺序容器添加元素的操作主要有如下几种：
 
-- **使用push_back：**追加到容器尾部
+- **使用`push_back`：**追加到容器尾部
 
-- **使用push_front：**将元素插入到容器头部，但这部分只有`list、forward、deque`支持。(是不是因为插入到vector的头部太过耗时)
+- **使用`push_front`：**将元素插入到容器头部，但这部分只有`list、forward、deque`支持。(是不是因为插入到vector的头部太过耗时)
 
-- **使用insert在容器特定位置添加元素：**`forward_list`提供了特殊版本的`insert`成员。`insert`接受一个迭代器作为其第一个参数。且是**将元素插入到迭代器所指定的位置之前，且返回的是新加入元素的位置**。
+- **使用`insert`在容器特定位置添加元素：**`forward_list`提供了特殊版本的`insert`成员。`insert`接受一个迭代器作为其第一个参数。且是**将元素插入到迭代器所指定的位置之前，且返回的是新加入元素的位置**。
 
 - 代码用法：`slist.insert(iter, "Hello!");`
 
@@ -305,17 +321,17 @@ swap操作很快，因为元素本身并未交换，swap只是交换了两个容
 
 - 对于`vector、deque、string`而言，插入进相应位置合法，然而可能很耗时；
 
-- **使用insert插入范围内元素：**迭代器作为第一个参数，元素数目作为第二个参数，元素值作为第三个参数。
+- **使用`insert`插入范围内元素：**迭代器作为第一个参数，元素数目作为第二个参数，元素值作为第三个参数。
 
   - 代码用法1：`svec.insert(svec.end(), 10, "Anna");`
 
-- **使用insert插入范围内元素：**第一个参数同样为迭代器，第二第三个参数给定所选范围。
+- **使用`insert`插入范围内元素：**第一个参数同样为迭代器，第二第三个参数给定所选范围。
 
   - 代码用法2：`slist.insert(slist.begin(), v.end() - 2, v.end());`
   - 代码用法3：`slist.insert(slist.end(), {"these", "words", "will"});`
   - 注意事项：**迭代器表示要拷贝的范围，不能指向与目的位置相同的容器**！
 
-- **insert的返回值：**接受元素个数或范围的`insert`版本*返回*指向第一个新加入元素的迭代器。如果范围为空，`insert`会将第一个参数返回！
+- **`insert`的返回值：**接受元素个数或范围的`insert`版本*返回*指向第一个新加入元素的迭代器。如果范围为空，`insert`会将第一个参数返回！
 
     ```c++
     list<string> lst;
@@ -324,12 +340,16 @@ swap操作很快，因为元素本身并未交换，swap只是交换了两个容
         iter = lst.insert(iter, word);	// 等价于调用push_front
     ```
 
-- **使用emplace操作：**包括`emplace_front、emplace、emplace_back`等成员，这些操作构造而不是拷贝元素；分别对应`push_front、insert、push_back`。直接上代码：
+- **使用`emplace`操作：**包括`emplace_front、emplace、emplace_back`等成员，这些操作构造而不是拷贝元素；分别对应`push_front、insert、push_back`。直接上代码：
 
   ```c++
   // 假定c保存Sales_data，在c的末尾构造一个Sales_data对象
-  c.emplace_back("978-0590353403", 25, 15.99);  // emplace_back的操作
-  c.push_back(Sales_data("978-0590353403", 25, 15.99)); // 要先创建一个临时的Sales_data对象
+
+  // emplace_back的操作
+  c.emplace_back("978-0590353403", 25, 15.99);
+
+  // 要先创建一个临时的Sales_data对象
+  c.push_back(Sales_data("978-0590353403", 25, 15.99));
   ```
 
   从上述代码可以看出的是，当我们调用一个`emplace`成员函数时，是将参数传递给**元素类型**的构造函数。`emplace`成员使用这些参数在容器管理的内存空间中直接构造元素。
@@ -337,9 +357,14 @@ swap操作很快，因为元素本身并未交换，swap只是交换了两个容
   **`emplace`函数的参数根据元素类型而变化，参数必须与元素类型的构造函数相匹配**
 
   ```c++
-  c.emplace_back(); // 使用Sales_data的默认构造函数
-  c.emplace(iter, "999-999999999"); // 使用Sales_data(string)一个参数的构造函数
-  c.emplace_front("978-0590353403", 25, 15.99); // 同样会调用Sales_data的相应构造函数
+  // 使用Sales_data的默认构造函数
+  c.emplace_back();
+
+  // 使用Sales_data(string)一个参数的构造函数
+  c.emplace(iter, "999-999999999");
+
+  // 同样会调用Sales_data的相应构造函数
+  c.emplace_front("978-0590353403", 25, 15.99);
   ```
 
 ### 访问元素
@@ -351,17 +376,22 @@ swap操作很快，因为元素本身并未交换，swap只是交换了两个容
 ```c++
 // 在解引用一个迭代器或调用front或back之前检查是否有元素
 if (!c.empty()) {
-    // val1和val2是c中第一个元素值得拷贝
-    auto val1 = *c.begin(), val2 = c.front();   // begin代表迭代器，front返回首元素的引用
+    // val1和val2是c中第一个元素值的拷贝
+    // begin代表迭代器，front返回首元素的引用
+    auto val1 = *c.begin(), val2 = c.front();
     auto last = c.end();
-    auto val3 = *(--last);	// 不能递减forward_list迭代器
-    auto val4 = c.back();	// 返回尾元素的引用
+
+    // 不能递减forward_list迭代器
+    auto val3 = *(--last);
+
+    // 返回尾元素的引用
+    auto val4 = c.back();
 }
 ```
 
 **下标操作和安全的随机访问**
 
-`string`、`vector`、`deque`、`array`等提供快速随机访问的容器也都会提供下标运算符，程序员需要保证下标有效。(需要确保下标合法，可以使用at成员函数，如越界，抛出一个out_of_range异常)
+`string`、`vector`、`deque`、`array`等提供快速随机访问的容器也都会提供下标运算符，程序员需要保证下标有效。(需要确保下标合法，可以使用`at`成员函数，如越界，抛出一个`out_of_range`异常)
 
 ```c++
 vector<string> svec;    // 空vector
@@ -396,11 +426,11 @@ cout << svec.at(0); // 抛出一个out_of_range异常
 - `lst.before_begin()`与`lst.cbefore_begin()`：*返回*指向链表首元素之前并不存在的元素的迭代器。
 - `lst.insert_after(p, t)`与`lst.insert_after(p, n, t)`与`lst.insert_after(p, b, e)`与`lst.insert_after(p, il)`：在迭代器p之后的位置插入元素。`t`是一个对象，`n`是数量，`b和e`是表示范围的一对迭代器，`il`是一个花括号列表，返回一个指向最后一个插入元素的迭代器。
 - `emplace_after(p, args)`使用`args`在`p`指定的位置之后创建一个元素。返回一个指向这个新元素的迭代器。
-- `lst.erase_after(p)`与`lst.erase_after(b, e)`：**返回一个指向被删元素之后元素的迭代器**，若不存在这么一个元素，则返回尾后迭代器。
+- `lst.erase_after(p)`与`lst.erase_after(b, e)`：返回一个指向被删元素之后元素的迭代器，若不存在这么一个元素，则返回尾后迭代器。
 
 ### 改变容器大小
 
-通过`resize`来增大或缩小容器(同样，array不支持resize)。
+通过`resize`来增大或缩小容器(同样，array不支持`resize`)。
 
 ```c++
 list<int> ilist(10, 42);
@@ -413,9 +443,9 @@ ilist.resize(5);	// 从ilist末尾删除20个元素
 
 *如果保存的是类类型，则我们必须提供初始值，或者元素类型必须提供一个默认构造函数。*
 
-<font color="red">很多涉及到顺序容器的操作，push，resize，erase等操作都可能会导致迭代器、指针和引用失效。</font>
+**很多涉及到顺序容器的操作，`push，resize，erase`等操作都可能会导致迭代器、指针和引用失效。**
 
-### 针对容器操作可能使迭代器失效的原因解释
+### 迭代器失效的原因
 
 <font color="red">使用失效的指针、引用或迭代器是一种严重的程序设计错误</font>，很可能引起与使用未初始化指针一样的问题。
 
@@ -433,7 +463,6 @@ ilist.resize(5);	// 从ilist末尾删除20个元素
 - 对于`deque`，首尾之外的任何位置删除元素，都会失效；删除尾元素，尾后迭代失效，其他不受影响。
 - 对于`vector`和`string`，指向之前的都有效，之后的都失效。
 
-<font color="red">针对上述问题的一个想法：对于`deque`而言，首尾位置是不是存在特殊的数据结构，所以才会针对首尾位置做单独说明！</font>
 
 **每次改变容器的操作之后都需要正确地重新定位迭代器**；展开来讲就是：
 
@@ -458,8 +487,11 @@ stack<int> stk(deq);	// 从deq拷贝元素带stk
 我们可以在创建一个适配器时，将一个命名的顺序容器作为第二个类型参数，来重载默认容器类型。
 
 ```c++
-stack<string, vector<string>> str_stk;	// 在vector上实现的空栈，第二个参数代表用vector容器的构造函数来初始化适配器
-stack<string, vector<string>> str_stk2(svec);	// 基于vector实现，初始化时保存svec的拷贝
+// 在vector上实现的空栈，第二个参数代表用vector容器的构造函数来初始化适配器
+stack<string, vector<string>> str_stk;
+
+// 基于vector实现，初始化时保存svec的拷贝
+stack<string, vector<string>> str_stk2(svec);
 ```
 
 **栈适配器**

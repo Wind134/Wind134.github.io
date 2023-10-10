@@ -96,7 +96,7 @@ if (p1 && p1->empty())
 
 - `p.use_count()`——返回与p共享对象的智能指针数量；可能很慢，用于调试。
 
-**make_shared函数**
+**`make_shared`函数**
 
 最安全的分配和使用动态内存的方法是调用一个名为`make_shared`的标准库函数，此函数在动态内存中分配一个对象并初始化它，返回指向此对象的`shared_ptr`。
 
@@ -106,7 +106,7 @@ shared_ptr<int> p4 = make_shared<string>(10， '9');    // 指向一个值为"99
 shared_ptr<int> p5 = make_shared<int>();
 ```
 
-**类似顺序容器的`emplace`成员，make_share用其参数来构造给定类型的对象**。
+**类似顺序容器的`emplace`成员，`make_share`用其参数来构造给定类型的对象**。
 
 **`shared_ptr`的拷贝与赋值**
 
@@ -190,7 +190,7 @@ Blob<string> b1;    // 空Blob
 
 *Notes：使用动态内存的一个常见原因是允许多个对象共享相同的状态！*
 
-**定义StrBlob类**
+**定义`StrBlob`类**
 
 我们<font color="orange">最终会为上述的Blob类实现一个模板</font>，但在这部分我们尝试先去定义一个管理`string`的类，此版本命名为`StrBlob`。
 
@@ -259,7 +259,7 @@ string& StrBlob::pop_back()
 ```
 
 
-**StrBlob的拷贝、赋值和销毁**  `StrBlob`使用默认版本的拷贝、赋值和销毁成员函数来对此类型的对象进行这些操作，`StrBlob`类中只有一个`shared_ptr`类型的数据成员。
+**`StrBlob`的拷贝、赋值和销毁**  `StrBlob`使用默认版本的拷贝、赋值和销毁成员函数来对此类型的对象进行这些操作，`StrBlob`类中只有一个`shared_ptr`类型的数据成员。
 
 - 拷贝一个`shared_ptr`会递增其引用计数，左侧给右侧赋值会递减左侧指向对象的引用计数。
 - 当引用计数值变为0，它所指向的对象会被自动销毁。
@@ -351,7 +351,9 @@ string& StrBlob::pop_back()
 
   - `const`对象的值是可以被`delete`的。
 
-  `delete p;        // p必须指向一个动态分配的对象或是一个空指针`
+  ~~~cpp
+  delete p;   // p必须指向一个动态分配的对象或是一个空指针
+  ~~~
 
 **动态对象的生存期直到被释放时为止**，这部分主要分为两种情况介绍：
 
@@ -365,7 +367,7 @@ string& StrBlob::pop_back()
 Foo* factory(T arg)
 {
     // 处理arg的部分
-    return new Foo(arg);    // 调用者负责释放此内存
+    return new Foo(arg);  // 调用者负责释放此内存
 }
 
 void use_factory(T arg)
@@ -374,9 +376,10 @@ void use_factory(T arg)
     // 使用了p但忘记delete，错误做法
     // 使用p
     delete p;    // 正确做法
-}    // p离开了作用域，但是指向的内存没有被释放(加上delete即可)
+}   // p离开了作用域，但是指向的内存没有被释放(加上delete即可)
 
-// 如果系统中还有其他代码需要使用use_factory所分配的对象，我们就应修改此函数，即返回指针，指向它分配的内存
+// 如果系统中还有其他代码需要使用use_factory所分配的对象
+// 我们就应修改此函数，即返回指针，指向它分配的内存
 ```
 
 **delete之后还存在重置指针值的问题**：`delete`之后，指针值变为无效的了，虽然指针无效了，但是很多机器上指针仍然保存着(已经释放了的)动态内存的地址，这就是常说的**空悬指针(dangling pointer)**，未初始化指针的所有缺点空悬指针也有，一般有如下方式去避免空悬指针的问题：
@@ -388,8 +391,8 @@ void use_factory(T arg)
 
 ```c++
 int *p(new int(42));
-auto q = p;        // 俩指针指向相同的内存地址
-delete p;        // 俩指针指向的地址都无效
+auto q = p;     // 俩指针指向相同的内存地址
+delete p;       // 俩指针指向的地址都无效
 p = nullptr;    // p不再绑定到任何对象
 
 // 那q咋办呢.....
@@ -467,14 +470,14 @@ shared_ptr<int> clone(int p) {
 int *x(new int(1024));  // x为一普通指针
 process(x);             // 错误，无法隐式转换
 process(shared_ptr<int>(x));    // 合法，但是内存会被释放
-int j = *x;             // 由于内存被释放了，所以x指向的那个地址是未定义的，即x变成了一个空悬指针
+int j = *x;   // 由于内存被释放了，所以x指向的那个地址是未定义的，即x变成了一个空悬指针
 ```
 
 从上面的代码可以看出来的是：
 
 - 当将一个`shared_ptr`绑定到一个普通指针时，所有管理内存的责任都将移交，**就不该再用内置指针来访问`shared_ptr`所指向的内存了**。
 
-***同时，也不要使用get初始化另一个智能指针或者为智能指针赋值***：
+**同时，也不要使用`get`初始化另一个智能指针或者为智能指针赋值：**
 
 ```c++
 shared_ptr<int> p(new int(42)); // 引用计数为1
@@ -783,7 +786,7 @@ weak_ptr<int> wp(p);    // wp弱共享p；p的引用计数未改变。
   }
   ```
 
-  <font color="red">上面好像是第一次在private部分见到函数声明。</font>
+  *上面好像是第一次在`private`部分见到函数声明。*
 
 ## 动态数组
 
@@ -794,7 +797,7 @@ weak_ptr<int> wp(p);    // wp弱共享p；p的引用计数未改变。
 - C++定义了另一种`new`表达式语法，可以分配并初始化一个对象数组；
 - 标准库包含一个名为`allocator`的类，允许我们将分配和初始化分离；`alloactor`通常会提供更好的性能和更灵活的内存管理能力。
 
-*Notes：大多数应用应该使用标准库容器而不是动态分配的数组，使用容器更为简单、更不容易出现内存管理错误且可能有更好的性能。*
+**Notes：**大多数应用应该使用标准库容器而不是动态分配的数组，使用容器更为简单、更不容易出现内存管理错误且可能有更好的性能。
 
 ### new和数组
 
@@ -825,10 +828,10 @@ int *p = new arrT;        // 分配一个42个int的数组；p指向第一个int
   ```c++
   // 默认情况下，new分配的对象都是默认初始化的
   // 可以对数组中的元素进行值初始化，加上一对括号即可
-  int *pia = new int[10];                // 默认初始化
-  int *pia2 = new int[10]();            // 10个值初始化为0的int
-  string *psa = new string[10];        // 10个空string
-  string *psa2 = new string[10]();    // 还是10个空string
+  int *pia = new int[10];           // 默认初始化
+  int *pia2 = new int[10]();        // 10个值初始化为0的int
+  string *psa = new string[10];     // 10个空string
+  string *psa2 = new string[10]();  // 还是10个空string
   ```
 
   在新标准中，我们还可以
@@ -903,15 +906,21 @@ int *p = new arrT;        // 分配一个42个int的数组；p指向第一个int
   - `unique_ptr<T[]> u(p);`——u指向内置指针p所指向的动态分配的数组。p必须能转换为类型`T*`。
   - `u[i];`——返回u拥有的数组中位置i处的对象。
 
-  与`unique_ptr`不同，`shared_ptr`不直接支持管理动态数组，如果硬是要用`shared_ptr`，**必须定义自己的删除器**：
+  与`unique_ptr`不同，`shared_ptr`不直接支持管理动态数组，如果硬是要用`shared_ptr`：
+  
+  **必须定义自己的删除器：**
 
   ```c++
   // 为了使用shared_ptr，必须提供一个删除器
-  shared_ptr<int> sp(new int[10], [](int *p) { delete[] p; });    // 第二个参数是可调用对象，用来执行删除器的功能
-  sp.reset();     // 使用我们提供的lambda释放数组
+
+  // 第二个参数是可调用对象，用来执行删除器的功能
+  shared_ptr<int> sp(new int[10], [](int *p) { delete[] p; });
+  
+  // 使用我们提供的lambda释放数组
+  sp.reset();
   ```
 
-  ***注意事项：***`shared_ptr`不直接支持动态数组这一特性会影响我们如何访问数组中的元素！
+  **注意事项：**`shared_ptr`不直接支持动态数组这一特性会影响我们如何访问数组中的元素！
 
   - 首先，`shared_ptr`未定义下标运算符。
 
@@ -999,15 +1008,20 @@ alloc.construct(q++, "hi");     // *q为hi
 
     返回值是一个指向复制结束的最后一个元素后面的位置的指针；
 
-    ```c++
-    // 举例，假定有一个int的vector，希望将其内容拷贝到动态内存中，我们分配*2的动态内存空间，前一半空间保存vector，后一半保存一个定值
-    auto p = alloc.allocate(vi.size() * 2);    // vi是vector数组，分配内存，但未构造
-    auto q = uninitialized_copy(vi.begin(), vi.end(), p);    // 走拷贝流程，从这里可以看出，该函数返回(递增后的)目的位置迭代器
-    uninitialized_fill_n(q, vi.size(), 42);
-    ```
-
   - `uninitialized_copy_n(b, n, b2);`——从迭代器b指向的元素开始，拷贝n个元素到b2开始的内存中，返回**指向最后一个复制元素之后位置的迭代器**。
 
   - `uninitialized_fill(b, e, t);`——从迭代器`(b, e)`指定的原始内存范围中创建对象，对象**值均为t**的拷贝。
 
   - `uninitialized_fill_n(b, n, t);`——从迭代器b指向的内存地址开始创建n个对象，b需要指向足够大的的未构造的初始内存。
+
+  ```c++
+    // 举例，假定有一个int的vector，希望将其内容拷贝到动态内存中，我们分配*2的动态内存空间，前一半空间保存vector，后一半保存一个定值
+    // vi是vector数组，分配内存，但未构造
+    auto p = alloc.allocate(vi.size() * 2);
+
+    // 走拷贝流程，从这里可以看出，该函数返回(递增后的)目的位置迭代器
+    auto q = uninitialized_copy(vi.begin(), vi.end(), p);
+
+    // 用42值填充分配出的所有空间
+    uninitialized_fill_n(q, vi.size(), 42);
+    ```

@@ -1,7 +1,7 @@
 ---
-title: 11-C++标准库之泛型算法
+title: 12-C++标准库之泛型算法
 author: Ping
-date: 2022-11-02 10:33:00 +0800
+date: 2022-11-02 10:34:00 +0800
 categories: [CPP, C++_Primer]
 tags: [Programming, C++/C, cpp]
 ---
@@ -25,9 +25,11 @@ tags: [Programming, C++/C, cpp]
 
 ### 只读算法
 
+该类型下算法的基本特点：
+
 - 一些算法只会读取其输入范围内的元素，而从不改变元素，如`find`函数；
 
-- 另一个只读算法是`accumulate`，它定义在头文件numeric中。`accumulate`函数接受三个参数，前两个指出了需要求和的元素范围，第三个参数是和的初值。
+- 另一个只读算法是`accumulate`，它定义在头文件`numeric`中。`accumulate`函数接受三个参数，前两个指出了需要求和的元素范围，第三个参数是和的初值。
 
   ```c++
   int sum = accumulate(vec.cbegin(), vec.cend(), 0);
@@ -36,19 +38,22 @@ tags: [Programming, C++/C, cpp]
 通过上述代码，我们需要进一步展开讨论的是**算法和元素类型**之间的关系，以`accumulate`为例，元素类型加到和的类型上的操作必须是可行的。即，序列中元素的类型必须与第三个参数匹配，或者能够转换为第三个参数的类型。我们列举一个`string`的案例：
 
 ```c++
-string sum = accumulate(v.cbegin(), v.cend(), string(""));  // 这一行代码将v中的每一个元素连接到了string上，该string初始为空串
-string sum = accumulate(v.cbegin(), v.cend(), "");          // 这种写法是错误的，""默认为const char*类型，该类型没有定义+运算符
+// 这一行代码将v中的每一个元素连接到了string上，该string初始为空串
+string sum = accumulate(v.cbegin(), v.cend(), string(""));
+
+// 这种写法是错误的，""默认为const char*类型，没有定义这种类型的+运算符
+string sum = accumulate(v.cbegin(), v.cend(), "");
 ```
 
-*Notes: 要注意区分字符串字面值和字符串的区别！*
+**Notes:** 要注意区分字符串字面值和字符串的区别！
 
-- 又一个只读算法是`equal`，用于确定两个序列是否保存相同的值。若是则true，否则false。
+- 又一个只读算法是`equal`，用于确定两个序列是否保存相同的值。若是则`true`，否则`false`。
 
   ```c++
   equal(roster1.cbegin(), roster2.cend(), roster2.cbegin());    //前两个参数表示第一个序列中的元素范围，第三个参数表示第二个序列的首元素。
   ```
 
-  这里有一点需要说的是，**因为利用迭代器完成操作，可以利用equal来比较两个不同类型的容器中的元素，甚至，元素类型也不必一样。**
+  这里有一点需要说的是，**因为利用迭代器完成操作，可以利用`equal`来比较两个不同类型的容器中的元素，甚至，元素类型也不必一样。**
 
 ### 写容器元素的算法
 
@@ -56,14 +61,14 @@ string sum = accumulate(v.cbegin(), v.cend(), "");          // 这种写法是�
 
 - 记住，**算法不会执行容器操作，因此它们自身不可能改变容器的大小**。
 
-- 算法fill：接受一对迭代器范围，再接受一个值作为第三个参数。
+- 算法`fill`：接受一对迭代器范围，再接受一个值作为第三个参数。
 
   ```c++
   fill(vec.begin(), vec.end(), 0);    // 将每个元素重置为0
   fill(vec.begin(), vec.begin() + vec.size() / 2, 10);    // 将一个子序列重置为10
   ```
 
-- 函数fill_n(dest, n, val)：从dest指向的那个位置将n个val写入。
+- 函数`fill_n(dest, n, val)`：从`dest`指向的那个位置将`n`个`val`写入。
 
   ```c++
   vector<int> vec;    // 空vector
@@ -74,11 +79,11 @@ string sum = accumulate(v.cbegin(), v.cend(), "");          // 这种写法是�
 
 **插入迭代器(insert iterator)**
 
-插入迭代器保证算法有足够元素空间来容纳输出数据。插入迭代器是一种向容器中添加元素的迭代器。
+插入迭代器保证算法有足够元素空间来容纳输出数据，插入迭代器是一种向容器中添加元素的迭代器。
 
-<font color="red">当我们通过一个迭代器向容器元素赋值时，值被赋予迭代器指向的元素。当我们通过一个插入迭代器赋值时，一个与赋值号右侧值相等的元素被添加到容器中。</font>
+当我们通过一个迭代器向容器元素赋值时，值被赋予迭代器指向的元素。当我们通过一个插入迭代器赋值时，一个与赋值号右侧值相等的元素被添加到容器中。
 
-通过`back_inserter`展示如何用算法向容器写入数据，该函数定义在头文件iterator中。
+通过`back_inserter`展示如何用算法向容器写入数据，该函数定义在头文件`iterator`中。
 
 ```c++
 vector<int> vec;              // 空向量
@@ -86,16 +91,21 @@ auto it = back_inserter(vec); // 通过它赋值会将元素添加到vec中
 *it = 42;                     // vec中现在有一个元素，42
 ```
 
-这一串代码基本可以解释上述<font color = "red">红色</font>字体的说法，`*it = 42;`就是那个赋值等式，右侧的那个值42就被添加进了`vec`中。<font color = "red">之所以能保证有足够空间是不是因为会先通过迭代器创建一定空间，然后插入元素，这样就避免了空间不足的问题？</font>
+<font color = "red">之所以能保证有足够空间是不是因为会先通过迭代器创建一定空间，然后插入元素，这样就避免了空间不足的问题？</font>
+- 不是先通过迭代器创建一定空间，而是`vector`的机制一般会预留一段空间；
 
-`back_inserter`接受一个<font color = "red">指向容器的引用(怎么理解这个引用)</font>，<font color="blue">返回</font>一个与该容器绑定的插入迭代器。
+`back_inserter`接受一个<font color = "red">指向容器的引用(怎么理解这个引用)</font>，返回一个与该容器绑定的插入迭代器。
 
-经常使用`back_inserter`来创建一个迭代器，作为算法的目的位置来使用。(<font color="red">说实话这个用法感觉有点蒙，但应该也理解了。</font>)
+经常使用`back_inserter`来创建一个迭代器，作为算法的目的位置来使用，此外，该函数的功能也比较直观，返回其参数容器中的末尾位置，通常情况下，它与算法函数`copy`结合使用，以便将元素从一个容器复制到另一个容器的末尾。
 
 ```c++
 vector<int> vec;    // 空向量
-fill_n(back_inserter(vec), 10, 0);    // 因为返回的是迭代器，因此每次赋值都会在vec上调用push_back，一个一个依次进行元素添加。
+
+// 因为返回的是迭代器，因此每次赋值都会在vec上调用push_back，一个一个依次进行元素添加。
+fill_n(back_inserter(vec), 10, 0);
 ```
+
+与之类似的迭代器函数还有`front_inserter`，该函数的功能是在容器头部位置插入元素；
 
 **拷贝算法**
 
@@ -103,18 +113,23 @@ fill_n(back_inserter(vec), 10, 0);    // 因为返回的是迭代器，因此每
 
 ```c++
 int a1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-int a2[sizeof(a1)/sizeof(*a1)];           // 这个处理还是很棒的，a1数组的总大小/a1数组单个元素的大小=a1数组元素数量
-auto ret = copy(begin(a1), end(a1), a2);  // 把a1的内容拷贝给a2
+
+// 这个处理还是很棒的，a1数组的总大小/a1数组单个元素的大小=a1数组元素数量
+int a2[sizeof(a1)/sizeof(*a1)];
+
+// 把a1的内容拷贝给a2
+auto ret = copy(begin(a1), end(a1), a2);
 ```
 
-*copy函数的返回值：*返回的是其目的位置迭代器(递增后)的值。即上述ret恰好指向拷贝到a2尾元素之后的位置。
+`copy`函数的返回值：返回的是其目的位置迭代器(递增后)的值，即上述`ret`恰好指向拷贝到`a2`尾元素之后的位置。
 
 多个算法都提供所谓的拷贝版本。这些算法计算新元素的值，但不会将它们放置在输入序列的末尾，而是创建一个新序列保存这些结果。
 
 - `replace`算法：读入一个序列，将其中所有等于给定值的元素都改为另一个值。4个参数-前两个迭代器-搜索值-新值。
 
   ```c++
-  replace(ilst.begin(), ilst.end(), 0, 42);    //将所有0改为42，最后ilst变成了一个新序列
+  // 将所有0改为42，最后ilst变成了一个新序列
+  replace(ilst.begin(), ilst.end(), 0, 42);
   ```
 
 如果我们希望原序列保持不变，这时候可以调用replace_copy。该算法接受额外第三个迭代器参数，指出调整后序列的保存位置：
@@ -126,11 +141,11 @@ auto ret = copy(begin(a1), end(a1), a2);  // 把a1的内容拷贝给a2
               back_inserter(ivec), 0, 42);
   ```
 
-  上述调用后，ilst并未改变，ivec包含ilst的一份拷贝，不过原来在ilst中值为0的元素在ivec中都变为42。
+  上述调用后，`ilst`并未改变，`ivec`包含`ilst`的一份拷贝，不过原来在`ilst`中值为0的元素在`ivec`中都变为42。
 
 ### 重排元素的算法
 
-某些算法会重排容器中元素的顺序，一个明显的例子是sort。(<font color="red">sort应该是会改变容器内容的一种算法</font>)
+某些算法会重排容器中元素的顺序，一个明显的例子是`sort`。
 
 此外，假设给定一段文本，我们用来消除重复的单词：为了消除重复单词，首先将`vector`进行排序，使得重复的单词都相邻出现。在`vector`排序完毕之后，使用`unique`的标准库算法来重排`vector`，使得不重复的元素出现在`vector`的开始部分。
 
@@ -147,8 +162,9 @@ void elimDups(vector<string> &words)
 }
 ```
 
-<font color="red">上述代码区域针对`unique`的理解不够到位，这里进行详细说明: 
-</font>我们可以认为`unique`的作用是消除容器中所有重复的元素(仅仅保留一个)，最后它所指向(返回)的就是处理过的不重复区域之后位置的迭代器，但是`unique`的作用仅仅是消除了那些重复的元素，这里的消除其实更底层来说是覆盖，`unique`只是指向不重复区域后的那个位置，不代表那个位置就没有元素了，这个位置的元素依然存在，但我们不知道元素是什么，也没有知道的必要，但是最终我们需要消除这些，所以需要调用`erase`去真正作用于容器。(即真正删除多余信息)
+- `unique`的作用是消除容器中所有重复的元素(仅仅保留一个)，最后它所指向(返回)的就是处理过的不重复区域之后位置的迭代器；
+- 但是`unique`的作用仅仅是消除了那些重复的元素，这里的消除其实更底层来说是覆盖；
+- 因为`unique`只是指向不重复区域后的那个位置，不代表那个位置就没有元素了，这个位置的元素依然存在，但我们不知道元素是什么，也没有知道的必要，但是最终我们需要消除这些，所以需要调用`erase`去真正作用于容器。(即真正删除多余信息)
 
 ## 定制操作
 
@@ -167,7 +183,7 @@ void elimDups(vector<string> &words)
 - **一元谓词(unary predicate)：**只接受单一参数的谓词。
 - **二元谓词(binary predicate)：**有两个参数的谓词。
 
-接受一个二元谓词参数的`sort`版本用这个谓词代替<来比较元素。<font color="red">提供给sort的谓词需要满足一定条件</font>。
+接受一个二元谓词参数的`sort`版本用这个谓词代替`<`来比较元素，提供给`sort`的谓词需要满足一定条件。
 
 结合所介绍的谓词，我们自定义一种大小比较：
 
@@ -183,7 +199,7 @@ sort(words.begin(), words.end(), isShorter);  // 基于长度按短到长排序w
 
 **上述几处都涉及到排序算法，针对排序算法进行介绍：**
 
-一般的sort排序并未考虑"稳定"这一特点，正如之前在数据结构中所学过的，就是两个相等的元素并不需要我们去改变它的顺序，即为"稳定"。此算法我们称为stable_sort算法。
+一般的`sort`排序并未考虑`稳定`这一特点，正如之前在数据结构中所学过的，就是两个相等的元素并不需要我们去改变它的顺序，即为`稳定`。此算法我们称为`stable_sort`算法。
 
 ```c++
 elimDups(words);    // 将words按字典序重排，并消除重复单词
@@ -200,9 +216,9 @@ cout << endl;
 
 根据算法接受一元谓词还是二元谓词，传递给算法的谓词必须严格接受一个或者两个参数。而有时候的参数需要更多，从而超出了算法对谓词的限制。
 
-*举一个例子来说明这个问题*：我们需要在string中指出是否有5个及以上的字符
+**举一个例子来说明这个问题**：我们需要在`string`中指出是否有5个及以上的字符
 
-*用一个例子来引出对lambda表达式的使用*：我们需要在一串句子中求大于等于一个给定长度的单词有多少，且打印出大于等于给定长度的单词：
+**用一个例子来引出对`lambda`表达式的使用**：我们需要在一串句子中求大于等于一个给定长度的单词有多少，且打印出大于等于给定长度的单词：
 
 ```c++
 // 将函数命名为biggies
@@ -225,14 +241,18 @@ void biggies(vector<string> &words, vector<string>::size_type sz)
 
 **可调用：**如果一个对象或一个表达式，如果可以对其使用调用运算符，则称它为可调用的。
 
-**四种可调用对象：**函数、函数指针、重载了函数调用运算符的类、lambda表达式。
+**四种可调用对象：**函数、函数指针、重载了函数调用运算符的类、`lambda`表达式。
 
 ```c++
-// 假设e是一个可调用的表达式，则我们可以编写代码e(args)，其中args是一个逗号分隔的一个或多个参数的列表
+// 假设e是一个可调用的表达式，则我们可以编写代码e(args)
+// 其中args是一个逗号分隔的一个或多个参数的列表
 // 目前所学两种可调用对象：函数和函数指针
-[capture list] (parameter list) -> return type { function body}
+
 // [capture list]是一个lambda所在函数中定义的局部变量的列表(通常为空)
+[capture list] (parameter list) -> return type { function body}
+
 auto f = [] { return 42; };        // 一个范例，注意写法，忽略了括号和参数列表
+
 // lambda的调用，即在后面增加一个"()"
 cout << f() << endl;    // 将42进行打印
 
@@ -242,7 +262,8 @@ cout << f() << endl;    // 将42进行打印
     { return a.size() < b.size(); }
 
 // 结合lambda与排序与谓词，最终代码
-stable_sort(words.begin(), words.end(), [] (const string &a, const string &b) { return a.size() < b.size(); });
+stable_sort(words.begin(), words.end(),
+[] (const string &a, const string &b) { return a.size() < b.size(); });
 ```
 
 一个`lambda`表达式表示一个可调用的代码单元。
@@ -253,7 +274,7 @@ stable_sort(words.begin(), words.end(), [] (const string &a, const string &b) { 
 
 - 一个`lambda`具有一个返回类型、一个参数列表和一个函数体，与函数不同的是`lambda`可以定义在函数内部；
 
-- **对于lambda而言，可以忽略括号和参数列表，甚至可以忽略返回类型；**但如果忽略返回类型，<font color = "red">lambda根据函数体中的代码推断出返回类型</font>；
+- **对于`lambda`而言，可以忽略括号和参数列表，甚至可以忽略返回类型；**但如果忽略返回类型，`lambda`也可以根据函数体中的代码推断出返回类型；
 
   - 但必须**永远包含捕获列表和函数体**；
   - 如果函数体只有一个`return`语句，则返回类型从返回的表达式的类型推断而来，否则，返回类型为`void`；
@@ -264,7 +285,7 @@ stable_sort(words.begin(), words.end(), [] (const string &a, const string &b) { 
 
 **使用捕获列表**
 
-解决上述遗留的问题，更好的结合`lambda`的使用，上面提到对于lambda的`[]`的作用是**使用所在函数中的局部变量**(<font color='green'>lambda本身还是可以使用定义在当前函数之外的名字</font>)，这个列表称之为**捕获列表**，通过该列表来指出将会使用这些变量(<font color="red">捕获列表还是只能使用所在函数的局部变量</font>)。
+解决上述遗留的问题，更好的结合`lambda`的使用，上面提到对于lambda的`[]`的作用是**使用所在函数中的局部变量**(`lambda`本身还是可以使用定义在当前函数之外的名字)，这个列表称之为**捕获列表**，通过该列表来指出将会使用这些变量(<font color="red">捕获列表还是只能使用所在函数的局部变量</font>)。
 
 *Notes：要捕获变量它所在函数中的局部变量，才能在函数体中使用变量。*
 
@@ -273,16 +294,18 @@ stable_sort(words.begin(), words.end(), [] (const string &a, const string &b) { 
 [sz] (const string &a) { return a.size() >= sz; }
 
 // 结合find_if，查找第一个长度大于等于sz的元素：
-auto wc = find_if(words.begin(), words.end(), [sz](const string &a) { return a.size() >= sz; });
+auto wc = find_if(words.begin(), words.end(),
+[sz](const string &a) { return a.size() >= sz; });
 
 // 计算满足size >= sz的元素的数目
 auto count = words.end() - wc;  // 获取符合要求的数目(之所以直接减，是因为已经有序了)
 
 // make_plural作用是返回单词复数形式(这语法也太严谨了)，如果符合要求的大于1个单词，就复数形式
-cout << count << " " << make_plural(count, "word", "s") << " of length " << sz << " or longer" << endl;
+cout << count << " " << make_plural(count, "word", "s")
+<< " of length " << sz << " or longer" << endl;
 ```
 
-**for_each算法**
+**`for_each`算法**
 
 ```c++
 // 打印单词
@@ -292,52 +315,60 @@ cout << endl;
 
 #### lambda捕获和返回
 
-定义一个lambda时，编译器生成一个与lambda对应的新的(未命名)类类型，当使用auto定义一个用lambda初始化的变量时，定义了一个从lambda生成的类型的对象。
+定义一个`lambda`时，编译器生成一个与`lambda`对应的新的(未命名)类类型，当使用auto定义一个用`lambda`初始化的变量时，定义了一个从`lambda`生成的类型的对象。
 
 以下再介绍几种构造捕获列表的方式：
 
-- **值捕获**：拷贝lambda返回的值，正因为是拷贝，所以对其修改不会影响到lambda内对应的值。
+- **值捕获**：拷贝`lambda`返回的值，正因为是拷贝，所以对其修改不会影响到`lambda`内对应的值。
 
-- **引用捕获**：保存对lambda返回值的引用，所以如果引用的那个变量的值发生了变化，那么对应保存的值也发生变化。下面是一个运用：
+- **引用捕获**：保存对`lambda`返回值的引用，所以如果引用的那个变量的值发生了变化，那么对应保存的值也发生变化。下面是一个运用：
 
   ```c++
-  void biggies(vector<string> &words, vector<string>::size_type sz, ostream &os = cout, char c = ' ')
+  void biggies(vector<string> &words, vector<string>::size_type sz,
+  ostream &os = cout, char c = ' ')
   {
       // 与之前例子一样的重排words的代码
       // 打印count的语句改为打印到os
-      for_each(words.begin(), words.end(), [&os, c](const string &s) { os << s << c;});    //for_each后面是需要冒号的(一个函数)
+      // for_each后面是需要冒号的(一个函数)
+      for_each(words.begin(), words.end(),
+      [&os, c](const string &s) { os << s << c;});
   }
   ```
 
-  *上面一个小细节：*因为我们不能拷贝ostream对象，因此捕获os的唯一方法就是捕获其引用。
+  *上面一个小细节：*因为我们不能拷贝`ostream`对象，因此捕获`os`的唯一方法就是捕获其引用。
 
-- **隐式捕获**：让编译器根据lambda体中的代码来推断我们要使用哪些变量。为了指示编译器推断捕获列表，应在捕获列表中写一个&或=(分别告诉编译器采用引用和值捕获)。
+- **隐式捕获**：让编译器根据`lambda`体中的代码来推断我们要使用哪些变量。为了指示编译器推断捕获列表，应在捕获列表中写一个`&`或`=`(分别告诉编译器采用引用和值捕获)。
 
   ```c++
   wc = find_if(words.begin(), words.end(), [=](const string &s)
                { return s.size() >= sz; });    // sz即为隐式捕获，值捕获方式
   
   // 还可以实现对一部分变量采用值捕获，对其他变量采用引用捕获，即混合使用
-  void biggies(vector<string> &words, vector<string>::size_type sz, ostream &os = cout, char c = ' ')
+  void biggies(vector<string> &words, vector<string>::size_type sz,
+  ostream &os = cout, char c = ' ')
   {
       // 与之前例子一样的重排words的代码
       // 打印count的语句改为打印到os
-      for_each(words.begin(), words.end(), [&, c](const string &s) { os << s << c;});        //os引用隐式捕获
-      for_each(words.begin(), words.end(), [=, &os](const string &s) { os << s << c;});    //c的值隐式捕获
+      for_each(words.begin(), words.end(),
+      [&, c](const string &s) { os << s << c;});    // os引用隐式捕获
+      for_each(words.begin(), words.end(),
+      [=, &os](const string &s) { os << s << c;});  // c的值隐式捕获
   }
   ```
 
-  *上述的代码也体现出这么几点：*
+  **上述的代码也体现出这么几点：**
 
   - 捕获列表中的第一个元素必须是一个`&`或`=`，此符号指定了默认捕获方式为引用或值；
   - 混合使用时，多个参数中显式捕获的那个必须采用不同的方式。(隐式采用引用，则其余的参数显式捕获必须采用值捕获，其余同理)；
     - 这个好理解，不然编译器就不好猜了；
 
-**可变lambda**
+**可变`lambda`**
 
-默认情况下，对于一个值被拷贝的变量，lambda不会改变其值，如果希望改变这么一个现状，就必须在参数列表后加上关键字mutable。
+默认情况下，对于一个值被拷贝的变量，`lambda`不会改变其值，如果希望改变这么一个现状，就必须在参数列表后加上关键字`mutable`。
 
-`auto f1 = [v1] () mutable { return ++v1; };        // 更改后的值被f捕获`
+```cpp
+auto f1 = [v1] () mutable { return ++v1; };        // 更改后的值被f捕获
+```
 
 然而一个引用捕获的变量是否可以修改**依赖于此引用指向的是一个const还是非const类型变量**。
 
@@ -347,41 +378,45 @@ void fcn()
     size_t v1 = 42;    // 局部变量
     // 下面v1是一个非const变量的引用
     auto f2 = [&v1] { return ++v1; };    // 返回的是一个引用类型，f2保存v1的引用。
-    v1 = 0;            // v1改变了
+    v1 = 0;           // v1改变了
     auto j = f2();    // 保存的是引用，自然也变了
 }
 ```
 
-**指定lambda的返回类型**
+**指定`lambda`的返回类型**
 
-默认情况下，**如果一个lambda体包含return之外的任何语句，则编译器假定此lambda返回void**。`void是`不能返回值的，举一个代码的范例：
+默认情况下，**如果一个`lambda`体包含`return`之外的任何语句，则编译器假定此`lambda`返回`void`**，`void`是不能返回值的，举一个代码的范例：
 
 ```c++
-transform(vi.begin(), vi.end(), v1_new.rbegin(), [] (int i) { return i < 0 ? -i : i; });    // 一行return,可以推断。
+transform(vi.begin(), vi.end(), v1_new.rbegin(),
+[] (int i) { return i < 0 ? -i : i; });    // 一行return,可以推断。
 
 // 下面是同样意图的一类写法，但由于编译器无法推断出返回类型，因此就报错了
 
-transform(vi.begin(), vi.end(), v1_new.rbegin(), [] (int i) { if (i < 0 ) return -i; else return i; });    // 多个return,无法推断。
+transform(vi.begin(), vi.end(), v1_new.rbegin(),
+[] (int i) { if (i < 0 ) return -i; else return i; });    // 多个return,无法推断。
 
 // 针对此种情况，必须使用尾置返回类型
+transform(vi.begin(), vi.end(), back_inserter(v1_new),
+[] (int i) -> int { if (i < 0 ) return -i; else return i; });
 ```
 
 ## 参数绑定
 
-如果只是少数场景使用的简单操作，lambda是最有用的，但如果需要在很多地方使用相同的操作，通常应该定义一个函数。
+如果只是少数场景使用的简单操作，`lambda`是最有用的，但如果需要在很多地方使用相同的操作，通常应该定义一个函数。
 
 但因为参数问题，**有时候函数的参数量不符合要求，比如某算法接受一元谓词，但是该函数使用了两个形参，就会出错！**这个时候就准备引入了一个新的函数：标准库`bind`函数。
 
 一般形式：
-```
-auto *newCallable* = bind(*callable, arg_list*);
+```cpp
+auto *newCallable = bind(*callable, arg_list*);
 ```
 
 `arg_list`对应给定的`callable`的参数，当我们调用`newCallable`时，`newCallable`会调用`callable`，并传递给它`arg_list`中的参数。
 
-<font color = "red">关于arg_list中的参数知识点记录：</font>
+关于`arg_list`中的参数知识点记录：
 
-- 参数中可能包含形如`_n`的名字，其中`n`是一个整数，称为占位符，表示<font color = "green">*newCallable*</font>中的参数。
+- 参数中可能包含形如`_n`的名字，其中`n`是一个整数，称为占位符，表示`newCallable`中的参数位置。
 - `_n`表示`newCallable`参数中的第`n`个参数。
 
 ```c++
@@ -394,7 +429,8 @@ bool check_size(const string &s, string::size_type sz)
 // 由于该函数需要两个参数，不满足一元谓词的要求，因此使用标准库中的bind函数
 // 下面的check6是一个可调用对象，自己本身接受一个string类型的参数
 // 并用此string和值6来调用check_size
-auto check6 = bind(check_size, _1, 6);    // 仅有一个占位符，表明check6只接受单一参数。(_1, 6)参数传递给check_size。
+// 仅有一个占位符，表明check6只接受单一参数。(_1, 6)参数传递给check_size。
+auto check6 = bind(check_size, _1, 6);
 
 // check6的使用
 string s = "hello";
@@ -404,7 +440,7 @@ bool b1 = check6(s);    // check6(s)会调用check_size(s, 6)
 auto wc = find_if(words.begin(), words.end(), bind(check_size, _1, sz));
 ```
 
-<font color = "red">一些思考&总结：(针对谓词)</font>
+**一些思考&总结：(针对谓词)**
 
 - 正如书中所看到的，对谓词的要求来源于算法本身，`find_if`只接受一元谓词，所以我们需要符合一元谓词的要求。
 
@@ -432,7 +468,7 @@ auto wc = find_if(words.begin(), words.end(), bind(check_size, _1, sz));
   - `[](const string &s) {cout << s << " ";}`整体是一个函数(`auto f2 = ...`)，不额外再`()`。
   - `bind(check_size, _1, sz)`整体是可调用对象(`auto check6 = ...`)，也不额外再带`()`。
 
-**使用placeholders名字**
+**使用`placeholders`名字**
 
 名字`_n`再一个名为`placeholders`的命名空间中(定义在头文件`functional`中)，而这个命名空间本身又定义在`std`命名空间。为了使用这些名字，两个命名空间都要写上。
 
@@ -448,7 +484,7 @@ using std::placeholders::_1;    // 声明
 using namespace std::placeholders    // 这样就使得placeholders定义的所有名字都可用
 ```
 
-**bind参数的进一步介绍**
+**`bind`参数的进一步介绍**
 
 ```c++
 auto g = bind(f, a, b, _2, c, _1);    // 代表g是有两个参数的可迭代对象
@@ -467,7 +503,9 @@ f(a, b, Y, c, X);
 
 ```c++
 sort(words.begin(), words.end(), isShorter);
-sort(words.begin(), words.end(), bind(isShorter, _2, _1));    // 排序顺序实现了调换(佩服sort这个函数的容纳性啊，不愧是标准库函数)
+
+// 排序顺序实现了调换(佩服sort这个函数的容纳性啊，不愧是标准库函数)
+sort(words.begin(), words.end(), bind(isShorter, _2, _1));
 ```
 
 **bind参数与引用的结合使用**
@@ -485,13 +523,17 @@ ostream &print(ostream &os, const string &s, char c)
 }
 
 // 在使用bind代替对os的捕获的时候，则会出现问题。
-for_each(words.begin(), words.end(), bind(print, os, _1, ''));      // 用法错误
-for_each(words.begin(), words.end(), bind(print, ref(os), _1, '')); // 不能普通引用，但可以通过ref引用。
+
+// 错误用法
+for_each(words.begin(), words.end(), bind(print, os, _1, ' '));
+
+// 不能普通引用，但可以通过ref引用
+for_each(words.begin(), words.end(), bind(print, ref(os), _1, ' '));
 ```
 
 ## 再探迭代器
 
-除了为每个容器定义的迭代器之外，标准库在头文件iterator中还定义了额外几种迭代器：
+除了为每个容器定义的迭代器之外，标准库在头文件`iterator`中还定义了额外几种迭代器：
 
 - `插入迭代器(insert iterator)`：向容器插入元素。
 - `流迭代器(stream iterator)`：绑定到输入或者输出流上，可用来遍历所关联的IO流。
@@ -517,11 +559,11 @@ it = t;
 - `front_inserter`：创建一个使用`push_front`的迭代器。
 - `inserter`：创建一个使用`insert`的迭代器，该函数接受第二个参数，该参数指向给定容器的迭代器。
 
-***Notes: 容器支持push_font的情况下，我们才可以使用front_inserter，back_inserter同理。***
+**Notes:** 容器支持`push_font`的情况下，我们才可以使用`front_inserter，back_inserter`。
 
 理解插入器的工作过程：
 
-以调用`inserter(c, iter)`为例，在这里，<font color = "red">c应该是绑定的容器，插入到iter所指向的元素位置之前，最后生成一个迭代器。</font>
+以调用`inserter(c, iter)`为例，在这里，`c`应该是绑定的容器，插入到`iter`所指向的元素位置之前，最后生成一个迭代器。
 
 ```c++
 // 通过代码理解，假设it是由inserter生成的迭代器，则下面这样的赋值语句
@@ -537,7 +579,7 @@ it = c.insert(it, val);        // it指向新插入的元素
 
 ### iostream迭代器
 
-iostream类型本身并不是容器，*但标准库定义了可用于这些IO类型对象的迭代器*。`istream_iterator`向一个输入流读数据，`ostream_iterator`向一个输出流写数据。通过使用流迭代器，我们可以用**泛型算法**从流对象读取数据以及向其写入数据。
+`iostream`类型本身并不是容器，*但标准库定义了可用于这些IO类型对象的迭代器*。`istream_iterator`向一个输入流读数据，`ostream_iterator`向一个输出流写数据。通过使用流迭代器，我们可以用**泛型算法**从流对象读取数据以及向其写入数据。
 
 - `istream_iterator`操作
 
@@ -583,7 +625,8 @@ cout << accumulate(in, eof, 0) << endl;    // 加和，初值为0
   // 用ostream_iterator来输出值的序列：
   ostream_iterator<int> out_iter(cout, " ");    // 保证输出每个字符后带空格是吗？
 
-  // 赋值语句实际上将元素写到cout上，去掉'*'无所谓，只是为了保证写法一致，运算符'*' '++'不对迭代器对象做任何事？
+  // 赋值语句实际上将元素写到cout上，去掉'*'无所谓
+  // 只是为了保证写法一致，运算符'*' '++'不对迭代器对象做任何事？
   for (auto e : vec)
       *out_iter++ = e;
   cout << endl;
@@ -600,6 +643,7 @@ cout << accumulate(in, eof, 0) << endl;    // 加和，初值为0
   ```c++
   istream_iterator<Sales_item> item_iter(cin), eof;
   ostream_iterator<Sales_item> out_iter(cout, "\n");
+
   // 将第一笔交易记录存在sum中，并读取下一条记录
   Sales_item sum = *item_iter++;
   while (item_iter != eof ) {
@@ -615,7 +659,7 @@ cout << accumulate(in, eof, 0) << endl;    // 加和，初值为0
 
 ### 反向迭代器
 
-意义上理解起来没什么压力，只需要**注意forward_list不支持反向迭代器**。可以用于诸多层面，如，排序算法。
+意义上理解起来没什么压力，只需要**注意`forward_list`不支持反向迭代器**。可以用于诸多层面，如，排序算法。
 
 在实践这部分代码中遇到了一些疑惑，进行了总结：
 
@@ -625,8 +669,12 @@ auto rcomma = find(line.crbegin(), line.crend(), ',');
 // 逆序输出，不符合需求
 cout << string(line.crbegin(), rcomma) << endl;
 // 自作聪明，尝试将反向迭代器与正向迭代器混用，出错了
-std::cout << std::string(rcomma, line.cend()) << std::endl;     // 错误写法
-std::cout << std::string(rcomma, line.rcbegin()) << std::endl;  // 同样不规范写法，可通过编译但程序无法运行，（方向反了）
+
+// 错误写法
+std::cout << std::string(rcomma, line.cend()) << std::endl; 
+
+// 同样不规范写法，可通过编译但程序无法运行，（方向反了）
+std::cout << std::string(rcomma, line.rcbegin()) << std::endl;
 
 // 正确做法是通过调用reverse_iterator的base成员函数来完成这一转换
 std::cout << std::string(rcomma.base(), line.cend()) << std::endl;
@@ -690,12 +738,13 @@ std::cout << std::string(rcomma.base(), line.cend()) << std::endl;
 
 大多数算法具有如下4种形式之一：
 
-```
+```cpp
 alg(beg, end, *other args*);        // 输入范围
 
 alg(beg, end, dest, *other args*);  // 输入范围和目的位置
 
-dest参数是一个表示算法可以写入的目的位置的迭代器。算法假定：按其需要写入数据，不管写入多少个都是安全的。
+// dest参数是一个表示算法可以写入的目的位置的迭代器。
+// 算法假定：按其需要写入数据，不管写入多少个都是安全的。
 
 alg(beg, end, beg2, *other args*);  // 输入范围和一个特定的开始位置，不指定后续的结束位
 
@@ -729,13 +778,16 @@ reverse_copy(beg, end, dest); // 将元素按逆序拷贝到dest
 一些算法同时提供`_copy`和`_if`版本。这些版本接受一个目的位置迭代器和一个谓词：
 
 ```c++
-remove_if(v1.begin(), v1.end(), [](int i) { return i % 2; });    // 基于原序列remove
-remove_copy_if(v1.begin(), v1.end(), back_inserter(v2), [](int i) { return i % 2; };);    // 将偶数元素拷贝到v2，v1不变
+remove_if(v1.begin(), v1.end(),
+[](int i) { return i % 2; });   // 基于原序列remove
+
+remove_copy_if(v1.begin(), v1.end(), back_inserter(v2),
+[](int i) { return i % 2; };);  // 将偶数元素拷贝到v2，v1不变
 ```
 
 ## 特定容器算法
 
-与其他容器不同，链表类型`list`和`forward_list`定义了几个成员函数形式的算法，他们定义了独有的`sort、merge、remove、reverse和unique`。(通用版的sort不能跑在链表上)。
+与其他容器不同，链表类型`list`和`forward_list`定义了几个成员函数形式的算法，他们定义了独有的`sort、merge、remove、reverse和unique`。(通用版的`sort`不能跑在链表上)。
 
 链表类型定义的其他算法通用版本可以用于链表，但代价太高，链表有自身独有的特性。
 
@@ -756,12 +808,16 @@ lst.unique(pred);         // 或者给定谓词
 
 链表类型的`splice`算法是链表数据结构所独有的。(`splice`的意思是拼接)
 
-`lst.splice(args)或flst.splice_after(args);        // 前者是双向链表后者是单向链表`
+```cpp
+lst.splice(args);         // 双向链表
+
+flst.splice_after(args);  // 单向链表
+```
 
 `args`参数一般有如下类型：
 
-- `(p, lst2)`：p是一个指向lst中元素的迭代器，以及一个指向flst首前位置的迭代器；进行对应的拼接(插入)操作；*类型必须相同，且不能是同一个链表*。
-- `(p, lst2, p2)`：p2是一个指向lst2中位置的有效的迭代器；将p2指向的元素移动到lst中，或者将p2之后的元素移动到flst中(_after)。
-- `(p, lst2, b, e)`：b和e表示lst2中的合法范围；同样将元素进行移动。
+- `(p, lst2)`：`p`是一个指向`lst`中元素的迭代器，以及一个指向`flst`首前位置的迭代器；进行对应的拼接(插入)操作；*类型必须相同，且不能是同一个链表*。
+- `(p, lst2, p2)`：`p2`是一个指向`lst2`中位置的有效的迭代器；针对双向链表，将`p2`指向的元素移动到`lst`中，针对单向链表，将p2之后的那个元素移动到`flst`中(`_after`)。
+- `(p, lst2, b, e)`：`b`和`e`表示`lst2`中的合法范围；同样将元素进行移动。
 
 *Notes：链表特有的操作会改变容器！*

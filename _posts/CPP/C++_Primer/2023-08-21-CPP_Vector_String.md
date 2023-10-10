@@ -6,11 +6,11 @@ categories: [CPP, C++_Primer]
 tags: [Programming, C++/C, cpp]
 ---
 
-之所以将string与vector单独拉出来作为一部分，主要还是因为这俩标准库在刷题以及实际应用中出现的频率非常高，因此作为一个单独的笔记模块；
+之所以将`string`与`vector`单独拉出来作为一部分，主要还是因为这俩标准库在刷题以及实际应用中出现的频率非常高，因此作为一个单独的笔记模块；
 
 ## vector容器
 
-向量vector是一个封装了动态大小数组的顺序容器(还是习惯称呼为数组)，跟任意其它类型容器一样，它能够存放各种类型的对象。可以简单的认为，向量是一个能够存放任意类型的动态数组。因为vector容纳着其他对象，所以它也常被称作**容器(container)**。后续针对容器会有更详细的介绍。
+向量`vector`是一个封装了动态大小数组的顺序容器(还是习惯称呼为数组)，跟任意其它类型容器一样，它能够存放各种类型的对象。可以简单的认为，向量是一个能够存放任意类型的动态数组。因为`vector`容纳着其他对象，所以它也常被称作**容器(container)**。后续针对容器会有更详细的介绍。
 
 ```c++
 class Solution {
@@ -41,13 +41,13 @@ vector<int> v3(10,1)    // v3有10个元素，每个元素为1
 vector<int> v4{10,1}    // v4有2个元素，值分别为10和1
 ```
 
-如果用的是圆括号，可以说提供的值是用来构造vector对象的；
+如果用的是圆括号，可以说提供的值是用来构造`vector`对象的；
 
-如果用的是花括号，可以表述成我们想列表初始化该vector对象，也就是说，初始化过程会尽可能地把花括号内的值当成元素初始值的列表来处理。
+如果用的是花括号，可以表述成我们想列表初始化该`vector`对象，也就是说，初始化过程会尽可能地把花括号内的值当成元素初始值的列表来处理。
 
 下面需要考虑一个初始化过程中元素类型的问题：
-- 这里主要是要考虑容器中元素的类型
-- 平时注意这个细节即可
+- 这里主要是要考虑容器中元素的类型；
+- 平时注意这个细节即可；
 
 ```c++
 vector<string> v5{"hi"};	// 正常的列表初始化，因为花括号内的"hi"就是string类型
@@ -56,17 +56,15 @@ vector<string> v7{10};		// 10是int类型，因此v7的含义是有10个默认�
 vector<string> v8{10， "hi"};	// v8有10个值为"hi"的元素
 ```
 
-书中提到的一个比较细节的点就是：随着对vector的更多使用，我们还会逐渐了解到其他的一些隐含的要求，其中一条是如果在循环体内部包含有向vector对象添加元素的语句，则不能使用范围for循环。
+书中提到的一个比较细节的点就是：随着对`vector`的更多使用，我们还会逐渐了解到其他的一些隐含的要求，其中一条是如果在循环体内部包含有向`vector`对象添加元素的语句，则不能使用范围for循环。
 
-*在这里提到size_type*
+使用`size_type`，需首先指定它是由哪种类型定义的。`vector`对象的类型总是包含着元素的类型，像
 
-要使用`size_type`，需首先指定它是由哪种类型定义的。vector对象的类型总是包含着元素的类型，像
+`vector::size_type`就是错误的方式，因为不知道`vector`的类型。
 
-`vector::size_type`就是错误的方式，因为不知道vector的类型。
+在使用`vector`数组时，一定要注意与C语言的区分，C语言一般是定义了一定的空间，而`vector`在未初始化之时，其实是一个空`vector`，不包含任何元素，所以刚初始化后万万不能用下标去访问。
 
-在使用vector数组时，一定要注意与C语言的区分，C语言一般是定义了一定的空间，而vector在未初始化之时，其实是一个空vector，不包含任何元素，所以刚初始化后万万不能用下标去访问。
-
-也正是因此有一个小tip，确保下标合法的一种有效手段就是尽可能使用范围for语句；其次在for循环最好少用`<=`，而更多的用`!=`.
+也正是因此有一个小tip，确保下标合法的一种有效手段就是尽可能使用`范围for语句`；其次在`for`循环最好少用`<=`，而更多的用`!=`.
 
 ### 迭代器操作
 
@@ -90,8 +88,8 @@ vector<string> v8{10， "hi"};	// v8有10个值为"hi"的元素
   vector<int> vec = {1, 2, 3, 4, 5};
   for(auto it = vec.begin(); it != vec.end(); it++)
   {
-      vec.push_back();		// 我们加了这个之后，vec.end()的内容就变化了，即迭代器发生了变化
-      cout << *it << endl;	// 本意就是想输出其中的每个元素
+      vec.push_back();      // 我们加了这个之后，vec.end()的内容就变化了，即迭代器发生了变化
+      cout << *it << endl;  // 本意就是想输出其中的每个元素
   }
   ```
 
@@ -101,32 +99,32 @@ vector<string> v8{10， "hi"};	// v8有10个值为"hi"的元素
 
 - 构造函数和析构函数：
 
-    ```markdown
-    vector<T> v;        默认构造函数，创建一个空的向量。
-    vector<T> v(size);  创建一个包含 size 个默认构造的元素的向量。
-    vector<T> v(size, value);   创建一个包含 size 个值为 value 的元素的向量。
-    vector<T> v(otherVector);   复制构造函数，创建一个与 otherVector 一样的向量。
-    ~vector();  析构函数，释放向量的资源。
+    ```cpp
+    vector<T> v;        // 默认构造函数，创建一个空的向量。
+    vector<T> v(size);  // 创建一个包含 size 个默认构造的元素的向量。
+    vector<T> v(size, value);   // 创建一个包含 size 个值为 value 的元素的向量。
+    vector<T> v(otherVector);   // 复制构造函数，创建一个与 otherVector 一样的向量。
+    ~vector();  // 析构函数，释放向量的资源。
     ```
 
 - 元素访问：
 
-    ```markdown
-    v[index];       返回索引为 index 的元素的引用。
-    v.at(index);    返回索引为 index 的元素的引用，提供了边界检查。
-    v.front();      返回第一个元素的引用。
-    v.back();       返回最后一个元素的引用。
+    ```cpp
+    v[index];       // 返回索引为 index 的元素的引用。
+    v.at(index);    // 返回索引为 index 的元素的引用，提供了边界检查。
+    v.front();      // 返回第一个元素的引用。
+    v.back();       // 返回最后一个元素的引用。
     ```
 
 - 容量操作：
 
-    ```markdown
-    v.size();       返回向量中元素的数量。
-    v.empty();      返回向量是否为空。
-    v.capacity();   返回向量当前分配的内存容量。
-    v.reserve(newCapacity);     请求分配至少newCapacity大小的内存容量，不动元素。
-    v.resize(new_num);          将数组大小设定为new_num，长了分配(默认初始化)，短了截断。
-    v.shrink_to_fit();          释放多余的内存。
+    ```cpp
+    v.size();       // 返回向量中元素的数量。
+    v.empty();      // 返回向量是否为空。
+    v.capacity();   // 返回向量当前分配的内存容量。
+    v.reserve(newCapacity); // 请求分配至少newCapacity大小的内存容量，不动元素。
+    v.resize(new_num);      // 将数组大小设定为new_num，长了分配(默认初始化)，短了截断。
+    v.shrink_to_fit();      // 释放多余的内存。
     ```
 
     这里要稍微区分一下`resize`和`reserve`，`resize`会对容器内元素产生作用。
@@ -142,31 +140,31 @@ vector<string> v8{10， "hi"};	// v8有10个值为"hi"的元素
 
 - 修改操作：
 
-    ```markdown
-    v.push_back(value);     在向量末尾添加一个元素。
-    v.pop_back();           删除向量末尾的元素。
-    v.insert(pos, value);   在pos处插入一个元素。
-    v.erase(pos);           删除位于pos处的元素。
-    v.clear();              清空向量中的所有元素。
+    ```cpp
+    v.push_back(value);     // 在向量末尾添加一个元素。
+    v.pop_back();           // 删除向量末尾的元素。
+    v.insert(pos, value);   // 在pos处插入一个元素。
+    v.erase(pos);           // 删除位于pos处的元素。
+    v.clear();              // 清空向量中的所有元素。
     ```
 
 - 其他操作：
 
-    ~~~markdown
-    v.swap(otherVector);        交换两个向量的内容。
-    v.assign(count, value);     将向量重置为包含 count 个值为 value 的元素。
-    v.resize(newSize);          调整向量的大小为 newSize，并在需要时进行插入或删除操作。
+    ~~~cpp
+    v.swap(otherVector);    // 交换两个向量的内容。
+    v.assign(count, value); // 将向量重置为包含 count 个值为 value 的元素。
+    v.resize(newSize);      // 调整向量的大小为 newSize，并在需要时进行插入或删除操作。
     ~~~
 
 ### 内存管理
 
-**vector对象的增长策略**
+**`vector`对象的增长策略**
 
 预先分配足够大的内存空间，从而避免频繁的空间移动以及添加新元素后，旧存储空间的释放操作。在实际应用中性能表现足够好。
 
 **管理容量的成员函数**
 
-这些函数针对的是vector以及string类型，允许我们与它的实现中内存分配部分互动。
+这些函数针对的是`vector`以及`string`类型，允许我们与它的实现中内存分配部分互动。
 
 ```c++
 c.shrink_to_fit();	// 将capacity减少到与size相同大小(vector、string、deque特有)，不一定保证退回内存空间。
@@ -176,7 +174,7 @@ c.reserve(n);		// 分配至少能容纳n个元素的内存空间(不改变容器
 
 `reserve`常与`resize`进行比较：`reserve`不会减少容器占用的内存空间；`resize`也只改变容器中元素的数目。
 
-`capacity`常与`size`进行比较：向vector中添加元素时，size与添加的元素数目相等，而capacity至少与size一样大，具体分配多少取决于标准库具体实现。
+`capacity`常与`size`进行比较：向`vector`中添加元素时，`size`与添加的元素数目相等，而`capacity`至少与`size`一样大，具体分配多少取决于标准库具体实现。
 
 ### 衔接C语言
 
@@ -186,16 +184,16 @@ c.reserve(n);		// 分配至少能容纳n个元素的内存空间(不改变容器
 
 因此现代的C++程序不得不与那些充满了数组和C风格字符串的代码衔接，为了使这一工作简单易行，C++专门提供了一组功能，后续要介绍的两组功能是衔接C风格数组以及衔接C风格字符串的内容；
 
-**使用数组初始化vector对象**
+**使用数组初始化`vector`对象**
 
-允许使用数组来初始化vector对象，只要指明要拷贝区域的首元素地址和尾后地址即可；
+允许使用数组来初始化`vector`对象，只要指明要拷贝区域的首元素地址和尾后地址即可；
 
 ```c++
 int int_arr[] = {0, 1, 2, 3, 4, 5};
 vector<int> ivec(begin(int_arr), end(int_arr));
 ```
 
-现代的C++程序应当尽量使用vector和迭代器，避免使用内置数组和指针；应该尽量使用string，避免使用C风格的基于数组的字符串；
+现代的C++程序应当尽量使用`vector`和迭代器，避免使用内置数组和指针；应该尽量使用`string`，避免使用C风格的基于数组的字符串；
 
 ## string字符串
 
@@ -209,7 +207,7 @@ vector<int> ivec(begin(int_arr), end(int_arr));
 string s1 = "hello", s2 = "world";
 ```
 
-上述是很正常的string定义，但下列涉及到string的加法会有一些细节需要我们注意：当把string对象和字符字面值及字符串字面值混在一条语句中使用时，必须确保每个加法运算符(+)的两侧的运算对象至少有一个是string：
+上述是很正常的`string`定义，但下列涉及到`string`的加法会有一些细节需要我们注意：当把`string`对象和字符字面值及字符串字面值混在一条语句中使用时，必须确保每个加法运算符(+)的两侧的运算对象至少有一个是`string`：
 
 ```c++
 string s4 = s1 + ", ";              // 合法：string加字面值常量
@@ -218,36 +216,43 @@ string s6 = s1 + ", " + "world";    // 合法：string加字面值常量之后�
 string s7 = "hello" + ", " + s2;    // 非法，主要问题出在("hello" + ", ")
 ```
 
-上述信息在初读确实遇到了一些困惑，因为`"hello"`显然是一个字符串形式啊，但经过书中说明，得知这种字面值`"hello"`并不是标准库类型string的对象。主要是因为一些历史原因以及为了保证与C语言的兼容性而导致的。接下来会在**C风格字符串**做进一步描述。
+上述信息在初读确实遇到了一些困惑，因为`"hello"`显然是一个字符串形式啊，但经过书中说明，得知这种字面值`"hello"`并不是标准库类型`string`的对象。主要是因为一些历史原因以及为了保证与C语言的兼容性而导致的。接下来会在**C风格字符串**做进一步描述。
 
 同时也在做题时遇到了一个问题，要求将一个字符串倒序输出，比如`ni hao ma`要输出为`ma hao ni`，第一次做题卡在对字符串的理解不够深刻，无法将之与二维数组联系起来；后续尝试利用C++来实现，想到利用`vector`来实现，<font color='red'>但是思维卡在如何将一个单词处理成为字符串数组中的一个元素</font>，这一步思路记录如下，当作基础拓展：
 
 ```c++
-string word;	//某一个单词
-vector <string> sentence;	//二维数组，一条句子。
-while(cin >> word)	sentence.push_back(word);	//类似我们在输入一个数组时候的处理，cin这个函数会自动识别空格...
+string word;    // 某一个单词
+vector <string> sentence;   // 二维数组，一条句子
+
+// 类似我们在输入一个数组时候的处理，cin这个函数会自动识别空格...
+while(cin >> word)	sentence.push_back(word);
 ```
 
 这样就实现了我们的目的。
 
 ### 额外的string操作
 
-这些额外的操作中的大部分要么是提供string类和C风格字符数组之间的相互转换，要么是增加了允许用下表代替迭代器的版本。
+这些额外的操作中的大部分要么是提供`string`类和C风格字符数组之间的相互转换，要么是增加了允许用下表代替迭代器的版本。
 
 **string特有的构造函数**
 
 - `string s(cp, n);`：s是cp指向的数组中前n个字符的拷贝。
 
-- `string s(s2, pos2);`：s是string s2从下标pos2开始的字符的拷贝。
+- `string s(s2, pos2);`：s是`string s2`从下标`pos2`开始的字符的拷贝。
 
-- `string s(s2, pos2, len2);`：s是string s2从下标pos2开始的字符的拷贝。
+- `string s(s2, pos2, len2);`：s是`string s2`从下标`pos2`开始的字符的拷贝。
 
   ```c++
   const char *cp = "Hello World!!!";    // 以空字符结束的数组
   char noNull[] = {'H', 'i'};           // 不存在空字符的数组
-  string s1(noNull, 2);                 // 对应上述的string s(cp, n)
-  string s2(nuNull);                    // 此行为是未定义的，因为noNull的类型并非字符类型，而是字符数组
-  // 通过上述代码，s构造函数的第二个参数n或pos2，若给定的是字符数组，需要给定一个参数，否则未定义
+
+  // 对应上述的string s(cp, n)
+  string s1(noNull, 2);
+
+  // 此行为是未定义的，因为noNull的类型并非字符类型，而是字符数组                 
+  string s2(nuNull);
+  // 通过上述代码，s构造函数的第二个参数n或pos2，
+  // 若给定的是字符数组，需要给定一个参数，否则未定义
   ```
 
 *注意事项*：
@@ -257,13 +262,13 @@ while(cin >> word)	sentence.push_back(word);	//类似我们在输入一个数组
 - 但我们一般也会通过构造函数的第二个参数去传递一个基数值，进行对应的操作。
 
   ```c++
-  //因此衍生出了一个疑问
-  string s("hello world");	// 合法，因为"hello world"是字符(C语言的历史遗留)
+  // 因此衍生出了一个疑问
+  string s("hello world");  // 合法，因为"hello world"是字符(C语言的历史遗留)
   ```
 
-**string中的substr操作**
+**`string`中的`substr`操作**
 
-substr操作返回一个string，它是原始string中的一部分或全部的拷贝。可以传递给`substr`一个可选的开始位置和计数值：
+`substr`操作返回一个`string`，它是原始`string`中的一部分或全部的拷贝。可以传递给`substr`一个可选的开始位置和计数值：
 
 ```c++
 string s("hello world");
@@ -272,16 +277,16 @@ string s3 = s.substr(6);    // 从6开始，默认截取到末尾
 // 若是超范围则抛出out_of_range异常
 ```
 
-**改变string的其他方法**
+**改变`string`的其他方法**
 
-string提供了接受下标的版本：
+`string`提供了接受下标的版本：
 
 ```c++
 s.insert(s.size(), 5, '!');	// 在s末尾插入5个感叹号
 s.erase(s.size() - 5, 5);	// 从s最后删除5个字符
 ```
 
-string还提供了接受C风格字符数组的`insert`和`assign`版本。
+`string`还提供了接受C风格字符数组的`insert`和`assign`版本。
 
 ```c++
 const char *cp = "Stately, plump Buck";
@@ -289,9 +294,11 @@ s.assign(cp, 7);                // 分配了前7个字符，s == "Stately"
 s.insert(s.size(), cp + 7);     // 从s的末尾开始插入数值，插入的信息从(cp + 7)的位置开始
 ```
 
-**append和replace函数**
+**`append`和`replace`函数**
 
-append操作在末尾进行插入操作；replace操作是同时调用`erase`和`insert`的一种简写形式，针对replace进行举例：
+`append`操作在末尾进行插入操作；
+
+`replace`操作是同时调用`erase`和`insert`的一种简写形式，针对`replace`进行举例：
 
 ```c++
 s = "C++ Primer Fifth Ed";
@@ -306,7 +313,7 @@ s.replace(11, 3, "Fifth");  // 在11的位置，删除3个字符，但会在其�
 - `s.append(args);`：将`args`追加到s；返回一个指向s的引用。
 - `s.replace(range, args);`：删除s中范围`range`内的字符，替换为`agrs`指定的字符。`range`可以是一个下标或一个长度，或者是一对指向s的迭代器；返回一个指向s的引用。
 
-*args的形式:*
+*`args`的形式:*
 - 字符串`str`；
 - str中从pos开始最多len个字-`(str, pos, len)`；
 - cp开始的前len字符-`(cp, len)`；
@@ -316,7 +323,13 @@ s.replace(11, 3, "Fifth");  // 在11的位置，删除3个字符，但会在其�
 
 ### string搜索操作
 
-string类提供了6个不同的搜索函数，每个函数都有4个重载版本；搜索操作返回一个`string::size_type`值，表示匹配发生位置的下标；搜索失败，则**返回一个**名为`string::npos`的`static`成员，npos的类型为`const string::size_type`，初始化为-1(无符号类型，所以表示的应该是无限大)。
+string类提供了6个不同的搜索函数，每个函数都有4个重载版本；
+
+搜索操作返回一个`string::size_type`值，表示匹配发生位置的下标；
+
+搜索失败，则**返回一个**名为`string::npos`的`static`成员；
+- `npos`的类型为`const string::size_type`，初始化为-1；
+- 无符号类型，所以表示的应该是无限大；
 
 **find函数**
 
@@ -331,7 +344,8 @@ auto pos = name.find_first_of(numbers);
 // 指定位置搜索的妙用
 string::size_type = 0;
 while ((pos = name.find_first_of(numbers, pos)) != string::npos) {
-    cout << "found number at index: " << pos << " element is " << name[pos] << endl;
+    cout << "found number at index: " << pos
+    << " element is " << name[pos] << endl;
     ++pos;  // 移动到下一个字符
 }
 // 同时也衍生了出了逆向搜索的例子，返回值就变成了最后一个匹配了。
@@ -339,7 +353,7 @@ while ((pos = name.find_first_of(numbers, pos)) != string::npos) {
 
 *`find`函数返回第一个匹配位置的下标位置。*
 
-**find_if函数**
+**`find_if`函数**
 
 该函数接受一个迭代器范围，第三个参数是一个**谓词**，`find_if`对输入序列中的每个元素调用这个给定的谓词；
 
@@ -347,7 +361,7 @@ while ((pos = name.find_first_of(numbers, pos)) != string::npos) {
 
 ### string的数值转换
 
-新标准引入了多个函数，可以实现数值数据与标准库string之间的转换：
+新标准引入了多个函数，可以实现数值数据与标准库`string`之间的转换：
 
 ```c++
 int i = 42;
@@ -361,8 +375,8 @@ d = stod(s2.find_first_of("+-.123456789")); // 这样就成功实现了浮点数
 *使用数值转换的注意事项:*
 - `string`参数中第一个非空白符必须是符号(+或-)或数字。
 - 可以以`0x`或`0X`开头来表示十六进制数。
-- 对那些将字符串转换为浮点值的函数，`string`参数也可以以小数点(.)开头，并可以包含e或E来表示指数部分。
-- 总之，根据基数不同，string参数可以包含字母字符，对应大于数字9的数。
+- 对那些将字符串转换为浮点值的函数，`string`参数也可以以小数点`.`开头，并可以包含e或E来表示指数部分。
+- 总之，根据基数不同，`string`参数可以包含字母字符，对应大于数字9的数。
 
 ### C风格字符串
 
@@ -371,28 +385,38 @@ d = stod(s2.find_first_of("+-.123456789")); // 这样就成功实现了浮点数
 下面代码举例用到的这些函数都是C标准库带的函数，切记；
 
 ```c++
-strlen(p);          // 返回p的长度，空字符不计算在内
-strcmp(p1, p2);     // 比较p1和p2的相等性。如果p1==p2,返回0；如果p1>p2，返回一个正值，p1<p2，返回一个负值
-strcat(p1, p2);     // 将p2附加到p1之后，返回p1
-strcpy(p1, p2);     // 将p2拷贝给p1，返回p1
+// 返回p的长度，空字符不计算在内
+strlen(p);
+
+// 比较p1和p2的相等性。如果p1==p2,返回0；如果p1>p2，返回一个正值，p1<p2，返回一个负值
+strcmp(p1, p2);
+
+// 将p2附加到p1之后，返回p1
+strcat(p1, p2);
+
+// 将p2拷贝给p1，返回p1
+strcpy(p1, p2);
 ```
 
-**传入此类函数的指针必须指向以空字符作为结束的数组**，因为C语言只将这种类型看作是字符串；
+**传入此类函数的指针必须指向以空字符作为结束的数组**，否则C语言只将这种类型看作是字符数组；
 
 ```c++
-char ca[] = {'C', '+', '+'};    // 没有空字符'\n'
-cout << strlen(ca) << endl;     // 严重错误，strlen可能会沿着ca在内存中位置不断向前寻找空字符
+// 没有空字符'\n'
+char ca[] = {'C', '+', '+'};
+
+// 严重错误，strlen可能会沿着ca在内存中位置不断向前寻找空字符
+cout << strlen(ca) << endl;
 ```
 
-**混用string对象和C风格字符串**
+**混用`string`对象和C风格字符串**
 
-使用字符串字面值来初始化string对象：`string s("Hello World");`
+使用字符串字面值来初始化`string`对象：`string s("Hello World");`
 
-如果程序的某处需要一个C风格字符串，无法直接用string对象来代替它；
+如果程序的某处需要一个C风格字符串，无法直接用`string`对象来代替它；
 
-**不能直接用string对象直接初始化指向字符的指针**；
+**不能直接用`string`对象直接初始化指向字符的指针**；
 
-为了完成该功能，string专门提供了一个名为`c_str`的成员函数：
+为了完成该功能，`string`专门提供了一个名为`c_str`的成员函数：
 
 ```c++
 const char* str = "Hello, World!";  // C风格字符串
@@ -405,7 +429,7 @@ char *str = s;  // 错误，s是string类型
 const char *str = s.c_str();
 ```
 
-即，**在C++中，C风格字符串可以很容易转为string，但是string不能直接转为C风格字符串，需要通过内置函数c_str()操作**；
+即，**在C++中，C风格字符串可以很容易转为`string`，但是`string`不能直接转为C风格字符串，需要通过内置函数`c_str()`操作**；
 
 **比较字符串**
 
@@ -417,13 +441,13 @@ const char ca2[] = "A different string";
 if (ca1 < ca2)  // 这里试图比较两个无关地址，所以会得到未定义的结果
 ```
 
-如果需要比较两个C风格字符串需要调用strcmp函数。
+如果需要比较两个C风格字符串需要调用`strcmp`函数。
 
 ```c++
 if (strcmp(ca1, ca2) < 0)	// 和两个string对象的比较效果一样
 ```
 
-***Notes：***建议使用标准库string，更安全、更高效；
+***Notes：***建议使用标准库`string`，更安全、更高效；
 
 ---
 
