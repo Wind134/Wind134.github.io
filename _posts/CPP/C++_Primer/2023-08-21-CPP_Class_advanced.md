@@ -43,9 +43,9 @@ class Foo {
 };
 ```
 
-我们可以定义一个接受非`const`引用的拷贝构造函数，但此参数几乎总是一个`const`的引用，可以定义一个非`const`引用的拷贝构造函数，但一定需要是引用(<font color="red">原因下面解释</font>)。
+我们可以定义一个接受非`const`引用的拷贝构造函数，但此参数几乎总是一个`const`的引用，可以定义一个非`const`引用的拷贝构造函数，但一定需要是引用，<font color="red">原因下面解释</font>。
 
-<font color="red">拷贝构造函数在几种情况下都会被隐式地使用。且拷贝构造函数通常都不是explicit(即可以隐式转换)。</font>
+拷贝构造函数在几种情况下都会被隐式地使用，且拷贝构造函数通常都不是`explicit`(即可以隐式转换)。
 
 有一种理解方式：
 
@@ -73,7 +73,8 @@ class Foo {
   class Sales_data {
       public:
       	// 其他成员和构造函数的定义，如之前所定义
-      	Sales_data(const Sales_data&);	// 与合成的拷贝构造函数等价的拷贝构造函数的声明
+        // 与合成的拷贝构造函数等价的拷贝构造函数的声明
+      	Sales_data(const Sales_data&);
       private:
       	std::string bookNo;
       	int units_sold = 0;
@@ -109,7 +110,7 @@ class Foo {
 
   **从参数和返回值看出一些东西：**
 
-  - 如果拷贝构造函数的参数不是引用，则调用永远不会成功，因为会陷入无限拷贝构造的循环(<font color="red">解释上面说的为何形参需要引用</font>)。
+  - <font color="red">如果拷贝构造函数的参数不是引用，则调用永远不会成功，因为会陷入无限拷贝构造的循环。</font>
 
     具体的理解方式呢，以代码为例：
 
@@ -118,10 +119,14 @@ class Foo {
     Sales_data a("test1");
     Sales_data b("test2");	
     b = a;  // 这里调用拷贝赋值运算符
-    Sales_data c = a;	// (不会调用拷贝赋值运算符，不要看到等于号就下意识反应，而是调用了拷贝构造函数)
+
+    // (不会调用拷贝赋值运算符，不要看到等于号就下意识反应，而是调用了拷贝构造函数)
+    Sales_data c = a;
     // 接下来我们假设非引用传值的方式
     Sales_data c(a);	// 与上行等价，此时调用拷贝构造函数，因为
-    Sales_data d(a);	// 要把上面的a传给d，由此陷入无限循环.....(假设d为拷贝构造函数的参数)
+
+    // 要把上面的a传给d，由此陷入无限循环.....(假设d为拷贝构造函数的参数)
+    Sales_data d(a);
     // 如果使用引用的方式
     Sales_data c(a);	// a是引用形式，一步到位 
     ```
@@ -135,8 +140,11 @@ class Foo {
   ​	通过几行代码展现：
 
   ```c++
-  string null_book = "9-999-99999-9";	// 拷贝初始化
-  string null_book("9-999-99999-9");	// 绕过了拷贝构造函数(通过构造函数)，直接创建对象
+  // 拷贝初始化
+  string null_book = "9-999-99999-9";
+
+  // 绕过了拷贝构造函数(通过构造函数)，直接创建对象
+  string null_book("9-999-99999-9");
   ```
 
 ### 拷贝赋值运算符
@@ -149,7 +157,7 @@ trans = accum;  // 使用Sales_data的拷贝赋值运算符
 // 类似拷贝构造函数，如果类定义自己的拷贝赋值运算符，编译器会为它合成一个
 ```
 
-***Notes：***一定要意识到初始化与赋值的区别！
+**Notes：**一定要意识到初始化与赋值的区别！
 
 关于拷贝赋值运算符的知识介绍，有如下内容：
 
@@ -341,14 +349,14 @@ Sales_data& Sales_data::operator=(const Sales_data&) = default;	// 保证不内�
 
     - 拷贝构造函数和拷贝赋值运算符是`private`的，用户代码将不能拷贝这个类型的对象。
     - 友元和成员函数仍然可以拷贝对象，为了阻止拷贝，将这些控制成员声明为`private`的，但并不定义它们。
-    - *声明但不定义一个成员函数是合法的(你保证不用到)——<font color="red">但存在例外，后面介绍。</font>*
+    - 声明但不定义一个成员函数是合法的(你保证不用到)——<font color="red">但存在例外，后面介绍。</font>
 
     但这么做会有如下的问题：
 
     - 试图拷贝对象的用户代码将在编译阶段被标记为错误；
     - 成员函数或友元函数中的拷贝操作将会导致链接时错误。
 
-***Notes：***拷贝赋值运算符通常执行拷贝构造函数和析构函数中也要做的工作，这种情况下，**公共操作应该放在private的工具函数中完成**。
+***Notes：***拷贝赋值运算符通常执行拷贝构造函数和析构函数中也要做的工作，这种情况下，**公共操作应该放在`private`的工具函数中完成**。
 
 ### 拷贝控制和资源管理
 
@@ -363,24 +371,26 @@ Sales_data& Sales_data::operator=(const Sales_data&) = default;	// 保证不内�
 
 #### 行为像值的类
 
-为了提供类值的行为，对于类管理的资源，每个对象都应该拥有一份自己的拷贝，这意味着对于ps指向的string，每个HasPtr都要有自己的拷贝：
+为了提供类值的行为，对于类管理的资源，每个对象都应该拥有一份自己的拷贝，这意味着对于ps指向的`string`，每个`HasPtr`都要有自己的拷贝：
 
-- 定义一个拷贝构造函数，完成string的拷贝，而并非指针；
-- 定义一个析构函数来释放string；
-- 定义一个拷贝赋值运算符来释放对象当前的string，并从右侧运算对象拷贝string；
+- 定义一个拷贝构造函数，完成`string`的拷贝，而并非指针；
+- 定义一个析构函数来释放`string`；
+- 定义一个拷贝赋值运算符来释放对象当前的`string`，并从右侧运算对象拷贝`string`；
 
 ```c++
 class HasPtr {
     public:
-    	HasPtr(const string &s = string()):
-    		ps(new string(s)), i(0) {}	// 构造函数
-    	// 对ps指向的string，每个HasPtr对象都有自己的拷贝，即都有一个指向string的指针
-    	HasPtr(const HasPtr &p) : ps(new string(*(p.ps))), i(p.i) { }	// 完成了对值的拷贝
-    	HasPtr& operator=(const HasPtr &);
-    	~HasPtr() { delete ps; }	// 析构函数释放ps指向的那片空间
+      HasPtr(const string &s = string()):
+        ps(new string(s)), i(0) {}	// 构造函数
+
+      // 对ps指向的string，每个HasPtr对象都有自己的拷贝，即都有一个指向string的指针
+      // 完成了对值的拷贝
+      HasPtr(const HasPtr &p) : ps(new string(*(p.ps))), i(p.i) { }
+      HasPtr& operator=(const HasPtr &);
+      ~HasPtr() { delete ps; }	// 析构函数释放ps指向的那片空间
     private:
-    	string *ps;		// 指向string变量的指针
-    	int i;
+      string *ps;		// 指向string变量的指针
+      int i;
 };
 ```
 
@@ -438,17 +448,22 @@ HasPtr& HasPtr::operator=(const HasPtr &rhs)
 class HasPtr
 {
     public:
-    	// 构造函数分配新的string和新的计数器，将计数器置为1
-    	HasPtr(const string &s = string()) : ps(new string(s)), i(0), use(new size_t(1)) {}
-    	// 拷贝构造函数拷贝所有三个数据成员，并递增计数器
-    	// 这里不需要new一个新的string类型的指针，而是直接初始化给ps
-    	HasPtr(const HasPtr &p): ps(p.ps), i(p.i), use(p.use) { ++*use; }	// use递增，拷贝就会增1
-    	HasPtr& operator=(const HasPtr&);
-    	~HasPtr();
+      // 构造函数分配新的string和新的计数器，将计数器置为1
+      HasPtr(const string &s = string()) :
+      ps(new string(s)), i(0), use(new size_t(1)) {}
+      // 拷贝构造函数拷贝所有三个数据成员，并递增计数器
+      // 这里不需要new一个新的string类型的指针，而是直接初始化给ps
+
+      // use递增，拷贝就会增1
+      HasPtr(const HasPtr &p): ps(p.ps), i(p.i), use(p.use) { ++*use; }
+      HasPtr& operator=(const HasPtr&);
+      ~HasPtr();
     private:
-    	string *ps;
-    	int i;
-    	size_t *use;	// 这是一个指针，真正的对象存储在对应的动态内存中，因为"1"不属于这个类嘛
+      string *ps;
+      int i;
+
+      // 这是一个指针，真正的对象存储在对应的动态内存中，因为"1"不属于这个类嘛
+      size_t *use;
 };
 ```
 
@@ -489,11 +504,9 @@ HasPtr& HasPtr::operator=(const HasPtr &rhs)
 <font color='red'>后面再看这段代码产生了一些疑惑：</font>
 
 - <font color='red'>如果左边变量的引用计数为1，那岂不是赋值没法完成？</font>解释：
-  - 根据这段代码，ps以及use所指向的空间会被释放，因为没有引用了(或者说引用计数为0)；
+  - 根据这段代码，`ps`以及`use`所指向的空间会被释放，因为没有引用了(或者说引用计数为0)；
   - 只是指针指向的空间被释放而已，**又不是指针没了**，指针的管理由编译器自己来的；
-  - if完成之后，下面的代码照样执行；
-- <font color='red'>还有一个疑惑是啥来着？</font>
-  - 占坑；
+  - `if`完成之后，下面的代码照样执行；
 
 
 ### 交换操作
@@ -726,10 +739,10 @@ private:
 
 - **移动构造函数和`std::move`**
 
-  string中<font color="red">移动构造函数</font>具体的机制暂且不表，我目前需要了解的：
+  `string`中<font color="red">移动构造函数</font>具体的机制暂且不表，目前需要了解的：
 
   - 移动构造函数可以实现我们上述移动元素的需求；
-  - 当reallocate函数在新内存中构造string时，必须调用move来表示希望使用string的移动构造函数，<font color="red">原因先埋坑</font>。
+  - 当`reallocate`函数在新内存中构造`string`时，必须调用`move`来表示希望使用`string`的移动构造函数，<font color="red">原因先埋坑</font>。
 
 #### StrVec的reallocate成员
 
@@ -745,7 +758,8 @@ void StrVec::reallocate()
     // 将数据从旧内存移动到新内存
     auto dest = newdata;	// 指向新数组中的空闲位置(指针)
     auto elem = elements;	// 指向旧数组中的首元素(指针)
-    for (size_t i = 0; i != size(); ++i)	alloc.construct(dest++, std::move(*elem++));	// 注意优先级，会先执行elem++
+    for (size_t i = 0; i != size(); ++i)	
+      alloc.construct(dest++, std::move(*elem++));  // 注意优先级，会先执行elem++
     free();		// 移动完成则释放旧内存空间
     // 更新数据结构，执行新元素
     elements = newdata;
@@ -811,9 +825,9 @@ void StrVec::reallocate()
   int &&rr2 = rr1;  // 错误，变量是左值
   ```
 
-**标准库的move函数**
+**标准库的`move`函数**
 
-move函数的具体机制在<font color = "red">后面会进行讲解</font>，定义在`utility`头文件，先讲功能，如上
+`move`函数的具体机制在<font color = "red">后面会进行讲解</font>，定义在`utility`头文件，先讲功能，如上
 
 ```c++
 int &&rr1 = 42;	// 正确且合法
@@ -825,7 +839,7 @@ int &&rr3 = std::move(rr1);	// 这样是正确的，相当于把rr1变成了一�
 书中这么描述`move`：
 
 - 有一个左值，但想像右值一样处理它，这时候使用`move`；
-- 调用`move`就意味着除了对rr1赋值或者销毁之外，我们不能再使用它，即不能对移后源对象的值做任何假设；
+- 调用`move`就意味着除了对`rr1`赋值或者销毁之外，我们不能再使用它，即不能对移后源对象的值做任何假设；
   - <font color="red">不能对移后源对象的值做任何假设的理解：因为这个值已经被移走了，这么理解直接了当！</font>
 
 **移后源对象：**移后源对象是指在移动构造函数或移动赋值函数中，被移动的对象；移动后源对象必须可析构。
@@ -867,7 +881,7 @@ StrVec::StrVec(StrVec &&s) noexcept	// 通知标准库我们的构造函数不�
 
 移动操作不分配任何资源，因此一般不会抛出任何异常，但需要告知标准库，否则标准库会认为移动我们的类对象时可能会抛出异常，以下有一些通知标准库的方式：
 
-- **在移动构造函数中指明noexcept**
+- **在移动构造函数中指明`noexcept`**
 
   `noexcept`的细节<font color="red">暂且不管</font>，目前只需要知道这是一种承诺一个函数不抛出异常的方法，具体用法：
 
@@ -988,7 +1002,7 @@ Foo z(std::move(x));	// 即便是右值，仍然是拷贝构造
 
 先定义一个拷贝并交换赋值运算符，这可以作为函数匹配和移动操作间相互关系的一个很好的示例：
 
-<font color=green>也很好的理解了拷贝构造的参数为何是引用类型以及拷贝赋值运算符的参数类型(拷贝赋值可以不是引用类型)。</font>
+也很好的理解了拷贝构造的参数为何是引用类型以及拷贝赋值运算符的参数类型(拷贝赋值可以不是引用类型)。
 
 ```c++
 class HasPtr {
@@ -1041,11 +1055,11 @@ hp = std::move(hp2);	// 实现移动构造的功能，类似上述分析即可
 - 一个版本接受一个指向`const`的左值引用；
 - 一个版本接受一个指向非`const`的右值引用；
 
-以push_back为例：
+以`push_back`为例：
 
 ```c++
-void push_back(const X&);	// 绑定到任意类型的X
-void push_back(X&&);	// 只可以绑定到类型X的可修改的右值
+void push_back(const X&); // 绑定到任意类型的X
+void push_back(X&&);      // 只可以绑定到类型X的可修改的右值
 ```
 
 **非const右值的定义：**指一个可修改的且不被`const`或的表达式；
@@ -1057,11 +1071,12 @@ void push_back(X&&);	// 只可以绑定到类型X的可修改的右值
   代码举例：
 
   ```c++
-  // 举个例子，假设我们有一个类MyClass，它有一个非const成员函数void set(int x)。那么我们可以这样写代码：
-  
+  // 举个例子，假设我们有一个类MyClass
+  // 它有一个非const成员函数void set(int x)。那么我们可以这样写代码：
   MyClass().set(10);
   
-  // 在这个例子中，MyClass()是一个右值，因为它是一个临时的、将要被移动的对象。我们在这个右值上调用了set成员函数来修改这个右值。
+  // 在这个例子中，MyClass()是一个右值，因为它是一个临时的、将要被移动的对象。
+  // 我们在这个右值上调用了set成员函数来修改这个右值。
   ```
 
 **const右值的定义：**指一个不可修改的且不可被`volatile`修饰的表达式；
@@ -1121,11 +1136,11 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
   Foo i, j;	// 左值
   ```
 
-  函数可以同时用const和引用限定，此情况下，引用限定符必须跟随在`const`限定符之后：
+  函数可以同时用`const`和引用限定，此情况下，引用限定符必须跟随在`const`限定符之后：
 
   ```c++
-  Foo someMem() & const;	// 错误用法
-  Foo anotherMem() const &;	// 正确用法
+  Foo someMem() & const;    // 错误用法
+  Foo anotherMem() const &; // 正确用法
   ```
 
 - **重载和引用函数**
@@ -1135,8 +1150,8 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
   ```c++
   class Foo {
   public:
-      Foo sorted() &&;	// 用于可改变的右值
-      Foo sorted() const &;	// 可用于任意类型的Foo
+      Foo sorted() &&;      // 用于可改变的右值
+      Foo sorted() const &; // 可用于任意类型的Foo
       // 其他成员的定义
   private:
       vector<int> data;
@@ -1144,14 +1159,17 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
   
   Foo FOO::sorted() &&
   {
-      sort(data.begin(), data.end());	// 对于右值可直接在源址上排序，因为没有用户使用，可随时销毁
+      // 对于右值可直接在源址上排序，因为没有用户使用，可随时销毁
+      sort(data.begin(), data.end());
       return *this;
   }
   
   Foo FOO::sorted() const &
   {
       Foo ret(*this);
-      sort(ret.data.begin(), ret.data.end());	// 对于左值可能有用户在使用，我们不能轻易改变原对象
+
+      // 对于左值可能有用户在使用，我们不能轻易改变原对象
+      sort(ret.data.begin(), ret.data.end());
       return ret;
   }
   
@@ -1166,10 +1184,10 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
 
     ```c++
     Foo sorted() &&;
-    Foo sorted() const;	// 错误，无引用限定符
+    Foo sorted() const;       // 错误，无引用限定符
     using Comp = bool(const int&, const int&);
-    Foo sorted(Comp*);	// 正确
-    Foo sorted(Comp*) const;	// 正确
+    Foo sorted(Comp*);        // 正确
+    Foo sorted(Comp*) const;  // 正确
     ```
 
 ## 重载运算与类型转换
@@ -1201,9 +1219,9 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
 ```c++
 // 一个非成员运算符的等价调用
 data1 + data2;	// 普通表达式
-operator+(data1, data2);	// 等价调用
+operator+(data1, data2);  // 等价调用
 
-data1.operator+=(data2);	// 调用
+data1.operator+=(data2);  // 调用
 ```
 
 **使用重载运算符的思路：**
@@ -1215,7 +1233,7 @@ data1.operator+=(data2);	// 调用
 
 书中492、493页有一系列运算符重载的准则，记得随时查阅(<font color="red">有些东西学完才能更好地理解</font>)。
 
-- 比如，什么叫<font color="red">string将+定义成了普通的非成员函数</font>；
+- 比如，什么叫`string`<font color="red">将+定义成了普通的非成员函数</font>；
 
 ### 一些常用运算符的重载
 
@@ -1251,7 +1269,8 @@ IO标准库分别使用`>>`和`<<`执行输入和输出操作，对于这两个�
   同样以`Sales_data`的输入运算符举例：
 
   ```c++
-  istream& operator>>(istream &is, Sales_data &item)	// 理解为何Sales_data不是const引用吗，因为要对item的状态进行处理
+  // 理解为何Sales_data不是const引用吗，因为要对item的状态进行处理
+  istream& operator>>(istream &is, Sales_data &item)
   {
       double price;	// 不需要初始化，因为我们将先读入数据到price
       is >> item.bookNo >> item.units_sold >> price;
@@ -1281,7 +1300,9 @@ IO标准库分别使用`>>`和`<<`执行输入和输出操作，对于这两个�
 Sales_data operator+(const Sales_data &lhs, const Sales_data &rhs)
 {
     Sales_data sum = lhs;	// 拷贝赋值
-    sum += rhs;				// 将rhs加到，其中类的+=重载运算符将在后面定义，你看是属于类本身的吧
+    
+    // 将rhs加到，其中类的+=重载运算符将在后面定义，你看是属于类本身的吧
+    sum += rhs;
     return sum;
 }
 ```
@@ -1304,7 +1325,6 @@ Sales_data operator+(const Sales_data &lhs, const Sales_data &rhs)
   }
   ```
 
-
 - **关系运算符**
 
   根据类的实际需求来看，有时候并不存在一种逻辑可靠的关系定义，这一部分主要是思想的学习；
@@ -1326,7 +1346,8 @@ Sales_data operator+(const Sales_data &lhs, const Sales_data &rhs)
   };
   
   // 定义这个赋值运算符
-  StrVec &StrVec::operator=(initializer_list<string> il)	// 无须检查运算符，因为this与之绝对不是同一个对象
+  // 无须检查运算符，因为this与之绝对不是同一个对象
+  StrVec &StrVec::operator=(initializer_list<string> il)
   {
       // alloc_n_copy分配内存空间并从给定范围内拷贝元素
       auto data = alloc_n_copy(il.begin(), il.end());
@@ -1360,8 +1381,8 @@ Sales_data operator+(const Sales_data &lhs, const Sales_data &rhs)
 ```c++
 class StrVec {
 public:
-    std::string& operator[](std::size_t n)	{ return elements[n]; }
-    const std::string& operator[](std::size_t n)	const { return elements[n]; }
+    std::string& operator[](std::size_t n) { return elements[n]; }
+    const std::string& operator[](std::size_t n) const { return elements[n]; }
  private:
     std::string *elements;	// 指向数组首元素的指针
 };
@@ -1376,18 +1397,19 @@ public:
   ```c++
   class StrBlobPtr {
   public:
-      // 递增和递减运算符
-      StrBlobPtr& operator++();
-      StrBlobPtr& operator--();
-      // 其他成员与之前一致
+    // 递增和递减运算符
+    StrBlobPtr& operator++();
+    StrBlobPtr& operator--();
+    // 其他成员与之前一致
   };
   
   /* 两个运算符的定义 */
   StrBlobPtr& StrBlobPtr::operator++()
   {
-      check(curr, "increment past end of StrBlobStr");	// 检查是否已经指向了容器的尾后位置
-      ++curr;
-      return *this;
+    // 检查是否已经指向了容器的尾后位置
+    check(curr, "increment past end of StrBlobStr");
+    ++curr;
+    return *this;
   }
   
   // 递减类似
@@ -1397,7 +1419,7 @@ public:
 
   在C/C++中需要考虑到的是前置和后置的位置所在是有意义的，而后置面临的一个问题是：普通的重载形式无法区分处理前置后置，因为名字相同，运算的对象与数量都相同。
 
-  为了解决这个问题，<font color=red>后置版本接受一个额外的(不被使用)int类型的形参，编译器为后置运算符提供一个值为0的实参</font>，代表了后置的形式；
+  为了解决这个问题，**后置版本接受一个额外的(不被使用)`int`类型的形参，编译器为后置运算符提供一个值为0的实参**，代表了后置的形式；
 
   ```c++
   class StrBlobPtr {
@@ -1412,9 +1434,9 @@ public:
   StrBlobPtr& StrBlobPtr::operator++(int)
   {
       // 此处无须检查有效性？
-      StrBlobPtr ret = *this;	// 记录当前的值
-      ++*this;	// 调用前置运算的++，这部分会对有效性进行检查，妙哉！
-      return *ret;	// 返回之前的状态
+      StrBlobPtr ret = *this; // 记录当前的值
+      ++*this;      // 调用前置运算的++，这部分会对有效性进行检查，妙哉！
+      return *ret;  // 返回之前的状态
   }
   
   // 递减类似
@@ -1447,7 +1469,10 @@ public:
     std::string* operator->() const
     {
         // 将实际工作委托给解引用运算符
-        return & this->operator*(); // 这个符号是返回相应的地址，其中this是指向本StrBlobPtr对象的指针，下面是一个等价写法
+        // 这个符号是返回相应的地址，其中this是指向本StrBlobPtr对象的指针
+        return & this->operator*();
+
+        // 下面是一个等价写法
         return & (*this).operator*();
     }
     // 其他成员与之前版本保持一致
@@ -1466,9 +1491,14 @@ public:
   从代码上来看，则是：
 
   ```c++
-  (*point).mem;	// 一个内置的指针类型
-  point.operator()->mem;	// point是类的一个对象，这个好理解
-  point.operator->().mem	// 疑问：准确来说不应该是这么写吗？反正总之都会简化成上面的写法，又是语法糖
+  // 一个内置的指针类型
+  (*point).mem;
+
+  // point是类的一个对象，这个好理解
+  point.operator()->mem;
+
+  // 疑问：准确来说不应该是这么写吗？反正总之都会简化成上面的写法，又是语法糖
+  point.operator->().mem
   ```
 
 ### 函数调用运算符
@@ -1499,11 +1529,15 @@ absObj.operator()(i);	// 显式调用
 ```c++
 class PrintString {
 public:
-    PrintString(ostream &o = cout, char c = ' '): os(o), sep(c) { }	// 默认实参
-    void operator() (const string &s) const { os << s << sep; }		// 定义了这么一个运算符
+
+    // 默认实参
+    PrintString(ostream &o = cout, char c = ' '): os(o), sep(c) { }
+
+    // 定义了这么一个运算符
+    void operator() (const string &s) const { os << s << sep; }
 private:
-    ostream &os;	// 用于写入的目的流
-    char sep;	// 用于将不同输出隔开的字符
+    ostream &os;  // 用于写入的目的流
+    char sep;     // 用于将不同输出隔开的字符
 };
 
 // 使用上述类
@@ -1516,7 +1550,8 @@ errors(s);				// 在cerr中打印s，后面跟一个换行符
 函数对象常常作为泛型算法的实参：
 
 ```c++
-for_each(vs.begin(), vs.end(), PrintString(cerr, '\n'));	// 好奇是怎么传参的
+// 好奇是怎么传参的
+for_each(vs.begin(), vs.end(), PrintString(cerr, '\n'));
 ```
 
 <font color=red>为什么lambda表达式产生的类不含有默认构造函数、赋值运算符以及默认析构函数：</font>
@@ -1540,7 +1575,7 @@ public:
 };
 ```
 
-所以说`lambda`是一个函数对象，默认情况下<font color=red>lambda不能改变它捕获的变量</font>，因此在默认情况下，由`lambda`产生的类当中的函数调用运算符是一个const成员函数。
+所以说`lambda`是一个函数对象，默认情况下`lambda`<font color=red>不能改变它捕获的变量</font>，因此在默认情况下，由`lambda`产生的类当中的函数调用运算符是一个`const`成员函数。
 
 **lambda产生的类**：在编译器中，`lambda`表达式会被转化为一个类，该类的名称和定义的`lambda`变量的名称无关，也无法在源代码中直接访问，这个类通常被称为 `lambda`产生的类，它包含一个名为`operator()`的成员函数，实现了`lambda`表达式定义的函数功能。
 
@@ -1579,7 +1614,7 @@ public:
 
 **主要有三类：**算数运算符、关系运算符和逻辑运算符(510页查表)；
 
-这些类都被定义成模板的形式，我们可以指定具体的应用类型，即调用运算符的形参类型：`plus<string>`令plus加法运算符作用于string对象，`plus<Sales_data>`对Sales_data对象执行加法运算。
+这些类都被定义成模板的形式，我们可以指定具体的应用类型，即调用运算符的形参类型：`plus<string>`令plus加法运算符作用于string对象，`plus<Sales_data>`对`Sales_data`对象执行加法运算。
 
 ```c++
 plus<int> intAdd;	// 可执行int加法的函数对
@@ -1593,19 +1628,24 @@ sum = intAdd(10, intNegate(10));	// 为零
 
   ```c++
   // 传入一个临时的函数对象用于执行两个string对象的>比较运算
-  sort(svec.begin(), svec.end(), greater<string>());  // greater后面的括号用来接形参，由sort传过来的形参
+  // greater后面的括号用来接形参，由sort传过来的形参
+  sort(svec.begin(), svec.end(), greater<string>());
   
   // 标准库规定其函数对象对于指针同样适用，但是直接将两个指针对比将产生未定义的行为
   vector<string *> nameTable;	// 指针的vector
-  sort(*, *, [](string *a, string *b) { return a < b; })      // 错误，无法直接对指针进行对比
-  sort(nameTable.begin(), nameTable.end(), less<string*>());  // 正确，因为less是定义良好的    
+
+  // 错误，无法直接对指针进行对比
+  sort(*, *, [](string *a, string *b) { return a < b; })
+
+  // 正确，因为less是定义良好的
+  sort(nameTable.begin(), nameTable.end(), less<string*>());    
   ```
 
 #### 可调用对象与函数
 
-C++中有几种可调用对象：函数、函数指针、lambda表达式、bind创建的对象以及重载了函数调用运算符的类；
+C++中有几种可调用对象：函数、函数指针、`lambda`表达式、`bind`创建的对象以及重载了函数调用运算符的类；
 
-可调用对象也有类型：每个lambda有它自己唯一的(未命名)类类型，函数及函数指针的类型则由其返回值类型和实参类型决定；
+可调用对象也有类型：每个`lambda`有它自己唯一的(未命名)类类型，函数及函数指针的类型则由其返回值类型和实参类型决定；
 
 可调用对象可以对其参数执行不同的算术运算，但是他们共享同一种调用形式：
 
@@ -1617,13 +1657,13 @@ C++中有几种可调用对象：函数、函数指针、lambda表达式、bind�
 
   ```c++
   map<string, int(*)(int, int)> binops;
-  binops.insert({"+", add});	// 插入一个pair，add是已经定义好的一个函数
+  binops.insert({"+", add});  // 插入一个pair，add是已经定义好的一个函数
   // 但是lambda表达式不能以同样的方式插入，因为值的类型不同
   ```
 
 解决上述因为类型不一致产生的影响的方法：
 
-**标准库function类型**
+**标准库`function`类型**
 
 `function`的操作细看512页；
 
@@ -1636,16 +1676,20 @@ function<int(int, int)>	// 声明了一个function类型，接受两个int，返
 function<int(int, int)> f3 = [](int i, int j) { return i * j; };  // lambda
 
 // 重新定义map
-map<string, function<int(int, int)>> binops;	// 解决上面的问题
+map<string, function<int(int, int)>> binops;  // 解决上面的问题
 ```
 
-- **重载的函数与function**
+- **重载的函数与`function`**
 
   由于二义性的存在，我们不能直接将重载函数的名字存入`function`类型的对象中，得处理一下：
 
   ```c++
-  int (*fp)(int, int) = add;	// fp所指的是接受两个int的版本，而不是类的版本，fp是一个函数指针
-  binops.insert( {"+", fp} );	// 正确：fp指向一个正确的add版本
+  // fp所指的是接受两个int的版本，而不是类的版本，fp是一个函数指针
+  int (*fp)(int, int) = add;
+
+  // 正确：fp指向一个正确的add版本
+  binops.insert( {"+", fp} );
+
   // 或者使用lambda
   binops.insert( {"+", [](int a, int b) {return add(a, b);} } );
   ```
@@ -1662,7 +1706,7 @@ map<string, function<int(int, int)>> binops;	// 解决上面的问题
 
 **类型转换运算符(conversion operator)**类的一种特殊的成员函数，负责将一个类类型转化为其他类型：`operator type() const;`
 
-- type类型要求是<font color=red>能作为函数的返回类型，因此不允许转换成数组或函数类型，但可以转换成指针或者引用类型</font>。
+- `type`类型要求是<font color=red>能作为函数的返回类型，因此不允许转换成数组或函数类型，但可以转换成指针或者引用类型</font>。
 - 类型转换运算符没有显式的返回类型，没有形参，必须定义成类的成员函数；
 - 类型转换运算符不得改变待转换对象的内容；
 
@@ -1681,17 +1725,22 @@ private:
   std::size_t val;  
 };
 
-SmallInt si;  // 定义一个类对象
-si = 4;       // 将4转化为一个SmallInt对象(隐式转换且经构造函数实现)，再调用隐式的拷贝赋值运算符
-si + 3;       // 隐式转换为int
+// 定义一个类对象
+SmallInt si;
+
+// 将4转化为一个SmallInt对象(隐式转换且经构造函数实现)，再调用隐式的拷贝赋值运算符
+si = 4;
+
+// 隐式转换为int
+si + 3;
 ```
 
 上述的处理过程：
 
 - 遇到`si = 4`，调用`SmallInt`的赋值运算符，由编译器自动提供；
 - 该赋值运算符发现右侧是`int`类型，需要进行类型转换；
-- 此时由于SmallInt类定义了从`int`到`SmallInt`的隐式转换(通过构造函数)，所以可以进行该类型转换；
-- 转换完成后，通过赋值运算符将转换结果赋值给si；
+- 此时由于`SmallInt`类定义了从`int`到`SmallInt`的隐式转换(通过构造函数)，所以可以进行该类型转换；
+- 转换完成后，通过赋值运算符将转换结果赋值给`si`；
 - `si + 3`则是调用了类型转换运算符，将`si`从`SmallInt`转换成`int`类型；
 
 *类型转换运算符可能产生意外结果*
@@ -1713,8 +1762,8 @@ si + 3;       // 隐式转换为int
 
   几个仍会隐式执行的例外：
 
-  - if、while及do语句的条件部分；
-  - for语句头的条件表达式；
+  - `if、while`及`do`语句的条件部分；
+  - `for`语句头的条件表达式；
   - 逻辑非或与运算符的运算对象；
   - 条件运算符的条件表达式；
 
@@ -1810,22 +1859,29 @@ manip2(10);	C(10) or E(double(10))
 **ChatGPT**有个例子很好：
 
 ```c++
-// 定义了一个成员函数operator+(const Foo&)，以及一个非成员函数operator+(const Foo&, const Foo&)
+// 定义了一个成员函数operator+(const Foo&)，
+// 以及一个非成员函数operator+(const Foo&, const Foo&)
 // 对象与对象相加
 Foo f1, f2, f3;
 f3 = f1 + f2;  // 调用成员函数 operator+(const Foo&)
 
 // 对象与常量相加
 Foo f;
-f = f + 5;  // 调用成员函数 operator+(const Foo&)，然后调用一次类型转换运算符
+
+// 调用成员函数 operator+(const Foo&)，然后调用一次类型转换运算符
+f = f + 5;
 
 // 常量与对象相加
 Foo f;
-f = 5 + f;  // 调用非成员函数 operator+(const Foo&, const Foo&)，然后调用一次类型转换运算符
+
+// 调用非成员函数 operator+(const Foo&, const Foo&)，然后调用一次类型转换运算符
+f = 5 + f;
 
 // 常量与常量相加
 Foo f;
-f = 5 + 6;  // 调用非成员函数 operator+(const Foo&, const Foo&)，然后调用两次类型转换运算符
+
+// 调用非成员函数 operator+(const Foo&, const Foo&)，然后调用两次类型转换运算符
+f = 5 + 6;
 
 // 如果FOO还定义了转换目标为int的类型转换，且
 int f = f + 5;	// 会产生二义性错误
@@ -1837,9 +1893,9 @@ int f = f + 5;	// 会产生二义性错误
 
 - 数据抽象可以将类的接口与实现分离；
 - 继承可以定义相似的类型并对其相似关系建模；
-- 动态绑定(多态？)可以在一定程度上忽略相似类型的区别；
+- 动态绑定(多态)可以在一定程度上忽略相似类型的区别；
 
-**C++的多态性:** 多态性(polymorphism)，即多种形式，我们把具有继承关系的多个类型称为多态类型，我们能使用这些类型的"多种形式"而无须在意它们的差异；
+**C++的多态性:** 多态性即多种形式，我们把具有继承关系的多个类型称为多态类型，我们能使用这些类型的多种形式而无须在意它们的差异；
 
 - 引用或指针的**静态类型与动态类型**不同这一事实正是C++语言支持多态性的根本所在；
   - 静态是对非虚函数的调用，这一调用是在编译时就进行绑定；
@@ -1864,8 +1920,8 @@ class SavingsAccount{
     	Person m_saver;     // 使用了一个Person类，上面已定义。
     	Currency m_balance; // 使用了一个Currency类，已定义。
 }
-SavingsAccount::SavingsAccount(const char* name, const char* address, 
-                               int cents) : m_saver(name, address), m_balance(0, cents) {}	//	初始化列表
+SavingsAccount::SavingsAccount(const char* name, const char* address, int cents):
+m_saver(name, address), m_balance(0, cents) {}  // 初始化列表
 void SavingsAccount::print(){
     m_saver.print();
     m_balance.print();
@@ -1897,7 +1953,8 @@ void SavingsAccount::print(){
 class Quote {
 public:
     Quote() = default;	// 关于default已学
-    Quote(const std::string &book, double sales_price):bookNo(book), price(sales_price) { }
+    Quote(const std::string &book, double sales_price):
+    bookNo(book), price(sales_price) { }
     std::string isbn() const { return bookNo; }
     // 返回给定数量书籍的销售总额
     // 派生类负责改写并使用不同折扣的计算算法
@@ -1932,15 +1989,16 @@ protected:
 派生类必须将其继承而来的成员函数中需要**覆盖**的那些重新声明：
 
 ```c++
-class Bulk_quote : public Quote {		// Bulk_quote继承自Quote，关于访问说明符public的介绍在书中543页
+// Bulk_quote继承自Quote，关于访问说明符public的介绍在书中543页
+class Bulk_quote : public Quote {
 public:
-    Bulk_quote() = default;				// 以下两行为构造函数
+    Bulk_quote() = default; // 以下两行为构造函数
     Bulk_quote(const std::string&, double, std::size_t, double);
     // 覆盖基类的函数版本以实现基于大量购买的折扣政策
-    double net_price(std::size_t) const override;	// 没有加virtual
+    double net_price(std::size_t) const override; // 没有加virtual
 private:
-    std::size_t min_qty = 0;	// 适用折扣政策的最低购买量
-    double discount = 0.0;		// 以小数表示的折扣额
+    std::size_t min_qty = 0;  // 适用折扣政策的最低购买量
+    double discount = 0.0;    // 以小数表示的折扣额
 };
 ```
 
@@ -2003,7 +2061,10 @@ private:
         Quote item;	// 基类对象
         Bulk_quote bulk;	// 派生类对象
         Quote *p = &item;	// p指向Quote对象
-        p = &bulk;			// p指向bulk的Quote部分，但p只能调用bulk的基类部分，此时派生类类型的指针转成了基类类型的指针
+        
+        // p指向bulk的Quote部分，但p只能调用bulk的基类部分，
+        // 此时派生类类型的指针转成了基类类型的指针
+        p = &bulk;
         Quote &r = bulk;	// r绑定到bulk的Quote部分
         ```
 
@@ -2029,9 +2090,10 @@ private:
   派生类对象的基类部分以及派生类自己的数据成员都是在构造函数的初始化阶段执行初始化操作的；
 
   ```c++
-  Bulk_quote(const std::string& book, double p,	// 这两个参数通过Quote类的构造函数执行
+  // 这两个参数通过Quote类的构造函数执行
+  Bulk_quote(const std::string& book, double p,
             std::size_t qty, double disc) : 
-            Quote(book, p), min_qty(qty), discount(disc) { }	// 所示
+            Quote(book, p), min_qty(qty), discount(disc) { }  // 所示
   ```
 
   如果我们不特别指出，派生类对象的基类部分会像数据成员一样执行默认初始化；
@@ -2043,8 +2105,9 @@ private:
   ```c++
   double Bulk_quote::net_price(size_t cnt) const
   {
-  	if (cnt >= min_qty)	return cnt * (1 - discount) * price;	// price是受保护的成员
-  	else	return cnt * price;
+    // price是受保护的成员
+    if (cnt >= min_qty)	return cnt * (1 - discount) * price;
+    else	return cnt * price;
   }
   ```
 
@@ -2062,8 +2125,8 @@ private:
   - 声明中包含类名<font color=red>但是不包含它的派生列表</font>；
 
     ```c
-    class Bulk_quote : public Quote;	// 错误，派生列表不能出现在声明中
-    class Bulk_quote;	// 正确方式
+    class Bulk_quote : public Quote;  // 错误，派生列表不能出现在声明中
+    class Bulk_quote; // 正确方式
     ```
 
   - 声明语句的目的是令程序知晓某个名字的存在以及该名字表示一个什么样的实体；
@@ -2182,7 +2245,7 @@ private:
 
 ```c++
 // 强行调用基类中的函数版本而不管baseP的动态类型
-double undiscounted = baseP->Quote::net_price(42);	// 这种情况称为回避机制
+double undiscounted = baseP->Quote::net_price(42);  // 这种情况称为回避机制
 ```
 
 **继承与虚函数使用展示**
@@ -2198,7 +2261,9 @@ double undiscounted = baseP->Quote::net_price(42);	// 这种情况称为回避�
 class Quote {
 public:	
     std::string isbn() const;
-    virtual double net_price(std::size_t n) const;	// 该基类希望它的派生类将该函数自定义成适合自身的版本
+
+    // 该基类希望它的派生类将该函数自定义成适合自身的版本
+    virtual double net_price(std::size_t n) const;
 };
 ```
 
@@ -2259,9 +2324,9 @@ protected:
 
 每个类控制自己的成员初始化过程，与之类似，每个类还分别控制着其成员对于派生类来说是否可访问；
 
-**protected关键字：**声明那些**它希望与派生类分享但是不想被其他公共成员访问使用的成员**；
+**`protected`关键字：**声明那些**它希望与派生类分享但是不想被其他公共成员访问使用的成员**；
 
-- protected的成员对于类的用户而言是不可访问的；
+- `protected`的成员对于类的用户而言是不可访问的；
 - 派生类对象中的基类部分的`protected`成员对于**派生类以及友元的成员**来说是可访问的；(规定)
 - 派生类的成员或友元只能通过派生类的对象来访问基类中的`protected`成员；
   - 这种情况下，访问`protected`成员的方法必须是`public`的才行；
@@ -2284,11 +2349,19 @@ protected:
 private:
     char priv_mem;
 };
-struct Pub_Derv : public Base {		// 派生访问说明符为public，不会影响派生列表的访问权限
-    int f() { return prot_mem; }	// 正确，访问了protected成员
-    char g() { return priv_mem; }	// 错误，没法访问private成员
+
+// 派生访问说明符为public，不会影响派生列表的访问权限
+struct Pub_Derv : public Base {
+
+    // 正确，访问了protected成员
+    int f() { return prot_mem; }
+
+    // 错误，没法访问private成员
+    char g() { return priv_mem; }
 };
-struct Priv_Derv : private Base {	// private继承下，基类的public以及protected部分都成为了private访问的
+
+// private继承下，基类的public以及protected部分都成为了private访问的
+struct Priv_Derv : private Base {
     // private不影响派生类的访问权限
     int f1() const { return prot_mem; }	// 正确
 };
@@ -2302,10 +2375,12 @@ struct Priv_Derv : private Base {	// private继承下，基类的public以及pro
 
   ```c++
   Priv_Derv d;
-  d.pub_mem();	// 错误，pub_mem变成了private的
+  d.pub_mem();  // 错误，pub_mem变成了private的
 
   // 权限只能渐渐收紧，而非渐渐放松
-  // Priv_Derv中继承Base的(所有)成员已成为private的变量，那接下来继承该Priv_Derv类的子类Derived_from_Private，即便访问控制说明符是public，也改不了权限
+  // Priv_Derv中继承Base的(所有)成员已成为private的变量，
+  // 那接下来继承该Priv_Derv类的子类Derived_from_Private，
+  // 即便访问控制说明符是public，也改不了权限。
   struct Derived_from_Private : public Priv_Derv {
       int use_base() { return prot_mem; }	// 无法访问到prot_mem
   };
@@ -2325,8 +2400,8 @@ struct Priv_Derv : private Base {	// private继承下，基类的public以及pro
 - 进一步考虑继承，则出现派生类用户，而：
   - 基类将派生类可使用的部分声明成受保护的，普通用户无法访问受保护成员，派生类及其友元不可访问私有成员；
   - 基类仍然将其接口声明为公有的，同时将属于其实现的部分分为两组：
-    - 一组供派生类访问(protected)；
-    - 一组由基类及其友元访问(private)；
+    - 一组供派生类访问(`protected`)；
+    - 一组由基类及其友元访问(`private`)；
 
 #### 继承相关
 
@@ -2383,7 +2458,7 @@ protected:
       public:
       	// 添加了一个discount_policy()成员
   };
-  Bulk_quote bulk;			// Bulk_quote是Disc_quote的派生类
+  Bulk_quote bulk;  // Bulk_quote是Disc_quote的派生类
   Bulk_quote *bulkP = &bulk;	// 动态静态类型一致
   Quote *itemP = &bulk;		// 动态与静态类型不一致
   bulkP->discount_pocicy();	// 可以通过继承的基类Bulk_quote找到
@@ -2400,7 +2475,8 @@ protected:
 
   ```c++
   struct Derived : Base {
-      int get_base_mem() { return Base::mem; }	// 作用域运算符将覆盖掉原有的查找规则
+      // 作用域运算符将覆盖掉原有的查找规则
+      int get_base_mem() { return Base::mem; }
       // ...
   };
   ```
@@ -2430,8 +2506,8 @@ protected:
 实现方式：
 
 - 要么覆盖所有的版本，要么一个也不覆盖；
-- 覆盖所有的版本太过繁琐，一个更好的解决方案就是，为重载的成员提供一条using声明语句；
-  - **using声明语句指定一个名字而不指定形参列表**，所以<font color=red>一条基类成员函数的using声明语句就可以把该函数的所有重载实例添加到派生类作用域中；</font>
+- 覆盖所有的版本太过繁琐，一个更好的解决方案就是，为重载的成员提供一条`using`声明语句；
+  - **`using`声明语句指定一个名字而不指定形参列表**，所以一条基类成员函数的`using`声明语句<font color=red>就可以把该函数的所有重载实例添加到派生类作用域中；</font>
   - 而后，派生类只需要定义其特有的函数即可，方便很多，而无需为其他函数再重新定义；
 
 ### 构造函数与拷贝控制
@@ -2552,9 +2628,10 @@ public:
 
 ```c++
 // EndangeredAnimal类的构造函数是默认构造，因此这里不写
+// 构造函数部分交给他继承的基类Bear来处理
 inline
 Panda::Panda(std::string name, bool onExhibit)  
-      : Bear(name, onExhibit, "Panda") { }	// 构造函数部分交给他继承的基类Bear来处理
+      : Bear(name, onExhibit, "Panda") { }
 ```
 
 **构造函数的初始化顺序:** 基类的构造顺序与派生类列表中基类的出现顺序保持一致；下面以`Panda`对象为例：
