@@ -67,9 +67,9 @@ int main()
 
 ```c++
 // 加const是因为传递的是数组，且我们无意于去改变这一数组，以下三行等价！
-void print(const int*);		// 传入数组首址，const表示无意于改变指针指向的对象内容
+void print(const int*);     // 传入数组首址，const表示无意于改变指针指向的对象内容
 void print(const int[]);
-void print(const int[10]);	// 表示我们所期望的数组的元素
+void print(const int[10]);  // 表示我们所期望的数组的元素
 ```
 
 也可以使用**标准库规范**管理数组实参，即传递指向数组首元素和尾后元素的指针，这种技术受到了标准库技术的启发。
@@ -85,9 +85,14 @@ void print(const int *beg, const int *end)
 **指针与数组之间括号处理**
 
 ```c++
-int *matrix[10];    // 10个指针构成的数组，元素是指向数组每一个元素的指针
-int (*matrix)[10];  // 是一个指向含有10个整数的数组的指针，有点像数组名为matrix的数组
-int main(int argc, char *argv[]) {...}	// 函数声明：argv是一个数组，元素是指向C风格字符串的指针
+// 10个指针构成的数组，元素是指向数组每一个元素的指针
+int *matrix[10];
+
+// 是一个指向含有10个整数的数组的指针，有点像数组名为matrix的数组
+int (*matrix)[10];
+
+// 函数声明：argv是一个数组，元素是指向C风格字符串的指针
+int main(int argc, char *argv[]) {...}
 ```
 
 通过这部分我们所需要总结出的一个信息是，如果我们想定义一个返回数组指针的函数，则数组的维度必须跟在函数名字之后。然而，函数的形参列表也跟在函数名字后面且形参列表应该先于数组的维度，因此，返回数组指针的函数形式：
@@ -102,7 +107,7 @@ int main(int argc, char *argv[]) {...}	// 函数声明：argv是一个数组，�
 
 涉及到**可变参数模板**，联系可变参数模板章节；
 
-- **initializer_list形参**
+- **`initializer_list`形参**
 
   即初始化列表，如果函数的实参数量未知但是全部实参的类型都相同，我们可以使用该类型的形参。与`vector`一样，`initializer_list`也是一种模板类型，**但不一样的是**，`initializer_list`对象中的元素永远是`const`常量值。
 
@@ -168,8 +173,11 @@ window = screen(66, 256, '#');  // screen(66, 256, '#')
 函数调用时实参按其位置解析，默认实参负责填补函数调用缺少的尾部实参（靠右侧位置），这就意味着无法填补左侧位置，因此：
 
 ```c++
-window = screen(, , '?');	// 这种写法是错误的，缺少了实参，因为缺少的部分在左侧
-window = screen('?');		// 语法上没问题，但逻辑上有问题，会把char类型转化为string::size_type类型(short)
+// 这种写法是错误的，缺少了实参，因为缺少的部分在左侧
+window = screen(, , '?');
+
+// 语法上没问题，但逻辑上有问题，会把char类型转化为string::size_type类型(short)
+window = screen('?');
 ```
 
 <font color=red>因此怎么合理设置形参的顺序也是个需要谨慎考虑的问题。</font>
@@ -179,27 +187,27 @@ window = screen('?');		// 语法上没问题，但逻辑上有问题，会把cha
 用作默认实参的名字在函数声明所在的作用域内解析，而这些名字的求值过程发生在函数调用时：
 
 ```c++
-sz wd = 80;		char def = ' ';
-sz ht();	string screen(sz = ht(), sz = wd, char = def);
-string window = screen();	// 等价于调用screen(ht(), 80, ' ')
+sz wd = 80; char def = ' ';
+sz ht();    string screen(sz = ht(), sz = wd, char = def);
+string window = screen();   // 等价于调用screen(ht(), 80, ' ')
 void f2()
 {
-    def = '*';		// def还是之前的def，改变了默认实参def的值，变成了'*'
-    sz wd  = 100;	// 这是一个新定义的变量wd，不会改变之前传递给screen的wd的默认值
-    window = screen();	// 等价于调用screen(ht(), 80, '*')
+    def = '*';      // def还是之前的def，改变了默认实参def的值，变成了'*'
+    sz wd  = 100;   // 这是一个新定义的变量wd，不会改变之前传递给screen的wd的默认值
+    window = screen();  // 等价于调用screen(ht(), 80, '*')
 }
 ```
 
 - **省略符形参**
 
-  省略符形参是为了便于C++程序访问某些特殊的C代码而设置的，这些代码使用了名为varargs的C标准库功能。通常，省略符形参不应用于其他目的。
+  省略符形参是为了便于C++程序访问某些特殊的C代码而设置的，这些代码使用了名为`varargs`的C标准库功能。通常，省略符形参不应用于其他目的。
 
   - 大多数类类型的对象在传递给省略符形参时都无法正确拷贝；
 
   代码示例：
 
   ```c++
-  void foo(parm_list, ...);		// 只能出现在形参列表的最后一个位置
+  void foo(parm_list, ...); // 只能出现在形参列表的最后一个位置
   
   void foo(...);
   ```
@@ -208,7 +216,7 @@ void f2()
 
 ### 参数使用注意点
 
-特别细节的一串代码：其实本质上就是涉及到**对常量的引用**，一定要求有const限定符。
+特别细节的一串代码：其实本质上就是涉及到**对常量的引用**，一定要求有`const`限定符。
 
 从下面这两串代码也能看出來，**在参数引用上我们应该尽可能使用常量引用**。
 
@@ -216,31 +224,36 @@ void f2()
 #include <iostream>
 using namespace std;
 
-void f(const int & i)	// 不加const会发生报错，因为传入的i*3其实就是一个const变量
+void f(const int & i)   // 不加const会发生报错，因为传入的i*3其实就是一个const变量
 {
-        cout << i << endl;
+    cout << i << endl;
 }
 
 int main()
 {
-        int i = 3;
-        f(i * 3);	// i * 3它并不是一个变量名，更准确来说，他是数字9，一个常量。 
-        return 0;
+    int i = 3;
+    f(i * 3);   // i * 3它并不是一个变量名，更准确来说，他是数字9，一个常量。 
+    return 0;
 }
 ```
 
-让我们再看看一些负面案例：主要是我们需要知道，我们不能把const对象，字面值或者需要转换类型的对象传递给普通的引用形参；
+让我们再看看一些负面案例：主要是我们需要知道，我们不能把`const`对象，字面值或者需要转换类型的对象传递给普通的引用形参；
 
 ```c++
 string::size_type find_char(string &s, char c, string::size_type &occurs);
-find_char("Hello World", 'o', ctr);	// 这个错误比较容易理解，Hello World是字面值常量！
+
+// 这个错误比较容易理解，Hello World是字面值常量！
+find_char("Hello World", 'o', ctr);
 
 // 下面这个错误隐藏更深，is_sentence使用的s是const string类型
 bool is_sentence(const string &s)
 {
     string::size_type ctr= 0;
+
+    // 因为find_char本身是非常量引用，这么一搞同样导致了编译错误
+    // 间接的解决方案就是再在内部定义一个string类型的变量。
     return find_char(s, '.', ctr) == s.size() - 1 && ctr == 1;
-} // 因为find_char本身是非常量引用，这么一搞同样导致了编译错误，间接的解决方案就是再在内部定义一个string类型的变量。
+}
 ```
 
 ## 返回数组指针
@@ -257,14 +270,14 @@ bool is_sentence(const string &s)
 
 可以按照以下的顺序来逐层理解该声明的含义：
 
-- `func(int i)`表示调用func函数时需要一个int类型的实参。
+- `func(int i)`表示调用`func`函数时需要一个`int`类型的实参。
 - `(*func(int i))`意味着我们可以对函数调用的结果执行解引用操作
-- `(*func(int i))[10]`表示解引用func的调用将得到一个大小是10的数组
-- `int (*func(int i))[10]`表示数组中的元素是int类型。
+- `(*func(int i))[10]`表示解引用`func`的调用将得到一个大小是10的数组
+- `int (*func(int i))[10]`表示数组中的元素是`int`类型。
 
 ### 使用尾置返回类型
 
-出现于C++11新标准，可以简化上述func声明，尾置返回类型跟在形参列表后面并以一个->符号开头。为了表示函数真正的返回类型跟在形参列表之后，我们在本应出现返回类型的地方加一个auto：
+出现于C++11新标准，可以简化上述`func`声明，尾置返回类型跟在形参列表后面并以一个->符号开头。为了表示函数真正的返回类型跟在形参列表之后，我们在本应出现返回类型的地方加一个auto：
 
 `auto func(int i) -> int (*)[10];`
 
@@ -312,7 +325,7 @@ string &shorterString(string &s1, string &s2)
 - 寻找最佳匹配，在这部分精确匹配比需要类型转换的匹配更好。
 - 处理含有多个形参的函数匹配，这部分编译器可能会报告二义性调用的信息，因为可能存在第一个形参调用函数1更好，第二个形参调用函数2更好....
 
-*Notes:*调用重载函数时尽可能避免强制类型转换，如果确实需要强制类型转换，则说明我们设计的形参集合不合理。
+**Notes:** 调用重载函数时尽可能避免强制类型转换，如果确实需要强制类型转换，则说明我们设计的形参集合不合理。
 
 ### 重载与作用域
 
@@ -347,17 +360,21 @@ void fooBar(int ival)
 声明一个可以指向该函数的指针：
 
 ```c++
-bool (*pf)(const string &, const string &);	// 未初始化的函数声明，这里的pf代表了指向该函数的指针
+// 未初始化的函数声明，这里的pf代表了指向该函数的指针
+bool (*pf)(const string &, const string &);
 
 // pf是一个指针，该指针的作用是，指向一个函数，这个函数是什么样的呢？
 // 它指向的这个函数具有两个string类型参数，返回值是bool类型
 ```
 
-pf<font color="red">两端小括号有很大作用</font>，如果不用，则：
+`pf`<font color="red">两端小括号有很大作用</font>，如果不用，则：
 
 ```c++
-bool *pf(const string &, const string &);	// 该声明则表明pf是一个返回值为bool指针的函数，即等价于
-bool* pf(const string &, const string &);	// 类似之前看过的数组部分
+// 该声明则表明pf是一个返回值为bool指针的函数
+bool *pf(const string &, const string &);
+
+// 同上
+bool* pf(const string &, const string &);
 ```
 
 ### 使用函数指针
@@ -389,7 +406,7 @@ bool b1 = lengthCompare("hello", "goodbye");  // 等价调用。
 
 - 即在指向不同函数类型的指针间不存在转换规则。
 
-但可以为函数指针赋一个nullptr或者值为0的整型常量表达式，表明该指针没有指向任何一个函数。
+但可以为函数指针赋一个`nullptr`或者值为0的整型常量表达式，表明该指针没有指向任何一个函数。
 
 **重载函数的指针：**编译器通过指针类型决定选用哪个函数，指针类型必须与重载函数中的某一个精确匹配。
 
@@ -398,10 +415,13 @@ bool b1 = lengthCompare("hello", "goodbye");  // 等价调用。
 类似数组，虽然不能定义函数类型的形参，但是形参可以是指向函数的指针。
 
 ```c++
+// 第三个形参被自动地转换成指向函数的指针
 void useBigger(const string &s1, const string &s2,
-               bool pf(const string &, const string &));	// 第三个形参被自动地转换成指向函数的指针
+               bool pf(const string &, const string &));
+
+// 同上的等价声明               
 void useBigger(const string &s1, const string &s2,
-               bool (*pf)(const string &, const string &));	// 同上的等价声明
+               bool (*pf)(const string &, const string &));
 
 // 如果是已经声明过的函数，那么也可以直接使用，因为也会被自动转换成为指针
 useBigger(s1, s2, lengthCompare);
@@ -410,18 +430,25 @@ useBigger(s1, s2, lengthCompare);
 **通过类型别名和decltype简化代码：**
 
 ```c++
-typedef bool Func(const string&, const string&);  // 将lengthCompare函数名转为Func
-typedef int arr[4];                               // 针对数组类型的转换，将含有4个整型变量的数组名定义为arr
-typedef decltype(lengthCompare) Func2;            // 与Func等价的类型
+// 将lengthCompare函数名转为Func
+typedef bool Func(const string&, const string&);
+
+// 针对数组类型的转换，将含有4个整型变量的数组名定义为arr
+typedef int arr[4];
+
+// 与Func等价的类型
+typedef decltype(lengthCompare) Func2;
 // --------------------------------------------------------
 // 下面两行同理，等价类型，指向函数的指针
 typedef bool (*FuncP)(const string&, const string&);
-typedef decltype(lengthCompare) *FuncP2;	// 等价的类型
+
+// 等价的类型
+typedef decltype(lengthCompare) *FuncP2;
 ```
 
 *其实上面最后一行代码理解起来还是有点困惑，是约定俗成的写法？*
 
-- decltype返回的只是函数类型而已；
+- `decltype`返回的只是函数类型而已；
 - 需要我们自行加上指针符号；
 
 ### 返回指向函数的指针
@@ -429,29 +456,30 @@ typedef decltype(lengthCompare) *FuncP2;	// 等价的类型
 声明一个返回函数指针的函数，最简单的办法是使用类型别名：
 
 ```c++
-using F = int(int*, int);     // F是函数类型，形参为一个指针、一个普通变量
-using PF = int(*)(int*, int); // PF是指针类型
+using F = int(int*, int);       // F是函数类型，形参为一个指针、一个普通变量
+using PF = int(*)(int*, int);   // PF是指针类型
 PF f1(int); // 返回指向f1函数的指针
 F *f1(int); // 等价类型，显式指定(是没有括号的嗷)
-int (*f1(int))(int*, int);    // 直接声明，这里比较特殊，f1首先是个函数，所以注意区分
-int (*f1)(int*, int);         // 这里f1只单纯是个变量，指向返回int的函数的指针
+int (*f1(int))(int*, int);  // 直接声明，这里比较特殊，f1首先是个函数，所以注意区分
+int (*f1)(int*, int);       // 这里f1只单纯是个变量，指向返回int的函数的指针
 ```
 
-将auto和decltype用于函数指针类型
+将`auto`和`decltype`用于函数指针类型
 
 ```c++
-auto f1(int) -> int (*)(int *, int);	// 尾置返回类型
+auto f1(int) -> int (*)(int *, int);    // 尾置返回类型
 
 string::size_type sumLength(const string&, const string&);
 string::size_type largerLength(const string&, const string&);
 
 // 根据其形参的取值，getFcn函数返回指向sumLength或者largerLength的指针
-decltype(sumLength) *getFcn(const string &);  // 这里getFcb函数返回的就是一个指针，因为没加括号
+// 这里getFcb函数返回的就是一个指针，因为没加括号
+decltype(sumLength) *getFcn(const string &);
 ```
 
 上面最后一行代码的运用与`typedef decltype(lengthCompare) *FuncP2;`类似；
 
-decltype得到的只是返回函数类型而非指针类型，因此在后面显式加上`*`；
+`decltype`得到的只是返回函数类型而非指针类型，因此在后面显式加上`*`；
 
 ## constexpr函数
 
@@ -465,27 +493,27 @@ decltype得到的只是返回函数类型而非指针类型，因此在后面显
 
   ```c++
   constexpr int new_sz()	{	return 42;	}
-  constexpr int foo = new_sz();	// foo是一个常量表达式
+  constexpr int foo = new_sz(); // foo是一个常量表达式
   ```
 
-为了能在编译过程中随时展开，constexpr被隐式地指定为内联函数。
+为了能在编译过程中随时展开，`constexpr`被隐式地指定为内联函数。
 
-我们同时也允许constexpr函数的返回值并非一个常量：
+我们同时也允许`constexpr`函数的返回值并非一个常量：
 
 `constexpr size_t scale(size_t cnt) { return new_sz() * cnt; }`
 
 - 在上面这串代码中，对于`scale(arg)`而言，如果`arg`是常量表达式，则`scale(arg)`也是常量表达式；
-- 如果`arg`并非常量表达式，**那么当把scale函数用在需要常量表达式的上下文中时，编译器会报错**；
+- 如果`arg`并非常量表达式，**那么当把`scale`函数用在需要常量表达式的上下文中时，编译器会报错**；
 
-constexpr函数有如下几个特点：
+`constexpr`函数有如下几个特点：
 
-- **constexpr函数不一定返回常量表达式。**
-- **内联函数与constexpr函数一般都放在头文件内**
-- **一般都是隐式const的**
+- **`constexpr`函数不一定返回常量表达式。**
+- **内联函数与`constexpr`函数一般都放在头文件内**
+- **一般都是隐式`const`的**
 
-***Notes：***对于给定的内联函数或者constexpr函数来说，它的多个定义必须完全一致(不可重新定义)；
+***Notes：***对于给定的内联函数或者`constexpr`函数来说，它的多个定义必须完全一致(不可重新定义)；
 
-因此内联函数和constexpr函数通常定义在头文件中；
+因此内联函数和`constexpr`函数通常定义在头文件中；
 
 
 

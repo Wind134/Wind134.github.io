@@ -33,16 +33,18 @@ tags: [Programming, C++/C, cpp]
   decltype(ref) z = y; // z的类型为int&，因为ref是int&类型的引用
   
   int&& right_rex = 3;
-  decltype(right_rex) r = right_rex;	// 这样使用是不合法的，因为推导出的r是一个右值引用，right_rex作为一个右值引用，是左值
-  decltype(right_rex) r = std::move(right_rex);	// 合法修改
-  decltype(right_rex) r = 3;	// 合法，3是一个右值，右值引用绑定到右值；
+
+  // 这样使用是不合法的，因为推导出的r是一个右值引用，right_rex作为一个右值引用，是左值
+  decltype(right_rex) r = right_rex;
+  decltype(right_rex) r = std::move(right_rex); // 合法修改
+  decltype(right_rex) r = 3;  // 合法，3是一个右值，右值引用绑定到右值；
   ```
 
 - **针对表达式的推断**
 
   ```c++
   int x = 42;
-  decltype((x)) y;	// y的类型为int&，因为(x)是一个表达式，表达式做左值
+  decltype((x)) y;  // y的类型为int&，因为(x)是一个表达式，表达式做左值
   ```
 
 ## 针对函数
@@ -53,12 +55,12 @@ tags: [Programming, C++/C, cpp]
 int foo();
 double bar();
 
-decltype(foo()) result1; // result1 的类型为 int，根据 foo() 的返回类型推断
-decltype(bar()) result2; // result2 的类型为 double，根据 bar() 的返回类型推断
+decltype(foo()) result1; // result1的类型为int，根据foo()的返回类型推断
+decltype(bar()) result2; // result2的类型为double，根据bar()的返回类型推断
 
 // 而在C++14标准，甚至可以通过auto自动推导
-decltype(auto) result1 = foo(); // result1 的类型为 int，根据 foo() 的返回类型推断
-decltype(auto) result2 = bar(); // result2 的类型为 double，根据 bar() 的返回类型推断
+decltype(auto) result1 = foo(); // result1的类型为int，根据foo()的返回类型推断
+decltype(auto) result2 = bar(); // result2的类型为double，根据bar()的返回类型推断
 ```
 
 如果推导的不是函数，而是函数名呢？

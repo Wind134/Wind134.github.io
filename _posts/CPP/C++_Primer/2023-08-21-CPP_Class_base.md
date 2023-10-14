@@ -16,7 +16,7 @@ tags: [Programming, C++/C, cpp]
 
 默认情况下，拷贝类的对象其实拷贝的是对象的数据成员。
 
-class的定义分为两部分：
+`class`的定义分为两部分：
 
 1. 头文件(header file)—用来声明该`class`的各种操作行为，头文件通常包含那些只能被定义一次的实体，如类、`const`和`constexpr`变量。
 
@@ -30,19 +30,19 @@ class的定义分为两部分：
 
 其次，当我们读类的程序时，类的作者定义了类对象可以执行的所有动作，比如以`Sales_items`为例，这个类定义了创建一个`Sales_item`对象时会发生什么事情，以及对Sales_item对象进行赋值、加法或输入输出运算时会发生什么事情。我们以`Sales_data`为例，也就是说，`Sales_data`的接口应该包括以下几个操作：
 
-- 一个`isbn`成员函数，用于返回对象的ISBN编号
-- 一个`combine`成员函数，用于将一个`Sales_data`对象加到另一个对象上
-- 一个名为`add`的函数，执行两个`Sales_data`对象的加法
-- 一个`read`函数，将数据从`istream`读入到`Sales_data`对象中
-- 一个`print`函数，将`Sales_data`对象的值输出到ostream
+- 一个`isbn`成员函数，用于返回对象的ISBN编号；
+- 一个`combine`成员函数，用于将一个`Sales_data`对象加到另一个对象上；
+- 一个名为`add`的函数，执行两个`Sales_data`对象的加法；
+- 一个`read`函数，将数据从`istream`读入到`Sales_data`对象中；
+- 一个`print`函数，将`Sales_data`对象的值输出到`ostream`；
 
 ### 类的类型
 
 每个类定义了唯一的类型。对于两个类而言，即便他们的成员完全一样，这两个类也是不同的类型。
 
 ```c++
-Sales_data item1;		// 默认初始化Sales_data类型的对象
-class Sales_data item1;	// 同上等价，继承至C语言
+Sales_data item1;       // 默认初始化Sales_data类型的对象
+class Sales_data item1; // 同上等价，继承至C语言
 ```
 
 类也是可以事先声明的，如`class Screen;`
@@ -77,8 +77,11 @@ class Link_screen {
 
 ```c++
 struct Sales_data {
-    std::string isbn() const { return bookNo; } // 直接定义isbn()成员函数(const表示函数体内的内容不能被修改)
-    Sales_data& combine(const Sales_data&);     // combine成员函数
+    // 直接定义isbn()成员函数(const表示函数体内的内容不能被修改)
+    std::string isbn() const { return bookNo; }
+    
+    // combine成员函数
+    Sales_data& combine(const Sales_data&);
     double avg_price() const;
     std::string bookNo;
     unsigned units_sold = 0;    // 已经给类定义了默认值(卖出去的书本)
@@ -92,29 +95,32 @@ std::istream& read(std::istream&, Sales_data&);
 - **理解常量成员函数**
 
   ```c++
-  std::string isbn() const { return bookNo; }           // 获取书本的ISBN编号
+  // 获取书本的ISBN编号
+  std::string isbn() const { return bookNo; }
+  
   // 等价于
-  std::string isbn(this) const { return this->bookNo; } // 这是一种更详细的底层写法
-  Sales_data total;	// total是一个Sales_data对象
-  total.isbn();		// 调用成员函数
+  // 这是一种更详细的底层写法
+  std::string isbn(this) const { return this->bookNo; }
+  Sales_data total; // total是一个Sales_data对象
+  total.isbn();     // 调用成员函数
   ```
 
   以`total.isbn()`为例(`this`指的是成员函数的隐式实参，指向对象)：
 
   - 首先引入`this`，**成员函数通过一个名为this的额外的隐式参数**来访问调用它的那个对象。
-  - 编译器负责把total的地址传递给**isbn的隐式形参this**，等价于`Sales_data::isbn(&total)`，即在调用`Sales_data`的`isbn`成员时传入了`total`的地址。
+  - 编译器负责把`total`的地址传递给**isbn的隐式形参this**，等价于`Sales_data::isbn(&total)`，即在调用`Sales_data`的`isbn`成员时传入了`total`的地址。
   - 在成员函数内部，我们可以**直接使用调用该函数的对象的成员**，而无须通过成员访问运算符来做到这一点，**因为this所指的也就是这个对象**。
     - 如上部分代码所示；
 
-  接下来解释紧随参数列表之后的`const`关键字，**它的作用是修改隐式this指针的类型**：
+  接下来解释紧随参数列表之后的`const`关键字，**它的作用是修改隐式`this`指针的类型**：
 
-  - 默认情况下，`this`的类型是指向类类型非常量版本的常量指针；(这一点应该好理解，类类型的地址是不变的，但是类本身是会变化的。)
+  - 默认情况下，`this`的类型是指向类类型非常量版本的常量指针(这一点应该好理解，类类型的地址是不变的，但是类本身是会变化的)；
   - 在`Sales_data`成员函数中，this的类型是`Sales_data *const`，顶层`const`，代表指针不能变化，但指针指向的对象可以变化；
-  - 然而根据初始化规则，因为`this`是<font color="red">指向非常量对象的常量指针，所以我们在默认情况下无法把this绑定到一个常量对象</font>。
-  - 因此就通过将this处理为指向常量对象的常量指针，即`const { return bookNo; }`这么一个形式；
-    - 此时的const表示this是一个指向常量的指针，<font color=red>这是C++语言的规定</font>。
-  - 像这样使用const的成员函数被称作**常量成员函数(const member function)**。
-  - **所以const关键字的作用在于，让常量对象也能正常调用isbn成员函数**，更好的匹配代码逻辑；
+  - 然而根据初始化规则，因为`this`是<font color="red">指向非常量对象的常量指针，所以我们在默认情况下无法把`this`绑定到一个常量对象</font>。
+  - 因此就通过将`this`处理为指向常量对象的常量指针，即`const { return bookNo; }`这么一个形式；
+    - 此时的`const`表示`this`是一个指向常量的指针，<font color=red>这是C++语言的规定</font>。
+  - 像这样使用`const`的成员函数被称作**常量成员函数(const member function)**。
+  - **所以`const`关键字的作用在于，让常量对象也能正常调用`isbn`成员函数**，更好的匹配代码逻辑；
 
   通过总结，联系前部分所学，我们知道这么做的依据是：
 
@@ -143,16 +149,16 @@ std::istream& read(std::istream&, Sales_data&);
 
   这里的一个小细节就是，**当编译器看到了avg_price函数，就能知道剩余代码是位于类的作用域内的**。因此函数体内编译器隐式使用了`Sales_data`的成员。
 
-- **定义一个<font color="blue">返回this对象的函数</font>**
+- **定义一个返回`this`对象的函数**
 
   这部分以函数`combine`为例，这个函数作用有点类似于复合赋值运算符`+=`，调用该函数的对象代表的是赋值运算符左侧的运算对象，右侧运算对象则通过显式的实参被传入函数：
 
   ```c++
   Sales_data& Sales_data::combine(const Sales_data &rhs)
   {
-      units_sold += rhs.units_sold;	// 把rhs的成员加到this对象的成员上
-      revenue += rhs.revenue;			// 同上
-      return *this;					// 返回调用该函数的对象
+      units_sold += rhs.units_sold; // 把rhs的成员加到this对象的成员上
+      revenue += rhs.revenue;       // 同上
+      return *this;                 // 返回调用该函数的对象
   }
   ```
 
@@ -163,7 +169,7 @@ std::istream& read(std::istream&, Sales_data&);
 
 如果该类函数在概念是属于类但是不定义在类中，则它一般应与类声明在同一个头文件内，在这种方式下，用户使用接口的任何部分都只需要引入一个文件即可。
 
-- **定义read以及print函数**
+- **定义`read`以及`print`函数**
 
   ```c++
   istream &read(istream &is, Sales_data &item)
@@ -171,7 +177,7 @@ std::istream& read(std::istream&, Sales_data&);
       double price = 0;
       is >> item.bookNo >> item.units_sold >> price;
       item.revenue = price * item.units_sold;
-      return is;	//注意，返回的是引用类型(流嘛)
+      return is;    // 注意，返回的是引用类型(流嘛)
   }
   ostream &print(ostream &os, const Sales_data &item)
   {
@@ -187,17 +193,19 @@ std::istream& read(std::istream&, Sales_data&);
 
 - **定义add函数**
 
-  add函数接受两个Sales_data对象作为其参数：
-
-  ```c++
-  Sales_data add(const Sales_data &lhs, const Sales_data &rhs)
-  {
-      Sales_data sum = lhs;	// 把lhs的数据成员拷贝给sum
-      sum.combine(rhs);		// 调用combine函数，也可以看到，此刻做左值，sum可以被改变
-      return sum;
-  }
-  ```
-
+    `add`函数接受两个`Sales_data`对象作为其参数：
+  
+    ```c++
+    Sales_data add(const Sales_data &lhs, const Sales_data &rhs)
+    {
+        // 把lhs的数据成员拷贝给sum
+        Sales_data sum = lhs;
+        
+        // 调用combine函数，也可以看到，此刻做左值，sum可以被改变
+        sum.combine(rhs);
+        return sum;
+    }
+    ```
 
 - **在C++中struct与class的区别**
 
@@ -213,7 +221,7 @@ std::istream& read(std::istream&, Sales_data&);
 
 类本身可以**包含多个构造函数**，但不同的构造函数之间必须在参数数量或参数类型上有所区别。
 
-不同于其他成员函数，构造函数**不能被声明成const类型**。因为当创建类的一个`const`对象时，直到构造函数完成初始化过程，对象才能真正取得其"常量属性"。
+不同于其他成员函数，构造函数**不能被声明成`const`类型**。因为当创建类的一个`const`对象时，直到构造函数完成初始化过程，对象才能真正取得其常量属性。
 
 ### 默认构造函数
 
@@ -223,7 +231,7 @@ std::istream& read(std::istream&, Sales_data&);
 
 而由编译器创建的构造函数又被称为**合成的默认构造函数(synthesized default constructor)**。
 
-- 某些类的默认构造函数的行为与只接受一个string实参的构造函数功能相同；
+- 某些类的默认构造函数的行为与只接受一个`string`实参的构造函数功能相同；
 - 同时，某些类不能依赖合成的默认构造函数；
 - 在为类设置初始值的时候，我们要根据实际情况去设定这些，结合实际去考虑；
 
@@ -237,7 +245,7 @@ std::istream& read(std::istream&, Sales_data&);
 
 当对象被默认初始化或值初始化时自动执行默认构造函数，此时这边分两类情况：值初始化和默认初始化。
 
-- **值初始化：**int一般默认为0，以此类推。
+- **值初始化：**`int`一般默认为0，以此类推。
 
 - **默认初始化：**其初始值和变量的类型以及变量定义的位置相关。
 
@@ -245,8 +253,9 @@ std::istream& read(std::istream&, Sales_data&);
 
 ```c++
 class NoDefault {
-    public:
-    	NoDefault (const std::string&);	// 没有了默认的构造函数，因为自己定义了一个构造函数
+public:
+    // 没有了默认的构造函数，因为自己定义了一个构造函数
+    NoDefault (const std::string&);
     // 假设下面还有其他成员，但没有其他的构造函数了
 };
 struct A {
@@ -254,8 +263,10 @@ struct A {
 };
 A a;	// 无法为A合成构造函数，因为my_mem没有默认的构造函数
 struct B {
-    B() {}              // 执行默认构造，没问题
-    NoDefault b_member; // 这是因为b_member没有初始值，可以理解，因为类NoDefault没有默认的构造函数
+    B() {}  // 执行默认构造，没问题
+
+    // 这是因为b_member没有初始值，可以理解，因为类NoDefault没有默认的构造函数
+    NoDefault b_member;
 };
 ```
 
@@ -273,8 +284,9 @@ struct B {
         // 新增的构造函数
         Sales_data() = default;
         Sales_data(const std::string &s) : bookNo(s) {}
-        Sales_data(const std::string &s, unsigned n, double p) : bookNo(s), units_sold(n), revenue(p*n) {}
-        Sales_data(std::istream &);	// 输入对象参数的构造函数
+        Sales_data(const std::string &s, unsigned n, double p) :
+        bookNo(s), units_sold(n), revenue(p*n) {}
+        Sales_data(std::istream &); // 输入对象参数的构造函数
     };
     ```
 
@@ -287,8 +299,10 @@ struct B {
   第二第三行的两个构造函数：
 
   ```c++
-  Sales_data(const std::string &s) : bookNo(s) { }	// 只接受一个string类型的参数
-  Sales_data(const std::string &s, unsigned n, double p) : bookNo(s), units_sold(n), revenue(p*n) { }	// 这部分构造比较简单，不多赘述
+  // 只接受一个string类型的参数
+  Sales_data(const std::string &s) : bookNo(s) { }
+  Sales_data(const std::string &s, unsigned n, double p) :
+  bookNo(s), units_sold(n), revenue(p*n) { }    // 这部分构造比较简单，不多赘述
   ```
 
   这两个定义出现了新的部分，冒号以及冒号和花括号之间的代码，花括号定义了函数体，新出现的部分叫做**构造函数初始值列表(constructor initialize list)**；
@@ -306,8 +320,8 @@ struct B {
   ```c++
   Sales_data::Sales_data(std::istream &is)
   {
-      read(is, *this)	// 把is的内容读取到相应的对象中
-  }	// 该函数没有返回类型(构造函数都没有返回类型)
+      read(is, *this)   // 把is的内容读取到相应的对象中
+  } // 该函数没有返回类型(构造函数都没有返回类型)
   ```
 
   这个构造函数比较特殊，没有返回类型，没有构造函数初始值列表(或者说构造函数初始值列表是空的)，但是因为执行了构造函数体，所以对象成员依然可以被初始化。
@@ -334,7 +348,7 @@ class ConstRef {
     private:
     	int i;
     	const int ci;
-    	int &ri;	// 引用必须有个初始值
+    	int &ri;    // 引用必须有个初始值
 };
 // 上面的例子就是一个类，成员中有const也有引用，且有构造函数，但没有通过初始值初始化
 ConstRef::ConstRef(int ii): i(ii), ci(ii), ri(i) {}	// 添加的构造函数
@@ -349,17 +363,20 @@ C++11新标准拓展了构造函数初始值的功能，使得我们可以定义
 - 委托构造函数使用它所属类的其他构造函数执行它自己的初始化过程。
 - 是不是很像派生类执行基类的构造函数的写法；
 
-使用委托构造函数重写Sales_data类，重写后的形式如下：
+使用委托构造函数重写`Sales_data`类，重写后的形式如下：
 
 ```c++
 class Sales_data {
     public:
     	Sales_data(std::string s, unsigned cnt, double price): 
     		bookNo(s), units_sold(cnt), revenue(cnt * price) {}
-    	// 其余构造函数全部委托给另一个构造函数，也就是说可以自行定义构造函数，也可以委托其他类进行构造函数的构造
+    	// 其余构造函数全部委托给另一个构造函数，
+        // 也就是说可以自行定义构造函数，也可以委托其他类进行构造函数的构造
     	Sales_data(): Sales_data("", 0, 0) { }	// 委托构造函数主要是那个符号':'
     	Sales_data(std::string s): Sales_data(s, 0, 0) {}
-    	Sales_data(std::istream &is) : Sales_data() { read(is, *this); }	// 这边的举例是自己委托自己的类
+
+        // 这边的举例是自己委托自己的类
+    	Sales_data(std::istream &is) : Sales_data() { read(is, *this); }
 };
 ```
 
@@ -381,7 +398,8 @@ class Sales_data {
 
   ```c++
   string null_book = "9-999-99999-9";
-  // 下面这一行代码构造了一个临时的Sales_data对象，该对象的units_sold和revenue等于0，bookNo等于null_book
+  // 下面这一行代码构造了一个临时的Sales_data对象
+  // 该对象的units_sold和revenue等于0，bookNo等于null_book
   item.combine(null_book);
   
   Sales_data Temp(null_book);   // 一个临时对象
@@ -413,7 +431,7 @@ class Sales_data {
 public:
     Sales_data() = default;
     Sales_data(const std::string &s, unsigned n, double p) : bookNo(s), units_sold(n), revenue(p*n) { }
-    explicit Sales_data(const std::string &s) : bookNo(s) { }	// 这样就使得没有任何构造函数能用于隐式地创建Sales_data对象
+    explicit Sales_data(const std::string &s) : bookNo(s) { }   // 这样就使得没有任何构造函数能用于隐式地创建Sales_data对象
     explicit Sales_data(std::istream&);
     // 其他成员与之前的版本一致
 };
@@ -428,8 +446,8 @@ public:
 当使用`explicit`构造函数时，那么**它将只能用于直接初始化，而不能使用于拷贝形式的初始化过程**。
 
 ```c++
-Sales_data item1(null_book);	// 直接初始化，没问题
-Sales_data item2 = null_book;	// 错误，explicit构造函数无法用于拷贝初始化
+Sales_data item1(null_book);    // 直接初始化，没问题
+Sales_data item2 = null_book;   // 错误，explicit构造函数无法用于拷贝初始化
 ```
 
 - 拷贝初始化的过程就相当于是，把等号右边的值当作构造函数中的一个参数，随便举例：
@@ -439,7 +457,7 @@ Sales_data item2 = null_book;	// 错误，explicit构造函数无法用于拷贝
   Sales_data x1 = s;
   
   // 实质上是等价于
-  Sales_data x1(s);	// 发生了隐式转换(一步之内是可以隐式转换的)
+  Sales_data x1(s); // 发生了隐式转换(一步之内是可以隐式转换的)
   ```
 
 - 然而因为`explicit`关键字会**抑制隐式转换**，所以上面的拷贝初始化就无法完成，只能是直接给到构造函数一个参数，然后初始化，即直接初始化。
@@ -449,8 +467,11 @@ Sales_data item2 = null_book;	// 错误，explicit构造函数无法用于拷贝
 就是说，即便是有`explicit`关键字在，也可以通过显式的方式强制实现类型转换；
 
 ```c++
-item.combine(Sales_data(null_book));	// 实参是一个显式构造的Sales_data对象
-item.combine(static_cast<Sales_data>(cin));	// static_cast可以使用explicit的构造函数(显式的类型转换，创建了一个临时的Sales_data对象。)
+// 实参是一个显式构造的Sales_data对象
+item.combine(Sales_data(null_book));
+
+// static_cast可以使用explicit的构造函数(显式的类型转换，创建了一个临时的Sales_data对象。)
+item.combine(static_cast<Sales_data>(cin));
 ```
 
 ## 访问控制与封装
@@ -465,13 +486,14 @@ public:	// 添加了访问说明符，公有变量
     // 新增的构造函数
     Sales_data() = default;
     Sales_data(const std::string &s) : bookNo(s) {}
-    Sales_data(const std::string &s, unsigned n, double p) : bookNo(s), units_sold(n), revenue(p*n) {}
+    Sales_data(const std::string &s, unsigned n, double p) :
+    bookNo(s), units_sold(n), revenue(p*n) {}
     Sales_data(std::istream &);
     std::string isbn() const { return bookNo; }
     Sales_data &combine(const Sales_data&);
-private:	// 私有变量
+private:    // 私有变量
     double Sale_data::avg_price() const 
-    { return units_sold ? revenue/units_sold : 0;}	// 双目运算符
+    { return units_sold ? revenue/units_sold : 0;}  // 双目运算符
     std::string bookNo;
     unsigned units_sold = 0;
     double revenue = 0.0;
@@ -485,7 +507,7 @@ private:	// 私有变量
 
 ### 友元
 
-同样由上引申，由于`Sales_data`定义的数据成员是`private`的，所定义的`read、print、add`函数就无法正常编译了，**因为它们并非类的成员，无法访问private**。
+同样由上引申，由于`Sales_data`定义的数据成员是`private`的，所定义的`read、print、add`函数就无法正常编译了，**因为它们并非类的成员，无法访问`private`**。
 
 因此，类可以允许其他类或者函数访问它的非公有成员，方法是令其他类或者函数成为它的**友元(friend)**。
 
@@ -508,7 +530,8 @@ friend std::istream &read(std::istream&, Sales_data&);
 public:
     Sales_data() = default;
     Sales_data(const std::string &s) : bookNo(s) {}
-    Sales_data(const std::string &s, unsigned n, double p) : bookNo(s), units_sold(n), revenue(p*n) {}
+    Sales_data(const std::string &s, unsigned n, double p) :
+    bookNo(s), units_sold(n), revenue(p*n) {}
     Sales_data(std::istream &);
     std::string isbn() const { return bookNo; }
     Sales_data &combine(const Sales_data&);
@@ -547,7 +570,7 @@ public:
     using ScreenIndex = std::vector<Screen>::size_type;
     void clear(ScreenIndex);
 private:
-    std::vector<Screen> screens{Screen(24, 80, ' ')};	// 初始化列表
+    std::vector<Screen> screens{Screen(24, 80, ' ')};   // 初始化列表
 };
 
 class Screen {
@@ -556,9 +579,9 @@ class Screen {
     // ....
 }
 
-void Window_mgr::clear(ScreenIndex i)	// 将第i个窗口清空，即clear的功能
+void Window_mgr::clear(ScreenIndex i)   // 将第i个窗口清空，即clear的功能
 {
-    Screen &s = screens[i];		// 引用可以做左值，改变我们想要改变的对象
+    Screen &s = screens[i];     // 引用可以做左值，改变我们想要改变的对象
     s.contents = string(s.height * s.width, ' ');
 }
 ```
@@ -587,7 +610,8 @@ private:
     pos height = 0, width = 0;  // 窗口长宽
     std::string contents;       // 窗口内容
 };
-// 上面代码将pos放在public部分还是很巧妙的，这样子用户只需要用pos，因为这部分包含了屏幕的长宽位置等信息
+// 上面代码将pos放在public部分还是很巧妙的，
+// 这样子用户只需要用pos，因为这部分包含了屏幕的长宽位置等信息
 // 同时内容contents由于在private,外部函数访问不到，保证了安全
 ```
 
@@ -598,14 +622,18 @@ private:
 class Screen {
 public:    
     Screen() = default;	// 添加必要的默认构造函数，因为Screen还有其他的构造函数
-    Screen(pos ht, pos wd, char c): height(ht), width(wd), contents(ht * wd, c) {}	// 定义的构造函数，如不存在初始值，则就从private初始化
-    char get() const { return contents[cursor]; }   // 隐式内联，类内部的成员函数默认内联
-    inline char get(pos ht, pos wd) const;          // 显式内联声明，读取给定位置的字符
-    Screen &move(pos r, pos c);                     // 声明移动光标的函数，参数代表了行列的位置
+
+    // 定义的构造函数，如不存在初始值，则就从private初始化
+    Screen(pos ht, pos wd, char c): height(ht), width(wd), contents(ht * wd, c) {}
+
+    // 隐式内联，类内部的成员函数默认内联
+    char get() const { return contents[cursor]; }
+    inline char get(pos ht, pos wd) const;  // 显式内联声明，读取给定位置的字符
+    Screen &move(pos r, pos c);             // 声明移动光标的函数，参数代表了行列的位置
 private:
     /* 这部分同上 */
 };
-inline	// 无须在声明和定义处同时说明inline,但这么做是合法的，可以使类更容易理解
+inline  // 无须在声明和定义处同时说明inline,但这么做是合法的，可以使类更容易理解
 Screen &Screen::move(pos r, pos c)
 {
     pos row = r * width;    // 计算行的位置
@@ -623,8 +651,8 @@ char Screen::get(pos r, pos c) const
 
 ```c++
 Screen myscreen;
-char ch = myscreen.get();	// 调用Screen::get()，返回此刻光标处的内容
-ch = myscreen.get(0, 0);	// 调用Screen::get(pos, pos)，返回指定位置光标处的内容
+char ch = myscreen.get();   // 调用Screen::get()，返回此刻光标处的内容
+ch = myscreen.get(0, 0);    // 调用Screen::get(pos, pos)，返回指定位置光标处的内容
 // 我们看到的是，这边调用了不同版本的函数
 ```
 
@@ -641,11 +669,11 @@ class Screen {
     public:
     	void some_member() const;
     private:
-    	mutable size_t access_ctr;	// 即使在一个const对象内也能被修改
+    	mutable size_t access_ctr;  // 即使在一个const对象内也能被修改
 };
 void Screen::some_member() const
 {
-    ++access_ctr;	// 保存一个计数值
+    ++access_ctr;   // 保存一个计数值
 }
 ```
 
@@ -679,18 +707,18 @@ class Window_mgr {
 ```c++
 class Screen {
     public:
-    	Screen& set(char);			// 设置光标所在位置的字符
+    	Screen& set(char);          // 设置光标所在位置的字符
     	Screen& set(pos, pos, char);// 设置指定位置的字符
 };
 inline Screen &Screen::set(char c)
 {
-    contents[cursor] = c;	// 设置值，cursor是光标的意思
-    return *this;			// 将this对象作为左值返回
+    contents[cursor] = c;   // 设置值，cursor是光标的意思
+    return *this;           // 将this对象作为左值返回
 }
 inline Screen &Screen::set(pos r, pos col, char ch)
 {
-    contents[r * width + col] = ch;	// 设置值
-    return *this;					// 将this对象作为左值返回
+    contents[r * width + col] = ch; // 设置值
+    return *this;                   // 将this对象作为左值返回
 }
 ```
 
@@ -700,18 +728,19 @@ inline Screen &Screen::set(pos r, pos col, char ch)
 myScreen.move(4, 0).set('#');   // 将光标移动到一个指定的位置，并设置该位置的字符值
 myScreen.set(4, 0, '#');        // 同样的功能
 // 上述表达式可以分为两步进行：
-myScreen.move(4, 0);    // move函数同样是调引用，因此也是返回左值，可以理解为，此处得到一个新的myScreen
-myScreen.set('#');      // 这两步等价于第一行的一步
+// move函数同样是调引用，因此也是返回左值，可以理解为，此处得到一个新的myScreen
+myScreen.move(4, 0);
+myScreen.set('#');  // 这两步等价于第一行的一步
 ```
 
 如果不用引用，那么上述`myScreen.move(4, 0).set('#');`就无法达到我们想要的结果，也即改变不了`myScreen`，而是等价于：
 
 ```c++
 Screen temp = myScreen.move(4, 0);  // 拷贝了返回值，并未改变myScreen
-temp.set('#');	                    // 只能改变临时副本
+temp.set('#');  // 只能改变临时副本
 ```
 
-- **从const成员函数返回`this`**
+- **从`const`成员函数返回`this`**
 
   继续添加一个名为`display`的操作，该操作负责打印`Screen`中的内容。我们希望这个函数能和`move`以及`set`出现在同一序列中：
 
@@ -729,18 +758,22 @@ temp.set('#');	                    // 只能改变临时副本
 
   主要是为了解决上述返回`*this`的问题，常量对象无法调用非常量版本的函数，即便在非常量对象上可以调用常量或者非常量版本，但是最好是用非常量版本去匹配非常量对象。
 
-  下面定义个一个名为do_display的私有成员，由它负责打印Screen的实际工作，所有的display操作将调用这个函数，然后返回执行操作的对象：
+  下面定义个一个名为`do_display`的私有成员，由它负责打印`Screen`的实际工作，所有的`display`操作将调用这个函数，然后返回执行操作的对象：
 
   ```c++
   class Screen {
       public:
-      	// 根据对象是否是const，重载了display函数
-      	Screen& display(std::ostream &os)	{ do_display(os); return *this; }			// 非常量用这个版本
-      	const Screen& display(std::ostream &os) const { do_display(os); return *this; }	// 常量用这个版本
+        // 根据对象是否是const，重载了display函数
+        // 非常量用这个版本
+      	Screen& display(std::ostream &os)   { do_display(os); return *this; }
+
+        // 常量用这个版本
+        const Screen& display(std::ostream &os) const
+        { do_display(os); return *this; }
       private:
-      	// 该函数负责显示Screen的内容
+        // 该函数负责显示Screen的内容
       	void do_display(std::ostream &os) const { os << contents; }
-  		// 其他成员与之前版本一致
+        // 其他成员与之前版本一致
   };
   ```
 
@@ -772,6 +805,7 @@ temp.set('#');	                    // 只能改变临时副本
 ```c++
 class Debug {
     public:
+        // 字面值常量类的构造函数
     	constexpr Debug(bool b = true): hw(b), io(b), other(b) {}
     	constexpr Debug(bool h, bool i, bool o): hw(h), io(i), other(o) {}
     	constexpr bool any() { return hw || io || other; }
@@ -779,11 +813,13 @@ class Debug {
     	void set_hw(bool b) { hw = b; }
     	void set_other(bool b) { hw = b; }
     private:
-    	bool hw;	// 这三个数据成员必须都要被constexpr构造函数初始化
+    	bool hw;    // 这三个数据成员必须都要被constexpr构造函数初始化
     	bool io;
     	bool other;
 };
-constexpr Debug io_sub(false, true, false);             // 调试IO，因为只有IO为true
+
+// Debug即为一个字面值常量类
+constexpr Debug io_sub(false, true, false); // 调试IO，因为只有IO为true
 if (io_sub.any())
     cerr << "print appropriate error messages" << endl; // 打印恰当的错误信息
 constexpr Debug prod(false);    // 不调试IO
@@ -801,7 +837,7 @@ if(prod.any())
 
 ### 静态成员的声明
 
-在成员的声明之前加上关键字static使得其与类关联在一起：
+在成员的声明之前加上关键字`static`使得其与类关联在一起：
 
 ```c++
 class Account {
@@ -861,7 +897,7 @@ r = ac2->rate();
 ```c++
 void Account::rate(double newRate)
 {
-    interestRate = newRate;	// 初始化
+    interestRate = newRate; // 初始化
 }
 ```
 
@@ -870,10 +906,10 @@ void Account::rate(double newRate)
 **一般而言不能在类的内部初始化静态成员而是必须在外部定义和初始化。**
 
 ```c++
-double Account::interestRate = initRate();	// 定义并且初始化一个静态成员
+double Account::interestRate = initRate();  // 定义并且初始化一个静态成员
 ```
 
-*Notes:* 要想确保对象只定义一次，最好的办法是把静态数据成员的定义与其他非内联函数的定义放在同一个文件中。
+**Notes:** 要想确保对象只定义一次，最好的办法是把静态数据成员的定义与其他非内联函数的定义放在同一个文件中。
 
 ### 静态成员的类内初始化
 
@@ -886,7 +922,7 @@ class Account {
     public:
     	// 同上，省略
     private:
-    	static constexpr int period = 30;	// period是常量表达式
+    	static constexpr int period = 30;   // period是常量表达式
     	double daily_tbl[period];
 };
 ```
@@ -907,8 +943,11 @@ class Account {
       	// ...
       private:
       	static Bar mem1;    // 正确且合法
-      	Bar *mem2;          // 正确且合法，因为可以定义类的指针或者引用
-      	Bar mem3;           // 错误，对于一般成员而言(非静态)，此时这个类都没有定义完成，此时根本不知道这个类是什么，陷入一种，死锁状态。
+      	Bar *mem2;  // 正确且合法，因为可以定义类的指针或者引用
+      	
+        // 错误，对于一般成员而言(非静态)，此时这个类都没有定义完成，
+        // 此时根本不知道这个类是什么，陷入一种，死锁状态。
+        Bar mem3;
   };
   ```
 
@@ -941,7 +980,7 @@ Screen::pos ht = 24, wd = 80;   // 这里本质上是无符号整数类型
 Screen scr(ht, wd, ' ');        // 运用了之前的构造函数
 Screen *p = &scr;               // 定义了一个指向scr对象的指针
 char c = scr.get();             // 访问scr对象的get成员
-c = p->get();                   // 本质上同上
+c = p->get();       // 本质上同上
 ```
 
 **名字查找(name lookup)的过程：**在名字所在块中寻找声明语句-->若未找到，查找外层作用域-->若最终未找到匹配的声明，程序报错；在类中首先编译成员的声明，直到类全部可见再编译函数体。
