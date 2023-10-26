@@ -13,14 +13,15 @@ tags: [Debian, Arch Linux, shell, tools]
 在自编辑desktop文件的过程中遇到固定到任务栏(Dock栏)后，在任务栏点开程序运行发现不会基于我固定的那个图标启动，经资料查询发现与`StartupWMClass`参数有关系，如果desktop文件中的`StartupWMClass`参数与程序真实的`StartupWMClass`参数不同就会另起一图标。解决方案如下：
 
 ```shell
-xprop WM_CLASS # 获取WM_CLASS名，获取方法，在终端输入之后将鼠标放置于对应窗口上点击，即可获取。
+# 获取WM_CLASS名，获取方法，在终端输入之后将鼠标放置于对应窗口上点击，即可获取。
+xprop WM_CLASS
 ```
 
 ### Linux文件图标
 
 1. **更改某文件类型在系统中的显示图标**
 
-    以xmind为例，查阅其xml文件，我们进行对照：
+    以`xmind`为例，查阅其`xml`文件，我们进行对照：
 
     ```shell
     cat /usr/share/mime/packages/xmind.xml	# 也可以修改对应的xml文件
@@ -40,29 +41,31 @@ xprop WM_CLASS # 获取WM_CLASS名，获取方法，在终端输入之后将鼠�
 ### Shell相关
 
 1. **常用插件配置**
-  主要介绍`oh my zsh`的插件安装及使用：
 
-    - 安装zsh-syntax-highlighting语法高亮插件
+    主要介绍`oh my zsh`的插件安装及使用：
 
-      ```shell
-      git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
-      echo "source $ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
-      source ~/.zshrc
-      ```
+      - 安装`zsh-syntax-highlighting`语法高亮插件
 
-    - 安装zsh-autosuggestions语法历史记录插件
+        ```shell
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
+        echo "source $ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
+        source ~/.zshrc
+        ```
 
-      ```shell
-      git clone https://github.com/zsh-users/zsh-autosuggestions.git $ZSH_CUSTOM/plugins/zsh-autosuggestions 
-      echo "source $ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc 
-      source ~/.zshrc
-      ```
+      - 安装`zsh-autosuggestions`语法历史记录插件
 
-2. **文件重定向指令**
+        ```shell
+        git clone https://github.com/zsh-users/zsh-autosuggestions.git $ZSH_CUSTOM/plugins/zsh-autosuggestions 
+        echo "source $ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc 
+        source ~/.zshrc
+        ```
+
+1. **文件重定向指令**
 
     当测试程序时，反复从键盘敲入一些信息作为程序的输入，是非常乏味且低效的，这时候就可以用到操作系统的文件重定向功能，这种机制允许我们将标准输入和标准输出与命名文件关联起来：
 
     ```shell
+    # addItems是我们所编译的程序文件
     addItems <infile >outfile
     ```
 
@@ -78,7 +81,7 @@ xprop WM_CLASS # 获取WM_CLASS名，获取方法，在终端输入之后将鼠�
     echo "123" >! test.txt	# 将123输入到文件test.txt中，强行覆盖输入
     ```
 
-3. **后台运行程序**
+2. **后台运行程序**
 
     如果想要从后台启动进程，可以在命令的结尾加上`&`符号，这样就可以在不阻塞当前终端的情况下启动一个新的进程。
 
@@ -86,11 +89,11 @@ xprop WM_CLASS # 获取WM_CLASS名，获取方法，在终端输入之后将鼠�
 
 ### Linux引导
 
-1. **跳过Grub引导，直接进入系统**
+1. **跳过`Grub`引导，直接进入系统**
 
-    主要grub有各种各样的问题，因此我换成了refind引导
+    主要`grub`有各种各样的问题，因此我换成了`refind`引导
 
-    首先编辑grub文件
+    首先编辑`grub`文件
 
     ```shell
     sudo gedit /etc/default/grub
@@ -98,7 +101,7 @@ xprop WM_CLASS # 获取WM_CLASS名，获取方法，在终端输入之后将鼠�
 
     将代码`GRUB_TIMEOUT`参数改为0
 
-    然后编辑30_os-prober文件
+    然后编辑`30_os-prober`文件
 
     ```shell
     sudo gedit /etc/grub.d/30_os-prober   
@@ -108,9 +111,7 @@ xprop WM_CLASS # 获取WM_CLASS名，获取方法，在终端输入之后将鼠�
 
     ```shell
     if [ "\${timeout}" = 0 ]; then
-
     set timeout=10
-
     fi
     ```
 
@@ -120,7 +121,7 @@ xprop WM_CLASS # 获取WM_CLASS名，获取方法，在终端输入之后将鼠�
     sudo update-grub
     ```
 
-    **补充：使grub自动记忆上次的启动选项**
+    **补充：使`grub`自动记忆上次的启动选项**
 
     在grub文件中添加如下参数：
 
@@ -182,10 +183,10 @@ tar xzvf my.tar.gz
 
 ### 蓝牙配置
 
-之前遇到的第一个需求就是双系统下（Windows、Linux）实现蓝牙鼠标（键盘）自动连接，不然两个OS上对于鼠标的信息生成不一致导致连接需要频繁切换，解决方案如下：
+之前遇到的第一个需求就是双系统下`Windows、Linux`实现蓝牙鼠标（键盘）自动连接，不然两个`OS`上对于鼠标的信息生成不一致导致连接需要频繁切换，解决方案如下：
 
-- 先在Windows下配对，配对好了会在注册表下生成蓝牙设备相关信息
-- 在Linux上同样连接上你的蓝牙设备，然后我们获取Linux下的相关参数
+- 先在`Windows`下配对，配对好了会在注册表下生成蓝牙设备相关信息
+- 在`Linux`上同样连接上你的蓝牙设备，然后我们获取`Linux`下的相关参数
 
 ```shell
 su
@@ -194,43 +195,43 @@ cd /var/lib/bluetooth
 
 ls -alF
 
-cd XX:XX:XX:XX:XX:XX  进入蓝牙设备地址
+cd XX:XX:XX:XX:XX:XX  # 进入蓝牙设备地址
 
 ls -alF
 
-cd XX:XX:XX:XX:XX:XX #你蓝牙设备的地址
+cd XX:XX:XX:XX:XX:XX # 你蓝牙设备的地址
 
 cat info
 ```
 
-将你所获取的info文件单独Copy下来，进入Windows操作系统，通过[工具集PSTools](https://download.sysinternals.com/files/PSTools.zip)进行注册表信息更改，执行并进入
+将你所获取的`info`文件内容单独复制下来，进入`Windows`操作系统，通过[工具集PSTools](https://download.sysinternals.com/files/PSTools.zip)进行注册表信息更改，执行并进入
 
 ```
 psexec.exe -s -i regedit
 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\BTHPORT\Parameters\Keys\
 ```
 
-找到你蓝牙设备对应的mac地址，与你在Manjaro下所获取的mac信息进行对照，发现会存在不一样的信息（主要是最后一位），进行更改，要更改两处的蓝牙设备mac信息：
+找到你蓝牙设备对应的`mac`地址，与你在`Manjaro`下所获取的`mac`信息进行对照，发现会存在不一样的信息（主要是最后一位），进行更改，要更改两处的蓝牙设备`mac`信息：
 
 ```
 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\BTHPORT\Devices\
 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\BTHPORT\Parameters\Keys\
 ```
 
-修改完之后，进入keys中的那一栏，把info中的信息分别对照过来：
+修改完之后，进入`keys`中的那一栏，把`info`中的信息分别对照过来：
 
-- 把IdentityResolvingKey的16进制形式复制到 IRK中（在注册表中该项是二进制，建议一个个手动输入吧，不知为啥我复制不动）
-- 把LongTermKey的16进制复制到LTK中    
-- 把EDIV以10进制复制到EDIV中
-- 把RAND以10进制复制到ERAND中
+- 把`IdentityResolvingKey`的16进制形式复制到`IRK`中（在注册表中该项是二进制，建议一个个手动输入吧，不知为啥我复制不动）
+- 把`LongTermKey`的16进制复制到`LTK`中    
+- 把`EDIV`以10进制复制到`EDIV`中
+- 把`RAND`以10进制复制到`ERAND`中
 
 OK，Reboot，Solved。
 
 ### Linux内核相关
 
-1. **整理Linux内核**
+1. **整理`Linux`内核**
 
-    查看你现在所有已安装的内核(debian系)：
+    查看你现在所有已安装的内核(`debian`系)：
 
     ```shell
     dpkg --get-selections | grep linux
@@ -246,7 +247,7 @@ OK，Reboot，Solved。
 
 1. **清除网络缓存**
 
-    首先安装nscd
+    首先安装`nscd`
 
     ```shell
     sudo apt-get install nscd
@@ -266,7 +267,7 @@ OK，Reboot，Solved。
 
 ### 文件权限
 
-普通用户通过`su`命令切换到root用户，使用`sudo`则短暂提权；
+普通用户通过`su`命令切换到`root`用户，使用`sudo`则短暂提权；
 
 **权限管理**
 
@@ -557,9 +558,9 @@ pthread_mutex_destroy # 销毁互斥锁
 
 ### 文件描述符
 
-在Linux系统中，一切设备都看作文件，每打开一个文件,就有一个代表该打开文件的文件描述符。
+在`Linux`系统中，一切设备都看作文件，每打开一个文件,就有一个代表该打开文件的文件描述符。
 
-程序启动时默认打开三个I/O设备文件：标准输入文件stdin，标准输出文件stdout，标准错误输出文件stderr： 
+程序启动时默认打开三个`I/O`设备文件：标准输入文件`stdin`，标准输出文件`stdout`，标准错误输出文件`stderr`： 
 
 - 文件描述符0：标准输入文件`stdin`；
 
@@ -569,6 +570,6 @@ pthread_mutex_destroy # 销毁互斥锁
 
 ### 底层服务
 
-**Samba服务:** 主要用来实现Linux系统的文件和打印服务，SMB(Server Messages Block，信息服务块)是一种在局域网上共享文件和打印机的一种通信协议。 
+**`Samba`服务:** 主要用来实现`Linux`系统的文件和打印服务，`SMB`(Server Messages Block，信息服务块)是一种在局域网上共享文件和打印机的一种通信协议。 
 
 ---
