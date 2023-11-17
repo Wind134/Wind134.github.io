@@ -109,7 +109,7 @@ $$
 $$
 \begin{align}
 \begin{bmatrix}
-{\alpha}_{1,1} \space {\alpha}_{2,1} \space {\alpha}_{3,1} \space {\alpha}_{4,1} \\ {\alpha}_{1,2} \space {\alpha}_{2,2} \space {\alpha}_{3,2} \space {\alpha}_{4,2} \\ {\alpha}_{1,3} \space {\alpha}_{2,3} \space {\alpha}_{3,3} \space {\alpha}_{4,3} \\ {\alpha}_{1,4} \space {\alpha}_{2,4} \space {\alpha}_{3,4} \space {\alpha}_{4,4}\end{bmatrix} = {\begin{bmatrix} {k^1} \\ {k^2} \\ {k^3} \\ {k^4} \end{bmatrix}} \cdot {[q^1, q^2, q^3, q^4]}
+{\alpha}_{1,1} \space {\alpha}_{2,1} \space {\alpha}_{3,1} \space {\alpha}_{4,1} \\ {\alpha}_{1,2} \space {\alpha}_{2,2} \space {\alpha}_{3,2} \space {\alpha}_{4,2} \\ {\alpha}_{1,3} \space {\alpha}_{2,3} \space {\alpha}_{3,3} \space {\alpha}_{4,3} \\ {\alpha}_{1,4} \space {\alpha}_{2,4} \space {\alpha}_{3,4} \space {\alpha}_{4,4}\end{bmatrix} = {\begin{bmatrix} {k^1} \\ {k^2} \\ {k^3} \\ {k^4} \end{bmatrix}} \cdot {[q^1 \space q^2 \space q^3 \space q^4]}
 \end{align}
 $$
 
@@ -124,7 +124,7 @@ $$
 \begin{align}
     b_1
     &= \hat{\alpha}_{1,1} \cdot v^1 + \hat{\alpha}_{1,2} \cdot v^2 + \hat{\alpha}_{1,3} \cdot v^3 + \hat{\alpha}_{1,4} \cdot v^4
-    \\ &= {[\hat{\alpha}_{1,1}, \hat{\alpha}_{1,2}, \hat{\alpha}_{1,3}, \hat{\alpha}_{1,4}]} \cdot \begin{bmatrix} v^1 \\ v^2 \\ v^3 \\ v^4 \end{bmatrix}
+    \\ &= {[\hat{\alpha}_{1,1} \space \hat{\alpha}_{1,2} \space \hat{\alpha}_{1,3} \space \hat{\alpha}_{1,4}]} \cdot \begin{bmatrix} v^1 \\ v^2 \\ v^3 \\ v^4 \end{bmatrix}
 \end{align}
 $$
 
@@ -132,7 +132,7 @@ $$
 \begin{align}
     b_2
     &= \hat{\alpha}_{2,1} \cdot v^1 + \hat{\alpha}_{2,2} \cdot v^2 + \hat{\alpha}_{2,3} \cdot v^3 + \hat{\alpha}_{2,4} \cdot v^4
-    \\ &= {[\hat{\alpha}_{2,1}, \hat{\alpha}_{2,2}, \hat{\alpha}_{2,3}, \hat{\alpha}_{2,4}]} \cdot \begin{bmatrix} v^1 \\ v^2 \\ v^3 \\ v^4 \end{bmatrix}
+    \\ &= {[\hat{\alpha}_{2,1} \space \hat{\alpha}_{2,2} \space \hat{\alpha}_{2,3} \space \hat{\alpha}_{2,4}]} \cdot \begin{bmatrix} v^1 \\ v^2 \\ v^3 \\ v^4 \end{bmatrix}
 \end{align}
 $$
 
@@ -140,7 +140,7 @@ $$
 \begin{align}
     b_3
     &= \hat{\alpha}_{3,1} \cdot v^1 + \hat{\alpha}_{3,2} \cdot v^2 + \hat{\alpha}_{3,3} \cdot v^3 + \hat{\alpha}_{3,4} \cdot v^4
-    \\ &= {[\hat{\alpha}_{3,1}, \hat{\alpha}_{3,2}, \hat{\alpha}_{3,3}, \hat{\alpha}_{3,4}]} \cdot \begin{bmatrix} v^1 \\ v^2 \\ v^3 \\ v^4 \end{bmatrix}
+    \\ &= {[\hat{\alpha}_{3,1} \space \hat{\alpha}_{3,2} \space \hat{\alpha}_{3,3} \space \hat{\alpha}_{3,4}]} \cdot \begin{bmatrix} v^1 \\ v^2 \\ v^3 \\ v^4 \end{bmatrix}
 \end{align}
 $$
 
@@ -148,7 +148,7 @@ $$
 \begin{align}
     b_4
     &= \hat{\alpha}_{4,1} \cdot v^1 + \hat{\alpha}_{4,2} \cdot v^2 + \hat{\alpha}_{4,3} \cdot v^3 + \hat{\alpha}_{4,4} \cdot v^4
-    \\ &= {[\hat{\alpha}_{4,1}, \hat{\alpha}_{4,2}, \hat{\alpha}_{4,3}, \hat{\alpha}_{4,4}]} \cdot \begin{bmatrix} v^1 \\ v^2 \\ v^3 \\ v^4 \end{bmatrix}
+    \\ &= {[\hat{\alpha}_{4,1} \space \hat{\alpha}_{4,2} \space \hat{\alpha}_{4,3} \space \hat{\alpha}_{4,4}]} \cdot \begin{bmatrix} v^1 \\ v^2 \\ v^3 \\ v^4 \end{bmatrix}
 \end{align}
 $$
 
@@ -171,5 +171,4 @@ $$
 Output = \text{softmax}({Q}{K}^{T})V
 $$
 
-- 对比初始时引入的注意力公式，我们基本做出了详细的推导，唯一的区别在于原核心公式引入了维度进行处理，以防止计算值太高而导致的梯度爆炸问题，我是这么猜测的，至此，注意力机制的底层结构已剖析完毕；
-
+- 对比初始时引入的注意力公式，我们基本做出了详细的推导，唯一的区别在于原核心公式引入了维度进行处理，以防止计算值太高而导致的梯度爆炸问题，我是这么猜测的，至此，注意力机制的底层结构已剖析完毕； 
