@@ -10,20 +10,17 @@ tags: [Programming, C++/C, cpp]
 ## 拷贝控制
 
 之前学到，每个类都定义了一个新类型和在此类型对象上可执行的操作，而这部分，教会我们：
-
 - 类可以定义构造函数，用来控制创建此类型对象时做什么；
-
 - 类如何控制该类型对象拷贝、赋值、移动或销毁时的行为；
 
-  一个类定义五种特殊的成员函数来控制这些操作：
+一个类定义五种特殊的成员函数来控制这些操作：
+- **拷贝构造函数(copy constructor)**：用同类型的另一个对象初始化本对象做什么。
+- **拷贝赋值运算符(copy-assignment operator)**：将一个对象赋予同类型的另一个对象做什么。
+- **移动构造函数(move constructor)**：用同类型的另一个对象初始化本对象做什么。
+- **移动赋值运算符(move-assignment)**：将一个对象赋予同类型的另一个对象做什么。
+- **析构函数(destructor)**：当此类型对象销毁时做什么。
 
-  - **拷贝构造函数(copy constructor)**：用同类型的另一个对象初始化本对象做什么。
-  - **拷贝赋值运算符(copy-assignment operator)**：将一个对象赋予同类型的另一个对象做什么。
-  - **移动构造函数(move constructor)**：用同类型的另一个对象初始化本对象做什么。
-  - **移动赋值运算符(move-assignment)**：将一个对象赋予同类型的另一个对象做什么。
-  - **析构函数(destructor)**：当此类型对象销毁时做什么。
-
-  以上操作统称为**拷贝控制操作(copy control)**。
+以上操作统称为**拷贝控制操作(copy control)**。
 
 如果一个类没有定义这些拷贝控制成员，编译器会自动为它定义缺失的操作，但是对有些类而言，依赖默认操作会导致灾难性后果。
 
@@ -32,7 +29,7 @@ tags: [Programming, C++/C, cpp]
 
 ### 拷贝构造函数
 
-**定义：**如果一个构造函数的第一个参数是自身类类型的引用，且额外参数都有默认值，则此函数为拷贝构造函数。
+**定义:** 如果一个构造函数的第一个参数是自身类类型的引用，且额外参数都有默认值，则此函数为拷贝构造函数。
 
 ```c++
 class Foo {
@@ -48,7 +45,6 @@ class Foo {
 拷贝构造函数在几种情况下都会被隐式地使用，且拷贝构造函数通常都不是`explicit`(即可以隐式转换)。
 
 有一种理解方式：
-
 - 拷贝构造之所以要求是引用的方式，是因为这种方式会告诉编译器，它并没有再制造出一个新的对象出来，只是把外面那个引用的对象传进了拷贝构造函数里面而已。
 
 接下来介绍几种拷贝构造函数：
@@ -71,81 +67,74 @@ class Foo {
 
   ```c++
   class Sales_data {
-      public:
-      	// 其他成员和构造函数的定义，如之前所定义
-        // 与合成的拷贝构造函数等价的拷贝构造函数的声明
-      	Sales_data(const Sales_data&);
-      private:
-      	std::string bookNo;
-      	int units_sold = 0;
-      	double revenue = 0.0;
+  public:
+      // 其他成员和构造函数的定义，如之前所定义
+      // 与合成的拷贝构造函数等价的拷贝构造函数的声明
+      Sales_data(const Sales_data&);
+  private:
+      std::string bookNo;
+      int units_sold = 0;
+      double revenue = 0.0;
   };
   
   // 定义Sales_data的合成的拷贝构造函数
   Sales_data::Sales_data(const Sales_data &orig):
-    bookNo(orig.bookNo),          // 使用string的拷贝构造函数
-    units_sold(orig.units_sold),  // 总之是使用对应类型的拷贝构造函数
-    revenue(orig.revenue)
-    { }                           // 空函数体
+      bookNo(orig.bookNo),          // 使用string的拷贝构造函数
+      units_sold(orig.units_sold),  // 总之是使用对应类型的拷贝构造函数
+      revenue(orig.revenue) { }     // 空函数体
   ```
 
-  **理解拷贝初始化和直接初始化之间的差异：**
+**理解拷贝初始化和直接初始化之间的差异：**
+```c++
+string dots(10, '.'); // 直接初始化
+string s(dots);       // 直接初始化
+string s2 = dots;     // 拷贝初始化
+string null_book = "9-999-99999-9";	// 拷贝初始化
+```
+- 直接初始化是要求编译器使用普通的函数匹配来选择与我们提供的参数最匹配的构造函数；
+- 拷贝初始化时我们要求编译器将右侧运算对象拷贝到正在创建的对象中，有时候还会进行类型转换(<font color="red">所以说不是explicit的</font>)；
 
-  ```c++
-  string dots(10, '.'); // 直接初始化
-  string s(dots);       // 直接初始化
-  string s2 = dots;     // 拷贝初始化
-  string null_book = "9-999-99999-9";	// 拷贝初始化
-  ```
+拷贝初始化不仅在用`=`变量时会发生，在下列情形同样发生: 
+- 将一个对象作为实参传递给一个非引用类型的形参；
+- 从一个返回类型为非引用类型的函数返回一个对象；
+- 用花括号列表初始化一个数组中的元素或一个聚合类中的成员；
+- 某些类类型还会对它们所分配的对象使用拷贝初始化，如调用其`insert`或`push`成员，与之相对，使用`emplace`成员创建的元素都进行直接初始化。
 
-  - 直接初始化是要求编译器使用普通的函数匹配来选择与我们提供的参数最匹配的构造函数；
-  - 拷贝初始化时我们要求编译器将右侧运算对象拷贝到正在创建的对象中，有时候还会进行类型转换(<font color="red">所以说不是explicit的</font>)；
+**从参数和返回值看出一些东西：**
+- <font color="red">如果拷贝构造函数的参数不是引用，则调用永远不会成功，因为会陷入无限拷贝构造的循环。</font>
 
-  拷贝初始化不仅在用=变量时会发生，在下列情形同样发生: 
+具体的理解方式呢，以代码为例：
+```c++
+// 就以上述的Sales_data为例
+Sales_data a("test1");
+Sales_data b("test2");	
+b = a;  // 这里调用拷贝赋值运算符
 
-  - 将一个对象作为实参传递给一个非引用类型的形参；
-  - 从一个返回类型为非引用类型的函数返回一个对象；
-  - 用花括号列表初始化一个数组中的元素或一个聚合类中的成员；
-  - 某些类类型还会对它们所分配的对象使用拷贝初始化，如调用其`insert`或`push`成员，与之相对，使用`emplace`成员创建的元素都进行直接初始化。
+// (不会调用拷贝赋值运算符，不要看到等于号就下意识反应，而是调用了拷贝构造函数)
+Sales_data c = a;
+// 接下来我们假设非引用传值的方式
+Sales_data c(a);	// 与上行等价，此时调用拷贝构造函数，因为
 
-  **从参数和返回值看出一些东西：**
+// 要把上面的a传给d，由此陷入无限循环.....(假设d为拷贝构造函数的参数)
+Sales_data d(a);
+// 如果使用引用的方式
+Sales_data c(a);	// a是引用形式，一步到位 
+```
 
-  - <font color="red">如果拷贝构造函数的参数不是引用，则调用永远不会成功，因为会陷入无限拷贝构造的循环。</font>
+**理解拷贝初始化的限制：**
+- 在构造函数是`explicit`的前提下，拷贝初始化会受到影响，因为`explicit`不接受隐式转换。
 
-    具体的理解方式呢，以代码为例：
+**编译器可以绕过拷贝构造函数：**
 
-    ```c++
-    // 就以上述的Sales_data为例
-    Sales_data a("test1");
-    Sales_data b("test2");	
-    b = a;  // 这里调用拷贝赋值运算符
+也就是前面提到的隐式类类型转换，通过几行代码展现：
 
-    // (不会调用拷贝赋值运算符，不要看到等于号就下意识反应，而是调用了拷贝构造函数)
-    Sales_data c = a;
-    // 接下来我们假设非引用传值的方式
-    Sales_data c(a);	// 与上行等价，此时调用拷贝构造函数，因为
+```c++
+// 拷贝初始化
+string null_book = "9-999-99999-9";
 
-    // 要把上面的a传给d，由此陷入无限循环.....(假设d为拷贝构造函数的参数)
-    Sales_data d(a);
-    // 如果使用引用的方式
-    Sales_data c(a);	// a是引用形式，一步到位 
-    ```
-
-  **理解拷贝初始化的限制：**
-
-  - 在构造函数是`explicit`的前提下，拷贝初始化会受到影响，因为`explicit`不接受隐式转换。
-
-  **编译器可以绕过拷贝构造函数：**
-
-  ​	通过几行代码展现：
-
-  ```c++
-  // 拷贝初始化
-  string null_book = "9-999-99999-9";
-
-  // 绕过了拷贝构造函数(通过构造函数)，直接创建对象
-  string null_book("9-999-99999-9");
-  ```
+// 绕过了拷贝构造函数(通过构造函数)，直接创建对象
+string null_book("9-999-99999-9");
+```
 
 ### 拷贝赋值运算符
 
@@ -157,23 +146,20 @@ trans = accum;  // 使用Sales_data的拷贝赋值运算符
 // 类似拷贝构造函数，如果类定义自己的拷贝赋值运算符，编译器会为它合成一个
 ```
 
-**Notes：**一定要意识到初始化与赋值的区别！
+**Notes:** 一定要意识到初始化与赋值的区别！
 
 关于拷贝赋值运算符的知识介绍，有如下内容：
 
 - **重载赋值运算符预备知识**
 
   重载赋值运算符**本质上是函数**，其名字由`operator`关键字后接表示要定义的运算符的符合组成，因此赋值运算符就是**一个名为`operator`的函数**，类似于其他任何函数，运算符函数也有一个返回类型和一个参数列表。
-
   - 重载运算符的参数表示运算符的运算对象；
   - 某些运算符必须定义为成员函数；
     - 比如后面的`+=`运算符重载；
-
   - 如果运算符是一个成员函数，其左侧对象绑定到隐式的`this`参数(即指向对象的指针)；
   - 如果是一个二元运算符，比如赋值运算符，其右侧对象作为显式参数传递；
 
   为了与内置类型的赋值保持一致，赋值运算符通常返回一个指向其左侧运算对象的引用
-
   - 这样就可以当左值了，可以被赋值；
 
   标准库类型通常要求保存在容器中的类型要具有赋值运算符，且其返回值是左侧对象的引用。
@@ -190,8 +176,7 @@ trans = accum;  // 使用Sales_data的拷贝赋值运算符
 以下代码等价于一个合成(默认的)拷贝赋值运算符：
 
 ```c++
-Sales_data&
-    Sales_data::operator=(const Sales_data &rhs)
+Sales_data& Sales_data::operator=(const Sales_data &rhs)
 {
     bookNo = rhs.bookNo;          // 调用string::operator=
     units_sold = rhs.units_sold;  // 使用内置的int赋值
@@ -200,14 +185,13 @@ Sales_data&
 }
 ```
 
-***Notes：***上面这部分还涉及到空间的销毁问题，只是一个简单展示；
+***Notes:*** 上面这部分还涉及到空间的销毁问题，只是一个简单展示；
 
 ### 析构函数
 
 析构函数本该放在上个章节，由于可以与拷贝控制联系起来，因此再在本节加以介绍；
 
 析构函数的操作：
-
 - 释放对象使用的资源，并销毁对象的**非`static`数据成员**；
 - 一个类只会有一个析构函数，它不接受重载；
 - 析构函数**首先执行自己的函数体**，然后销毁成员，释放对象在生存期分配的所有资源。成员按初始化顺序的逆序销毁；
@@ -216,16 +200,14 @@ Sales_data&
 - 不同于普通指针，**智能指针是类类型，所以具有析构函数**，智能指针成员会析构阶段会被自动销毁。
 
 何时会调用析构函数：
-
 - 变量在离开其作用域时被销毁；
 - 当一个对象被销毁，其成员被销毁；
 - 容器被销毁时，其元素被销毁；
 - 对于动态分配的对象，当对指向它的指针应用`delete`运算符时被销毁；
 - 对于临时对象，当创建它的完整表达式结束时被销毁；
 
-***Notes：***
-
-- 当指向一个对象的引用或指针离开作用域时，析构函数不会执行；
+***Notes:***
+- 当指向一个对象的**引用或指针**离开作用域时，析构函数不会执行；
 - 合成的析构函数也不会`delete`一个指针数据成员；
 - <font color=red>是不是因为指针是由编译器来管理的？</font>
 
@@ -236,13 +218,11 @@ Sales_data&
 ### 三/五法则
 
 三个基本操作用来控制类的拷贝操作：
-
 - 拷贝构造函数
 - 拷贝赋值运算符
 - 析构函数
 
 在新标准下，还有：
-
 - 移动构造函数
 - 移动赋值运算符
 
@@ -256,11 +236,11 @@ C++并不要求我们定义所有这些操作：可以只定义其中一个或�
 
   ```c++
   class HasPtr {	// 带有指针的类
-      public:
-      	HasPtr(const std::string &s = std::string()):
-      		ps(new std::string(s)), i(0) { }  // i应该是私有成员
-      	～HasPtr() { delete ps; }           // 自定义的析构函数，销毁掉ps指针
-      // 而这样的定义是错误的，原因分析如下：
+  public:
+      HasPtr(const std::string &s = std::string()):
+        ps(new std::string(s)), i(0) { }  // i应该是私有成员
+      ～HasPtr() { delete ps; }           // 自定义的析构函数，销毁掉ps指针
+    // 而这样的定义是错误的，原因分析如下：
   };
   
   // 上例我们使用合成的拷贝构造函数以及拷贝赋值运算符，只是对指针成员做简单的拷贝
@@ -284,26 +264,25 @@ C++并不要求我们定义所有这些操作：可以只定义其中一个或�
 
 ### 合成版本的拷贝控制
 
-我们可以通过将拷贝控制成员定义为=default来显式地要求编译器生成合成的版本：
+我们可以通过将拷贝控制成员定义为`=default`来显式地要求编译器生成合成的版本：
 
 ```c++
 class Sales_data {
-    public:
-    	// 拷贝控制成员，使用default
-    	Sales_data() = default;	// 默认构造函数
-    	Sales_data(const Sales_data&) = default;	// 默认的拷贝构造
-    	Sales_data& operator=(const Sales_data &);	// ...
-    	~Sales_data() = default;
-    	// 其他成员的定义
+public:
+    // 拷贝控制成员，使用default
+    Sales_data() = default;	// 默认构造函数
+    Sales_data(const Sales_data&) = default;	// 默认的拷贝构造
+    Sales_data& operator=(const Sales_data &);	// ...
+    ~Sales_data() = default;
+    // 其他成员的定义
 };
 
 Sales_data& Sales_data::operator=(const Sales_data&) = default;	// 保证不内联
 ```
 
 有两个细节：
-
-- 在类内使用=default修饰成员的声明时，合成的函数将**隐式地声明为内联的**；
-- 如果不希望为内联函数，**应该只对成员的类外定义使用=default**；
+- 在类内使用`=default`修饰成员的声明时，合成的函数将**隐式地声明为内联的**；
+- 如果不希望为内联函数，**应该只对成员的类外定义使用`=default`**；
 
 ### 阻止拷贝的策略
 
@@ -311,8 +290,7 @@ Sales_data& Sales_data::operator=(const Sales_data&) = default;	// 保证不内�
 
 - **定义删除的函数：虽然声明了该函数，但不能以任何方式来使用它们**
 
-  新标准下，我们通过拷贝构造函数和拷贝赋值运算符定义为**删除的函数(deleted function)**来阻止拷贝(**参数列表后面加上`=delete`**)。
-
+  新标准下，我们通过拷贝构造函数和拷贝赋值运算符定义为**删除的函数**(deleted function)来阻止拷贝(**参数列表后面加上`=delete`**)。
   ```c++
   struct NoCopy {
       NoCopy() = default;		// 使用合成的默认构造函数
@@ -332,7 +310,7 @@ Sales_data& Sales_data::operator=(const Sales_data&) = default;	// 保证不内�
 
   - **合成的拷贝控制成员可能是删除的**
 
-    上面这条规则的本质含义是：**如果一个类有数据成员不能默认构造、拷贝、赋值或销毁，则对于的成员函数将被定义为删除的**。
+    上面这条规则的本质含义是：**如果一个类有数据成员不能默认构造、拷贝、赋值或销毁，则对应的成员函数将被定义为删除的**。
 
     - 一个成员有删除的或不可访问的析构函数会导致该类合成的默认和拷贝构造函数被定义为删除的；
       - 没有这条规则，我们可能会创建出无法销毁的对象。
@@ -356,7 +334,7 @@ Sales_data& Sales_data::operator=(const Sales_data&) = default;	// 保证不内�
     - 试图拷贝对象的用户代码将在编译阶段被标记为错误；
     - 成员函数或友元函数中的拷贝操作将会导致链接时错误。
 
-***Notes：***拷贝赋值运算符通常执行拷贝构造函数和析构函数中也要做的工作，这种情况下，**公共操作应该放在`private`的工具函数中完成**。
+***Notes:*** 拷贝赋值运算符通常执行拷贝构造函数和析构函数中也要做的工作，这种情况下，**公共操作应该放在`private`的工具函数中完成**。
 
 ### 拷贝控制和资源管理
 
@@ -472,8 +450,7 @@ class HasPtr
 析构函数不能无条件`delete ps`——可能还有其他对象指向这块内存：
 
 ```c++
-HasPtr::~HasPtr()
-{
+HasPtr::~HasPtr() {
     if (--*use  0)  // 先减一次，如变为0
     {
         delete ps;  // 释放string内存
@@ -485,8 +462,7 @@ HasPtr::~HasPtr()
 而针对拷贝赋值运算符处理，左侧运算对象的引用计数递减，右侧运算对象的引用计数递增：
 
 ```c++
-HasPtr& HasPtr::operator=(const HasPtr &rhs)
-{
+HasPtr& HasPtr::operator=(const HasPtr &rhs) {
     ++*rhs.use;     // 递增右侧运算对象的引用计数
     if (--*use  0)  // 递减自己的引用计数
     {
@@ -513,7 +489,7 @@ HasPtr& HasPtr::operator=(const HasPtr &rhs)
 
 #### 产生背景
 
-除了定义拷贝控制成员之外，管理资源的类通常还定义一个名为swap的函数，对于那些重排元素顺序的算法，这类算法在需要交换两个元素时会调用swap。
+除了定义拷贝控制成员之外，管理资源的类通常还定义一个名为`swap`的函数，对于那些重排元素顺序的算法，这类算法在需要交换两个元素时会调用`swap`。
 
 涉及到交换我们会优先定义指针，这样效率更高：
 
@@ -521,8 +497,7 @@ HasPtr& HasPtr::operator=(const HasPtr &rhs)
 class HasPtr {
     friend void swap(HasPtr&, HasPtr&);
 };
-inline
-    void swap(HasPtr &lhs, HasPtr &rhs)
+inline void swap(HasPtr &lhs, HasPtr &rhs)
 {
     using std::swap;		// 调用std标准库中的swap函数
     swap(lhs.ps, rhs.ps);	// 交换指针而不是string数据
@@ -543,8 +518,7 @@ void swap(Foo &lhs, Foo &rhs)
 
 #### 在赋值运算符中使用swap
 
-定义了`swap`的类通常用`swap`来定义它们的赋值运算符，这些运算符使用了一种名为**拷贝并交换(copy and swap)**的技术：
-
+定义了`swap`的类通常用`swap`来定义它们的赋值运算符，这些运算符使用了一种名为**拷贝并交换**(copy and swap)的技术：
 ```c++
 // 下面的rhs是按值传递的，意味着HasPtr的拷贝构造函数将右侧对象中的string拷贝到rhs
 HasPtr& HasPtr::operator=(HasPtr rhs)
@@ -556,7 +530,6 @@ HasPtr& HasPtr::operator=(HasPtr rhs)
 ```
 
 这一技术的有趣之处在于它自动处理了自赋值情况且天然就是异常安全的，原因在于：
-
 - 改变左侧运算对象之前拷贝了右侧运算对象`rhs`保证了自赋值的正确，这一点的理解在于：
   - 右侧对象`rhs`会执行拷贝构造函数，从而实现了自赋值的正确；
   - 在拷贝构造中如果`new`使用出现了异常，也会在我们改变运算对象之前发生；
@@ -654,17 +627,16 @@ private:
   我们在拷贝或赋值`StrVec`时，可能会调用`alloc_n_copy`成员，同时，`StrVec`类必须有<font color=red>类值</font>的行为。
 
   ```c++
-  pair<string*, string*>
-      StrVec:alloc_n_copy(const string *b, const string *e)
-      {
-          // 分配空间保存给定范围中的元素
-          auto data = alloc.allocate(e - b);
-          // 初始化并返回一个pair，该pair由data和uninitialized_copy的返回值构成
-          return {data, uninitialized_copy(b, e, data)};
-      }
+  pair<string*, string*> StrVec:alloc_n_copy(const string *b, const string *e)
+  {
+      // 分配空间保存给定范围中的元素
+      auto data = alloc.allocate(e - b);
+      // 初始化并返回一个pair，该pair由data和uninitialized_copy的返回值构成
+      return {data, uninitialized_copy(b, e, data)};
+  }
   ```
 
-  - 我们需要注意到的是，上述代码中的`uninitialized_copy(b, e, data)`是STL标准库中的一个函数，调用construct函数，将输入区间`[b,e) `的每个对象生成一个复制品，然后放置于未初始化输出区间`[data, data + (e - b))`；
+  - 我们需要注意到的是，上述代码中的`uninitialized_copy(b, e, data)`是STL标准库中的一个函数，调用`construct`函数，将输入区间`[b,e)`的每个对象生成一个复制品，然后放置于未初始化输出区间`[data, data + (e - b))`；
 
 - **free成员**
 
@@ -780,15 +752,15 @@ void StrVec::reallocate()
 
 #### 右值引用
 
-**右值定义：**右值是指表达式结束后将要被销毁的值。这些值可以是临时对象（例如函数返回的对象），也可以是使用`std::move()`转移所有权的对象。
+**右值定义:** 右值是指表达式结束后将要被销毁的值。这些值可以是临时对象（例如函数返回的对象），也可以是使用`std::move()`转移所有权的对象。
 
-**右值引用：**右值引用就是必须绑定到右值的引用，通过`&&`来获得右值引用。
+**右值引用:** 右值引用就是必须绑定到右值的引用，通过`&&`来获得右值引用。
 
-**性质：**只能绑定到一个将要销毁的对象，因此可以自由地将一个右值引用的资源移动到另一个对象中。
+**性质:** 只能绑定到一个将要销毁的对象，因此可以自由地将一个右值引用的资源移动到另一个对象中。
 
 一般而言，一个左值表达式表示的是一个对象的身份，而一个右值表达式表示的是对象的值。
 
-先介绍**左值引用(lvalue reference)**的特点：
+先介绍**左值引用**(lvalue reference)的特点：
 
 - 不能将其绑定到要求转换的表达式；
 
@@ -813,13 +785,9 @@ void StrVec::reallocate()
 右值引用的特点上面已经叙述了；
 
 左值与右值的区别：
-
 - 左值持久，右值短暂；
-
 - 右值引用只能绑定到临时对象；
-
 - 变量是左值，这意味着我们不能将一个右值引用绑定到一个右值引用类型的变量上；
-
   ```c++
   int &&rr1 = 42;   // 正确且合法
   int &&rr2 = rr1;  // 错误，变量是左值
@@ -830,24 +798,22 @@ void StrVec::reallocate()
 `move`函数的具体机制在<font color = "red">后面会进行讲解</font>，定义在`utility`头文件，先讲功能，如上
 
 ```c++
-int &&rr1 = 42;	// 正确且合法
-int &&rr2 = rr1;	// 错误，变量是左值
+int &&rr1 = 42;   // 正确且合法
+int &&rr2 = rr1;  // 错误，变量是左值
 /* 可以通过标准库中的move函数解决上述的错误问题 */
-int &&rr3 = std::move(rr1);	// 这样是正确的，相当于把rr1变成了一个右值临时对象
+int &&rr3 = std::move(rr1); // 这样是正确的，相当于把rr1变成了一个右值临时对象
 ```
 
 书中这么描述`move`：
-
 - 有一个左值，但想像右值一样处理它，这时候使用`move`；
 - 调用`move`就意味着除了对`rr1`赋值或者销毁之外，我们不能再使用它，即不能对移后源对象的值做任何假设；
   - <font color="red">不能对移后源对象的值做任何假设的理解：因为这个值已经被移走了，这么理解直接了当！</font>
 
-**移后源对象：**移后源对象是指在移动构造函数或移动赋值函数中，被移动的对象；移动后源对象必须可析构。
+**移后源对象:** 移后源对象是指在移动构造函数或移动赋值函数中，被移动的对象，移动后源对象必须可析构。
 
 #### 移动构造函数
 
 为了使得自己的类型支持移动操作，需要为其定义移动构造函数和移动赋值运算符，类似拷贝构造函数：
-
 - 移动构造函数的第一个参数是该类类型的一个**右值引用**；
 - 确保移后源对象处于——销毁无害的状态；
 - 完成移动之后，源对象不再指向被移动的资源；
@@ -865,19 +831,17 @@ StrVec::StrVec(StrVec &&s) noexcept	// 通知标准库我们的构造函数不�
 ```
 
 上述代码中，我们需要了解到的一些注意事项是：
-
 - 将s中的对象都置为`nullptr`是必不可少的一步；
 - 因为移动构造函数不分配任何新内存；
 - 如果忘记置为`nullptr`，那么当我们销毁移后源对象时将会释放掉我们刚刚移动的内存；
 - 置为`nullptr`之后，源对象暂时还存在，但最终会调用自己的析构将自身销毁；
 
 上述移动操作将移后源对象置为析构安全的状态，但此外：
-
 - 移动操作需要保证对象对象是有效的；
   - 所谓有效就是可以安全地为其赋予新值，不依赖当前值；
 - 移动操作对移后源对象中留下的值没有任何要求；
 
-**上述两点汇成一句话：**移后源对象必须保持有效的、可析构的状态，但是用户不能对其值做任何假设；
+**上述两点汇成一句话:** 移后源对象必须保持有效的、可析构的状态，但是用户不能对其值做任何假设；
 
 移动操作不分配任何资源，因此一般不会抛出任何异常，但需要告知标准库，否则标准库会认为移动我们的类对象时可能会抛出异常，以下有一些通知标准库的方式：
 
@@ -887,8 +851,8 @@ StrVec::StrVec(StrVec &&s) noexcept	// 通知标准库我们的构造函数不�
 
   ```c++
   class StrVec {
-      public:
-      	StrVec(StrVec&&) noexcept;
+  public:
+      StrVec(StrVec&&) noexcept;
   };
   StrVec::StrVec(StrVec &&s) noexcept :	/* 成员初始化器 */
   { /* 构造函数体 */ }
@@ -918,16 +882,14 @@ StrVec &StrVec::operator=(StrVec &&rhs) noexcept
 }
 ```
 
-**自赋值定义：**定义一个类的=操作符的时候，检查输入的参数是不是它自身。
+**自赋值定义:** 定义一个类的`=`操作符的时候，检查输入的参数是不是它自身。
 
 上面代码中自赋值的检查很关键，因为万一是相同的资源，使用`free()`就是错误的行为；
 
 #### 合成的移动操作
 
 这部分主要会对比拷贝构造相关知识来学习：
-
 - 一个类定义了自己的拷贝构造函数、拷贝赋值运算符或析构函数，那么编译器就不会为它合成移动构造函数和移动赋值运算符了；
-
 - 当类没有定义任何自己版本的拷贝控制成员，且类的每个非`static`数据成员都可以移动时，编译器才会为它合成移动构造函数或移动赋值运算符；
 
   ```c++
@@ -986,12 +948,11 @@ class Foo {
     	// ...其他成员，没有移动构造
 };
 Foo x;
-Foo y(x);	// 左值，拷贝构造
-Foo z(std::move(x));	// 即便是右值，仍然是拷贝构造
+Foo y(x); // 左值，拷贝构造
+Foo z(std::move(x));  // 即便是右值，仍然是拷贝构造
 ```
 
 右值拷贝构造的过程：
-
 - `move`返回一个绑定到`x`的`Foo&&`；
 - `Foo&&`转化为一个`const Foo&`;
 - 正好就是一个拷贝构造的形式；
@@ -1035,16 +996,15 @@ hp = std::move(hp2);	// 实现移动构造的功能，类似上述分析即可
 
 #### 移动迭代器
 
-对于拷贝，存在这么一个函数`uninitialized_copy`来构造新分配的内存，但是标准库中并没有类似的函数将对象"移动"到未构造的内存中；
+对于拷贝，存在这么一个函数`uninitialized_copy`来构造新分配的内存，但是标准库中并没有类似的函数将对象**移动**到未构造的内存中；
 
 新标准库中的**移动迭代器(move iterator)**：这个实现由标准库的`make_move_iterator`函数处理，将一个普通迭代器转换为一个移动迭代器；
-
 - 一般而言，一个迭代器的解引用运算符返回一个所指向元素的值；
 - 移动迭代器的解引用运算符生成一个右值引用；
 
 由于移动一个对象可能销毁掉原对象，因此只有在确信一个算法在为一个元素赋值或将其传递给一个用户定义的函数后不再访问它时，才将一个移动迭代器传递给算法；
 
-**<font color="red">Notes：</font>**不要随意使用移动操作，因为一个*移后源对象*具有不确定的状态，对其调用`std::move`是很危险的一个操作。
+**Notes:** 不要随意使用移动操作，因为一个*移后源对象*具有不确定的状态，对其调用`std::move`是很危险的一个操作。
 
 #### 右值引用和成员函数
 
@@ -1062,10 +1022,8 @@ void push_back(const X&); // 绑定到任意类型的X
 void push_back(X&&);      // 只可以绑定到类型X的可修改的右值
 ```
 
-**非const右值的定义：**指一个可修改的且不被`const`或的表达式；
-
+**非const右值的定义:** 指一个可修改的且不被`const`的表达式；
 - 通常是一个临时的、将要被移动的对象，比如返回右值引用`T&&`的函数返回值、`std::move`的返回值；
-
 - 或者是转换为`T&&`的类型转换函数的返回值；
 
   代码举例：
@@ -1079,8 +1037,7 @@ void push_back(X&&);      // 只可以绑定到类型X的可修改的右值
   // 我们在这个右值上调用了set成员函数来修改这个右值。
   ```
 
-**const右值的定义：**指一个不可修改的且不可被`volatile`修饰的表达式；
-
+**const右值的定义:** 指一个不可修改的且不可被`volatile`修饰的表达式；
 - `const`引用声明后没办法修改内部的值(只能调用非`const`方法)。
 - `const`引用支持右值来构造。
 
@@ -1088,9 +1045,9 @@ void push_back(X&&);      // 只可以绑定到类型X的可修改的右值
 
 ```c++
 class StrVec {
-    public:
-    	void push_back(const std::string&);	// 拷贝元素
-    	void push_back(std::string&&);		// 移动元素 
+public:
+    void push_back(const std::string&);	// 拷贝元素
+    void push_back(std::string&&);		// 移动元素 
 };
 // 仅定义上两个函数的声明
 void StrVec::push_back(const string& s)
@@ -1117,15 +1074,18 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
 
   <font color=red>之前试着想理解为什么通过这种形式去限定，现在暂时不想那么多，只需要知道这是一种限定左右值的方式即可。</font>
 
-  **引用限定符**的出现主要是为了满足自行定义的类对左值右值限定的需求，代码体现如下：
+  **引用限定符**的出现主要是为了满足自行定义的类对左值右值限定的需求：
+  - 让成员函数根据对象的类型选择最优的实现，左值就用左值版，右值就用右值版；
+  
+  代码体现如下：
 
   ```c++
   class Foo {
   public:
       Foo &operator=(const Foo&) &;	// 只能向可修改的左值赋值
-  	// 其他参数
+      // 其他参数
   };
-  Foo &Foo::operator=(const Foo &rhs)	&
+  Foo &Foo::operator=(const Foo &rhs) &
   {
       // 执行将rhs赋予本对象所需的工作
       return *this;	// this只能只能指向一个左值
@@ -1157,14 +1117,14 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
       vector<int> data;
   };
   
-  Foo FOO::sorted() &&
+  Foo Foo::sorted() &&
   {
       // 对于右值可直接在源址上排序，因为没有用户使用，可随时销毁
       sort(data.begin(), data.end());
       return *this;
   }
   
-  Foo FOO::sorted() const &
+  Foo Foo::sorted() const &
   {
       Foo ret(*this);
 
@@ -1179,8 +1139,8 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
   **注意：**
 
   - 定义`const`成员函数时，可以定义两个版本，有`const`限定符以及没有`const`限定符的版本；
-
   - 对于**引用限定**的函数，如果定义两个及以上具有相同名字相同参数的带引用限定符的成员函数，必须对所有函数加上引用限定符；
+    - 这个规定其实进一步细化了使用要求；
 
     ```c++
     Foo sorted() &&;
@@ -1192,18 +1152,16 @@ vec.push_back("done");	// 调用移动版本，如果没有移动构造呢？也
 
 ## 重载运算与类型转换
 
-**出现场景：**当运算符作用于类类型的运算对象时，可以通过运算符重载重新定义该运算符的含义，灵活使用运算符重载能令我们的程序更易于编写和阅读；
+**出现场景:** 当运算符作用于类类型的运算对象时，可以通过运算符重载重新定义该运算符的含义，灵活使用运算符重载能令我们的程序更易于编写和阅读；
 
 ### 基本概念
 
 **重载运算符的概念：**
-
 - 是具有特殊名字的函数；
 - 名字由关键字`operator`和其后要定义的运算符号共同组成；
 - 重载的运算符也包含返回类型、参数列表以及函数体；
 
 **重载运算符的特点：**
-
 - 重载运算符函数的参数数量与该运算符左右的运算对象一样多，具体在：
   - 一元运算符一个参数，二元运算符两个参数；
 - 对于二元运算符而言，左侧运算对象传递给第一个参数，而右侧运算对象对象传递给第二个参数；
@@ -1312,16 +1270,16 @@ Sales_data operator+(const Sales_data &lhs, const Sales_data &rhs)
   通常情况下，C++中的类会比较对象的每一个数据成员去判断两个对象是否相等，代码如下：
 
   ```c++
-  bool operator(const Sales_data &lhs, const Sales_data &rhs)
+  bool operator==(const Sales_data &lhs, const Sales_data &rhs)
   {
       return lhs.isbn()  rhs.isbn() &&
           lhs.units_sold  rhs.units_sold &&
           lhs.revenue  rhs.revenue;
   }
-  /* 定义了，那最好也定义!= */
-  bool operator(const Sales_data &lhs, const Sales_data &rhs)
+  /* 定义了==，那最好也定义!= */
+  bool operator!=(const Sales_data &lhs, const Sales_data &rhs)
   {
-      return !(lhs  rhs);
+      return !(lhs == rhs);
   }
   ```
 
@@ -1362,6 +1320,7 @@ Sales_data operator+(const Sales_data &lhs, const Sales_data &rhs)
 - **复合赋值运算符**
 
   如上述定义的信息，为了保证与赋值运算符的一致性，我们一般也会将赋值运算符定义在类的内部：
+  - 复合赋值运算符形如: `+=`、`-=`等；
 
   ```c++
   Sales_data& Sales_data::operator+=(const Sales_data &rhs)
@@ -1383,7 +1342,7 @@ class StrVec {
 public:
     std::string& operator[](std::size_t n) { return elements[n]; }
     const std::string& operator[](std::size_t n) const { return elements[n]; }
- private:
+private:
     std::string *elements;	// 指向数组首元素的指针
 };
 ```
@@ -1397,19 +1356,19 @@ public:
   ```c++
   class StrBlobPtr {
   public:
-    // 递增和递减运算符
-    StrBlobPtr& operator++();
-    StrBlobPtr& operator--();
-    // 其他成员与之前一致
+      // 递增和递减运算符
+      StrBlobPtr& operator++();
+      StrBlobPtr& operator--();
+      // 其他成员与之前一致
   };
   
   /* 两个运算符的定义 */
   StrBlobPtr& StrBlobPtr::operator++()
   {
-    // 检查是否已经指向了容器的尾后位置
-    check(curr, "increment past end of StrBlobStr");
-    ++curr;
-    return *this;
+      // 检查是否已经指向了容器的尾后位置
+      check(curr, "increment past end of StrBlobStr");
+      ++curr;
+      return *this;
   }
   
   // 递减类似
@@ -1447,9 +1406,9 @@ public:
 **显式调用后置运算符**
 
 ```c++
-StrBlobPtr p(a1);	// p指向a1中的vector
-p.operator++(0);	// 调用后置版本的operator++
-p.operator++();		// 调用前置版本的operator++
+StrBlobPtr p(a1); // p指向a1中的vector
+p.operator++(0);  // 调用后置版本的operator++
+p.operator++();   // 调用前置版本的operator++
 ```
 
 ### 成员访问运算符
@@ -1461,13 +1420,11 @@ p.operator++();		// 调用前置版本的operator++
 ```c++
 class StrBlobPtr {
 public:
-    std::string& operator*() const
-    {
-        auto p = check(curr, "dereference past end";)
-            return (*p)[curr];	// (*p)是对象所指的vector
+    std::string& operator*() const {
+        auto p = check(curr, "dereference past end");
+        return (*p)[curr];	// (*p)是对象所指的vector
     }
-    std::string* operator->() const
-    {
+    std::string* operator->() const {
         // 将实际工作委托给解引用运算符
         // 这个符号是返回相应的地址，其中this是指向本StrBlobPtr对象的指针
         return & this->operator*();
@@ -1481,10 +1438,8 @@ public:
 
 #### 对箭头运算符返回值的限定
 
-- 我们可以令`operator*`完成任何我们指定的操作，可以让其返回一个固定；
-
+- 我们可以令`operator*`完成任何我们指定的操作，可以让其返回一个固定值；
 - 而`operator->`运算符则不是这样，它永远不能丢掉成员访问这个最基本的含义，对于形如`point->mem`的表达式来说：
-
   - `point`要么是一个指向类对象的指针；
   - 要么是一个重载了`operator->`的类的对象；
 
@@ -1516,8 +1471,8 @@ struct absInt {
 
 int i = -42;
 absInt absObj;
-int ui = absObj(i);	// 将i传递给absObj.operator()，隐式调用，语法糖形式
-absObj.operator()(i);	// 显式调用
+int ui = absObj(i);   // 将i传递给absObj.operator()，隐式调用，语法糖形式
+absObj.operator()(i); // 显式调用
 ```
 
 如果类定义了调用运算符，则该类的对象称作**函数对象(function object)**；
@@ -1529,7 +1484,6 @@ absObj.operator()(i);	// 显式调用
 ```c++
 class PrintString {
 public:
-
     // 默认实参
     PrintString(ostream &o = cout, char c = ' '): os(o), sep(c) { }
 
@@ -1541,10 +1495,10 @@ private:
 };
 
 // 使用上述类
-PrintString printer;	// 使用默认值，打印到cout
-printer(s);				// 在cout中打印s，后面接空格
-PrintString erros(cerr, '\n');	// 不用默认值
-errors(s);				// 在cerr中打印s，后面跟一个换行符
+PrintString printer;  // 使用默认值，打印到cout
+printer(s);           // 在cout中打印s，后面接空格
+PrintString erros(cerr, '\n');  // 不用默认值
+errors(s);            // 在cerr中打印s，后面跟一个换行符
 ```
 
 函数对象常常作为泛型算法的实参：
@@ -1601,10 +1555,9 @@ public:
     };
     ```
 
-  lambda表达式产生的类不含默认构造函数、赋值运算符及默认析构函数；
+  `lambda`表达式产生的类不含默认构造函数、赋值运算符及默认析构函数；
   
   (<font color=red>没有默认析构函数，那么对象怎么释放呢？</font>)
-
 
 #### 标准库定义的函数对象
 
@@ -1612,9 +1565,9 @@ public:
 
 这些对象都定义在`functional`头文件中；
 
-**主要有三类：**算数运算符、关系运算符和逻辑运算符(510页查表)；
+**主要有三类:** 算数运算符、关系运算符和逻辑运算符(510页查表)；
 
-这些类都被定义成模板的形式，我们可以指定具体的应用类型，即调用运算符的形参类型：`plus<string>`令plus加法运算符作用于string对象，`plus<Sales_data>`对`Sales_data`对象执行加法运算。
+这些类都被定义成模板的形式，我们可以指定具体的应用类型，即调用运算符的形参类型：`plus<string>`令plus加法运算符作用于`string`对象，`plus<Sales_data>`对`Sales_data`对象执行加法运算。
 
 ```c++
 plus<int> intAdd;	// 可执行int加法的函数对
@@ -1690,7 +1643,7 @@ map<string, function<int(int, int)>> binops;  // 解决上面的问题
   // 正确：fp指向一个正确的add版本
   binops.insert( {"+", fp} );
 
-  // 或者使用lambda
+  // 或者使用lambda对象
   binops.insert( {"+", [](int a, int b) {return add(a, b);} } );
   ```
 
@@ -1704,8 +1657,7 @@ map<string, function<int(int, int)>> binops;  // 解决上面的问题
 
 #### 类型转换运算符
 
-**类型转换运算符(conversion operator)**类的一种特殊的成员函数，负责将一个类类型转化为其他类型：`operator type() const;`
-
+**类型转换运算符**(conversion operator)类的一种特殊的成员函数，负责将一个类类型转化为其他类型：`operator type() const;`
 - `type`类型要求是<font color=red>能作为函数的返回类型，因此不允许转换成数组或函数类型，但可以转换成指针或者引用类型</font>。
 - 类型转换运算符没有显式的返回类型，没有形参，必须定义成类的成员函数；
 - 类型转换运算符不得改变待转换对象的内容；
@@ -1722,7 +1674,7 @@ public:
     }
     operator int() const { return val; }	// 转换运算符
 private:
-  std::size_t val;  
+    std::size_t val;  
 };
 
 // 定义一个类对象
@@ -1756,8 +1708,8 @@ si + 3;
       	explicit operator int() const { return val; }
       	// 保持一致
   };
-  SmaillInt si = 3;	// 这部分按之前的情况执行
-  static_cast<int>(si) + 3;	// 正确，显式地请求转换
+  SmaillInt si = 3; // 这部分按之前的情况执行
+  static_cast<int>(si) + 3; // 正确，显式地请求转换
   ```
 
   几个仍会隐式执行的例外：
@@ -1830,9 +1782,9 @@ struct D {
 };
 // 上面这种定义使得二义性进一步提升：
 void manip(const C&);
-void manip(const D&);	// 重载
-manip(10); // 我该调哪个呢？
-manip(C(10));	// 显式正确调用
+void manip(const D&); // 重载
+manip(10);    // 我该调哪个呢？
+manip(C(10)); // 显式正确调用
 ```
 
 同时注意**重载函数与用户定义的类型转换**
@@ -1884,7 +1836,7 @@ Foo f;
 f = 5 + 6;
 
 // 如果FOO还定义了转换目标为int的类型转换，且
-int f = f + 5;	// 会产生二义性错误
+int f = f + 5;	// 会产生二义性错误，是转换f呢，还是转换5呢
 ```
 
 ## <font color=red>面向对象程序设计</font>
@@ -1910,19 +1862,19 @@ int f = f + 5;	// 会产生二义性错误
 ```c++
 class Person {....};
 class Currency {....};
-class SavingsAccount{
-    public:
-    	SavingsAccount(const char *name, 
-                      const char* address, int cents);
-    	~SavingsAccount();  // 析构函数
-    	void print();
-    private:
-    	Person m_saver;     // 使用了一个Person类，上面已定义。
-    	Currency m_balance; // 使用了一个Currency类，已定义。
-}
+class SavingsAccount {
+public:
+    SavingsAccount(const char *name, 
+                  const char* address, int cents);
+    ~SavingsAccount();  // 析构函数
+    void print();
+private:
+    Person m_saver;     // 使用了一个Person类，上面已定义。
+    Currency m_balance; // 使用了一个Currency类，已定义。
+};
 SavingsAccount::SavingsAccount(const char* name, const char* address, int cents):
 m_saver(name, address), m_balance(0, cents) {}  // 初始化列表
-void SavingsAccount::print(){
+void SavingsAccount::print() {
     m_saver.print();
     m_balance.print();
 }
@@ -1980,7 +1932,7 @@ protected:
   - 关键字`virtual`只能出现**在类内部的声明语句之前**而不能用于类外部的函数定义，一个被声明为虚函数的函数在派生类中隐式地也是虚函数；
 - **访问控制与继承**
   - 派生类可以继承定义在基类中的成员，但是<font color=red>派生类的成员函数不一定有权访问从基类继承而来的成员</font>，比如不能访问私有成员；
-  - 但是基类中还有这么一类成员，基类希望它的派生类有权访问该成员，同时禁止其他用户访问，此即**受保护的(`protected`)**访问运算符；
+  - 但是基类中还有这么一类成员，基类希望它的派生类有权访问该成员，同时禁止其他用户访问，此即**受保护的**(`protected`)访问运算符；
 
 #### 定义派生类
 
@@ -2018,18 +1970,17 @@ private:
 
   - 派生类经常(但不总是)覆盖它继承的虚函数，如果派生类选择不覆盖，则虚函数的行为类似于其他的普通成员；
   - **派生类可以在它覆盖的函数前使用`virtual`关键字，但不是非得这么做**，C++11新标准允许**派生类显式地注明它使用某个成员函数覆盖它继承的虚函数**；
-    - 在形参列表后面、在`const`成员函数的`const`关键字后面、在引用成员函数的引用限定符后面加一个关键字override；
+    - 在形参列表后面、在`const`成员函数的`const`关键字后面、在引用成员函数的引用限定符后面加一个关键字`override`；
     - 上述这种方式就属于显式注明的行为，这个时候`virtual`关键字可以不写；
 
-  基于上述原因，可以总结到**`override`说明符的作用**：
-
-  - 派生类如果定义了一个与**基类中虚函数名字相同但形参列表不同**的函数，编译器认为新定义的函数与基类中原有函数时相互独立的，合法；
+  基于上述原因，可以总结到`override`说明符的作用：
+  - 派生类如果定义了一个与**基类中虚函数名字相同但形参列表不同**的函数，编译器认为新定义的函数与基类中原有函数时相互独立的，合法，而不是对原来版本的覆盖；
   - 基于上原因，编译器会进一步确认到派生类的函数没有覆盖掉基类中的版本，认为我们缺失了这部分，于是会报错；
   - 加上`override`关键字来说明派生类中的虚函数，**使得我们的意图更加清晰**，同时让编译器为我们发现错误，比如形参列表有误；
 
-  同时陈述**override说明符的由来**
+  同时陈述**override说明符的由来:**
 
-  - 在C++11标准之前，派生类要在它覆盖的函数前使用`virtual`关键字**，C++11新标准允许**派生类显式地注明它使用某个成员函数覆盖它继承的虚函数；
+  - 在C++11标准之前，派生类要在它覆盖的函数前使用`virtual`关键字，C++11新标准允许派生类显式地注明它使用某个成员函数覆盖它继承的虚函数；
 
   - 在形参列表后面、在`const`成员函数的`const`关键字后面、在引用成员函数的引用限定符后面加一个关键字`override`；
   - 上述这种方式就属于显式注明的行为，这个时候`virtual`关键字可以不写；
@@ -2058,14 +2009,14 @@ private:
         这种转换通常称为**派生类到基类的**(derived-to-base)类型转换；编译器会隐式地执行派生类到基类的转换；
 
         ```c++
-        Quote item;	// 基类对象
-        Bulk_quote bulk;	// 派生类对象
-        Quote *p = &item;	// p指向Quote对象
+        Quote item;       // 基类对象
+        Bulk_quote bulk;  // 派生类对象
+        Quote *p = &item; // p指向Quote对象
         
-        // p指向bulk的Quote部分，但p只能调用bulk的基类部分，
+        // 下面的p指向bulk的Quote部分，但p只能调用bulk的基类部分，
         // 此时派生类类型的指针转成了基类类型的指针
         p = &bulk;
-        Quote &r = bulk;	// r绑定到bulk的Quote部分
+        Quote &r = bulk;  // r绑定到bulk的Quote部分
         ```
 
     - 如果**一个基类指针或引用转换为派生类指针或引用**，此时发生**向下造型**：
@@ -2073,7 +2024,7 @@ private:
       ```c++
       Base* basePtr = new Derived();  // 基类指针指向派生类对象
       
-      // 向下造型为派生类指针
+      // 向下造型为派生类指针，dynamic_cast确保这个过程安全，所以叫类型检查
       Derived* derivedPtr = dynamic_cast<Derived*>(basePtr);
       if (derivedPtr != nullptr) {
           // 成功进行向下造型，可以访问派生类特有的成员和方法
@@ -2105,15 +2056,15 @@ private:
   ```c++
   double Bulk_quote::net_price(size_t cnt) const
   {
-    // price是受保护的成员
-    if (cnt >= min_qty)	return cnt * (1 - discount) * price;
-    else	return cnt * price;
+      // price是受保护的成员
+      if (cnt >= min_qty)	return cnt * (1 - discount) * price;
+      else	return cnt * price;
   }
   ```
 
   我们现在需要了解的是：**派生类的作用域嵌套在基类的作用域之内**；使用基类中成员以及派生类自身的成员在方法上没什么区别；
 
-  **关键习惯：**每个类负责定义各自的接口，即便从语法上我们可以在派生类构造函数体内给它的公有或受保护的基类成员赋值，但是最好不要这么做；而是调用基类的构造函数进行赋值；
+  **关键习惯:** 每个类负责定义各自的接口，即便从语法上我们可以在派生类构造函数体内给它的公有或受保护的基类成员赋值，但是最好不要这么做；而是调用基类的构造函数进行赋值；
 
 - **继承与静态成员**
 
@@ -2137,11 +2088,11 @@ private:
   - 隐含一个类不能派生它本身的规定；
   - 一个类是基类，同时它也可以是一个派生类；
 
-  ```c++
-  class Base { /* ... */ };
-  class D1: public Base { /* ... */ };  // Base是D1的直接基类(direct base)
-  class D2: public D1 { /* ... */ };    // Base是D2的间接基类(indirect base)
-  ```
+    ```c++
+    class Base { /* ... */ };
+    class D1: public Base { /* ... */ };  // Base是D1的直接基类(direct base)
+    class D2: public D1 { /* ... */ };    // Base是D2的间接基类(indirect base)
+    ```
 
 - **防止继承的发生**
 
@@ -2160,17 +2111,14 @@ private:
 上述内容已经针对类型转换与继承进行了描述，这部分更多的是补充信息；
 
 将基类的指针或引用绑定到派生类对象上有一层极为重要的含义：
-
 - 使用基类的引用时，实际上我们并不清楚该引用所绑定对象的真实类型，该对象可能是基类的对象，也可能是派生类的对象；
 - 和内置指针一样，智能指针类也支持派生类向基类的类型转换；
 
 **静态类型与动态类型：**
-
 - 表达式的**静态类型在编译时总是已知的**，它是变量声明时的类型或表达式生成的类型；
 - 动态类型**则是变量或表达式表示的内存中的对象**的类型，在运行时得知；
 
 在基类指针指向派生类的过程中：
-
 - 基类的指针或引用的静态类型可能与其动态类型不一致；
 - 如果**表达式既不是引用也不是指针，则它的动态类型永远与静态类型一致**；
 - <font color=red>那怎么保证不一致的情况下可以顺利执行呢？</font>
@@ -2634,7 +2582,7 @@ Panda::Panda(std::string name, bool onExhibit)
       : Bear(name, onExhibit, "Panda") { }
 ```
 
-**构造函数的初始化顺序:** 基类的构造顺序与派生类列表中基类的出现顺序保持一致；下面以`Panda`对象为例：
+**构造函数的初始化顺序:** 基类的构造顺序与派生类列表中基类的出现顺序保持一致，下面以`Panda`对象为例：
 
 - `Panda`首先继承的是`Bear`，因此先对`Bear`执行构造函数，但是在执行`Bear`的构造函数过程中，`Bear`又是继承自`Animal`类；
 - 因此`Animal`类被首先初始化；
