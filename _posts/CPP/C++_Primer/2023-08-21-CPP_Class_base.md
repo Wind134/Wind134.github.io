@@ -106,11 +106,9 @@ std::istream& read(std::istream&, Sales_data&);
   ```
 
   以`total.isbn()`为例(`this`指的是成员函数的隐式实参，指向对象)：
-
   - 首先引入`this`，**成员函数通过一个名为this的额外的隐式参数**来访问调用它的那个对象。
   - 编译器负责把`total`的地址传递给**isbn的隐式形参this**，等价于`Sales_data::isbn(&total)`，即在调用`Sales_data`的`isbn`成员时传入了`total`的地址。
   - 在成员函数内部，我们可以**直接使用调用该函数的对象的成员**，而无须通过成员访问运算符来做到这一点，**因为this所指的也就是这个对象**。
-    - 如上部分代码所示；
 
   接下来解释紧随参数列表之后的`const`关键字，**它的作用是修改隐式`this`指针的类型**：
 
@@ -158,10 +156,9 @@ std::istream& read(std::istream&, Sales_data&);
   {
       units_sold += rhs.units_sold; // 把rhs的成员加到this对象的成员上
       revenue += rhs.revenue;       // 同上
-      return *this;                 // 返回调用该函数的对象
+      return *this;                 // 返回调用该函数的对象，仔细看，返回的是对象的引用
   }
   ```
-
 
 ### 定义非成员函数
 
@@ -242,13 +239,6 @@ std::istream& read(std::istream&, Sales_data&);
 - 有时候编译器不能为某些类合成默认的构造函数。
   - 例如，某类中包含一个其他类类型的成员且这个成员的而类型没有默认构造函数，那么编译器将无法初始化该成员。
 
-
-当对象被默认初始化或值初始化时自动执行默认构造函数，此时这边分两类情况：值初始化和默认初始化。
-
-- **值初始化：**`int`一般默认为0，以此类推。
-
-- **默认初始化：**其初始值和变量的类型以及变量定义的位置相关。
-
 针对上述原因的第一个原因，我们列举一段代码：
 
 ```c++
@@ -261,7 +251,7 @@ public:
 struct A {
     NoDefault my_mem;
 };
-A a;	// 无法为A合成构造函数，因为my_mem没有默认的构造函数
+A a;	// 无法为A合成构造函数，因为my_mem没有默认的构造函数，而这里又只能执行默认的构造函数
 struct B {
     B() {}  // 执行默认构造，没问题
 
@@ -269,6 +259,12 @@ struct B {
     NoDefault b_member;
 };
 ```
+
+当对象被默认初始化或值初始化时自动执行默认构造函数，此时这边分两类情况：值初始化和默认初始化。
+
+- **值初始化:** `int`一般默认为0，以此类推。
+
+- **默认初始化:** 其初始值和变量的类型以及变量定义的位置相关。
 
 ### 代码实例
 
@@ -339,7 +335,7 @@ struct B {
 - 当成员是`const`或者是引用的话，必须进行初始化；
 - 当成员属于某种类类型且该类没有定义默认构造函数时，必须进行初始化；
 
-***Notes：***初始化就是给赋一个初始值(简单理解)；
+***Notes:*** 初始化就是给赋一个初始值(简单理解)；
 
 ```c++
 class ConstRef {
@@ -354,7 +350,7 @@ class ConstRef {
 ConstRef::ConstRef(int ii): i(ii), ci(ii), ri(i) {}	// 添加的构造函数
 ```
 
-***Notes：***尽可能使用构造函数初始值；最好令构造函数初始值的顺序与成员声明的顺序保持一致。
+***Notes:*** 尽可能使用构造函数初始值，最好令构造函数初始值的顺序与成员声明的顺序保持一致。
 
 ### 委托构造函数
 
@@ -376,6 +372,7 @@ class Sales_data {
     	Sales_data(std::string s): Sales_data(s, 0, 0) {}
 
         // 这边的举例是自己委托自己的类
+        // 委托自己的默认构造函数
     	Sales_data(std::istream &is) : Sales_data() { read(is, *this); }
 };
 ```
@@ -389,6 +386,11 @@ class Sales_data {
 - 那么将会先执行这些代码，然后控制权才会交还给委托者的函数体；
 
 ### 隐式的类类型转换
+
+主要还是分三种情况讨论，因为在C++中，三种情况下会发生隐式的类类型转换：
+- 单参数构造函数的隐式转换，本节大部分内容都是基于此进行讲述；
+- 派生类到基类的隐式转换，这里不涉及到什么指针之类的，主要是说派生类的对象可以隐式转换为基类的对象；
+- 内置类型的转换，主要是C++内置类型之间存在一些隐式的转换规则；
 
 **如果构造函数只接受一个实参，则它实际上定义了转换为此类类型的隐式转换机制**，这种构造函数称作**转换构造函数(converting constructor)**。
 
@@ -478,7 +480,7 @@ item.combine(static_cast<Sales_data>(cin));
 
 经过以上的几个部分，我们成功为类定义了接口，但没有任何机制强制用户使用这些接口，类还没有封装，用户可以直达`Sales_data`对象的内部并且控制它的具体实现细节。
 
-我们可以使用**访问说明符(access specifiers)**加强类的封装性，也即`public`以及`private`说明符。因为我们更新一下上述类的定义情况：
+我们可以使用`public`以及`private`两种**访问说明符**(access specifiers)加强类的封装性。因为我们更新一下上述类的定义情况：
 
 ```c++
 class Sales_data {
@@ -501,7 +503,6 @@ private:    // 私有变量
 ```
 
 **封装的两个优点：**
-
 - 确保用户代码不会无意间破坏封装对象的状态。
 - 被封装的类的具体实现细节可以随时改变，而无须调整用户级别的代码，因为用户级别的代码只能调动`public`部分，`public`一改，就会影响到用户级代码。
 
@@ -510,23 +511,21 @@ private:    // 私有变量
 同样由上引申，由于`Sales_data`定义的数据成员是`private`的，所定义的`read、print、add`函数就无法正常编译了，**因为它们并非类的成员，无法访问`private`**。
 
 因此，类可以允许其他类或者函数访问它的非公有成员，方法是令其他类或者函数成为它的**友元(friend)**。
-
 - 友元声明只能出现在类定义的内部，但位置不限。
 - 友元不是类的成员，也不受它所在区域访问控制级别的约束；
 - 我们会建议在类定义开始或者结束前的位置集中声明友元；
 - **友元仅仅是指定了访问的权限，而非一个通常意义上的函数声明**。因此**如果希望类的用户能够调用某个友元函数，最好再提供一个独立的函数声明**；
 
-**整理：**通过上述的整个知识体系的构建，我们已经了解到C++语言中关于类的许多语法要点，比如，类的一些特性、类通过访问说明符屏蔽自身的实现细节同时也提供给用户代码接口、类同样需要通过构造函数进行初始化、在定义了其他构造函数之后我们也需要补上一个默认构造函数等等。
+**整理:** 通过上述的整个知识体系的构建，我们已经了解到C++语言中关于类的许多语法要点，比如，类的一些特性、类通过访问说明符屏蔽自身的实现细节同时也提供给用户代码接口、类同样需要通过构造函数进行初始化、在定义了其他构造函数之后我们也需要补上一个默认构造函数等等。
 
 将上述总结的那些关于类的特性运用到最终代码上，代码：
 
 ```c++
 class Sales_data {
-
-// 这三个友元让外部代码能访问到private部分
-friend Sales_data add(const Sales_data&, const Sales_data&);
-friend std::ostream &print(std::ostream&, const Sales_data&);
-friend std::istream &read(std::istream&, Sales_data&);
+    // 这三个友元让外部代码能访问到private部分
+    friend Sales_data add(const Sales_data&, const Sales_data&);
+    friend std::ostream &print(std::ostream&, const Sales_data&);
+    friend std::istream &read(std::istream&, Sales_data&);
 public:
     Sales_data() = default;
     Sales_data(const std::string &s) : bookNo(s) {}
@@ -536,8 +535,7 @@ public:
     std::string isbn() const { return bookNo; }
     Sales_data &combine(const Sales_data&);
 private:
-    double Sale_data::avg_price() const 
-    { return units_sold ? revenue/units_sold : 0;}
+    double Sale_data::avg_price() const { return units_sold ? revenue/units_sold : 0; }
     std::string bookNo;
     unsigned units_sold = 0;
     double revenue = 0.0;
@@ -586,7 +584,7 @@ void Window_mgr::clear(ScreenIndex i)   // 将第i个窗口清空，即clear的�
 }
 ```
 
-**需要注意：**友元关系不存在传递性；每个类负责控制自己的友元类或友元函数；重载函数需要单独定义友元，重载函数不代表函数一样；
+**需要注意:** 友元关系不存在传递性；每个类负责控制自己的友元类或友元函数，也就是友元不继承；重载函数需要单独定义友元，重载函数不代表函数一样；
 
 上述将整个类作为友元类的做法还可以进一步拓展，主要发挥作用的是`clear`函数，因此我们进一步将另一个类所需要访问`private`部分的函数设置为友元函数，也是很好的方法。
 
@@ -606,7 +604,7 @@ class Screen {
 public:
 	typedef std::string::size_type pos;   	// 将无符号类型别名为pos类型
 private:
-    pos cursor = 0; // 光标的位置
+    pos cursor = 0;             // 光标的位置
     pos height = 0, width = 0;  // 窗口长宽
     std::string contents;       // 窗口内容
 };
@@ -658,9 +656,9 @@ ch = myscreen.get(0, 0);    // 调用Screen::get(pos, pos)，返回指定位置�
 
 ### 可变数据成员
 
-**可变数据成员(mutable data member)**可以帮助我们实现这么一个功能：我们希望能修改类的某个数据成员，即便是在一个`const`成员函数内。具体实现即在变量的声明中加入`mutable`关键字来做到这一点。
+**可变数据成员**(mutable data member)可以帮助我们实现这么一个功能：我们希望能修改类的某个数据成员，即便是在一个`const`成员函数内。具体实现即在变量的声明中加入`mutable`关键字来做到这一点。
 
-**可变数据成员(mutable data member)**永远不会是`const`，即使是`const`对象的成员，一个`const`成员函数可以改变一个可变成员的值。
+**可变数据成员**(mutable data member)永远不会是`const`，即使是`const`对象的成员，一个`const`成员函数可以改变一个可变成员的值。
 
 我们加入一个名为`access_ctr`的可变成员，通过它追踪每个`Screen`的成员函数的调用次数：
 
@@ -673,13 +671,14 @@ class Screen {
 };
 void Screen::some_member() const
 {
-    ++access_ctr;   // 保存一个计数值
+    ++access_ctr;   // 保存一个计数值，const括号内的本不可变，但因为是可变成员，所以可变
 }
 ```
 
 <font color=red>可变数据成员的使用意义在哪呢？</font>
 - 这是曾经提出来的一个问题；
 - 确实用得不多；
+- 可能要结合实际场景来感知用处？
 
 ### 类数据成员的初始值
 
@@ -693,10 +692,10 @@ void Screen::some_member() const
 
 ```c++
 class Window_mgr {
-    private:
-    	// 默认情况下，一个Window_mgr包含一个标准尺寸的空白Screen
-        // {}内的元素代表了数组的内容，也就是说，这个数组就一个这样的screens对象
-    	std::vector<Screen> screens{24, 80, ' '};
+private:
+    // 默认情况下，一个Window_mgr包含一个标准尺寸的空白Screen
+    // {}内的元素代表了数组的内容，也就是说，这个数组就一个这样的screens对象
+    std::vector<Screen> screens{24, 80, ' '};
 };
 ```
 
@@ -722,7 +721,7 @@ inline Screen &Screen::set(pos r, pos col, char ch)
 }
 ```
 
-**再次总结：**set成员的<font color="blue">返回</font>值是调用set的对象的引用。<font color="blue">返回引用的函数是左值</font>，意味着这些函数<font color="blue">返回的是对象本身</font>而非对象的副本。因此一系列的操作可以连接在一条表达式中：
+**再次总结:** `set`成员函数的<font color="blue">返回</font>值是调用set的对象的引用。<font color="blue">返回引用的函数是左值</font>，意味着这些函数<font color="blue">返回的是对象本身</font>而非对象的副本。因此一系列的操作可以连接在一条表达式中：
 
 ```c++
 myScreen.move(4, 0).set('#');   // 将光标移动到一个指定的位置，并设置该位置的字符值
@@ -833,7 +832,7 @@ if(prod.any())
 
 举一个现实例子，一个银行账户类可能需要一个数据成员来表示当前的基准利率，从实现效率的角度，没必要每个对象都存储利率信息，一旦利率浮动，我们希望所有对象都能使用新值。
 
-***Notes：***类静态成员需要初始化，否则其默认值是未定义的。
+***Notes:*** 类静态成员需要初始化，否则其默认值是未定义的。
 
 ### 静态成员的声明
 
@@ -841,22 +840,22 @@ if(prod.any())
 
 ```c++
 class Account {
-    public:
-    	void calculate() { amount += amount * interestRate; }
+public:
+    void calculate() { amount += amount * interestRate; }
 
-        // 疑惑点：加上static就是从底层去优化了物理空间的存储？
-        // 但是成员函数本身就不算在类的大小当中，因此应该不是为了节省类的空间
-    	static double rate() { return interestRate; }
-    	static void rate(double);
-    private:
-    	std::string owner;
-    	double amount;
-    	static double interestRate;
-    	static double initRate();
+    // 疑惑点：加上static就是从底层去优化了物理空间的存储？
+    // 但是成员函数本身就不算在类的大小当中，因此应该不是为了节省类的空间
+    static double rate() { return interestRate; }
+    static void rate(double);
+private:
+    std::string owner;
+    double amount;
+    static double interestRate;
+    static double initRate();
 };
 ```
 
-**说明：**类的静态成员存在于任何对象之外，对象中不包含任何与静态数据成员有关的数据。
+**说明:** 类的静态成员存在于任何对象之外，对象中不包含任何与静态数据成员有关的数据。
 
 以上述代码为例，每个`Account`对象将包含两个数据成员：`owner`和`amount`。只存在一个`interestRate`对象而且它被所有`Account`对象共享。
 
@@ -869,7 +868,6 @@ class Account {
 ### 类静态成员的使用
 
 我们使用作用域运算符直接访问静态成员：
-
 ```c++
 double r;
 r = Account::rate();	// Account是这个类名，因此需要用作用域运算符进行访问。
@@ -919,11 +917,11 @@ double Account::interestRate = initRate();  // 定义并且初始化一个静态
 
 ```c++
 class Account {
-    public:
-    	// 同上，省略
-    private:
-    	static constexpr int period = 30;   // period是常量表达式
-    	double daily_tbl[period];
+public:
+    // 同上，省略
+private:
+    static constexpr int period = 30;   // period是常量表达式
+    double daily_tbl[period];
 };
 ```
 
@@ -931,7 +929,7 @@ class Account {
 
 如果我们将它用于值不能替换的场景中，则该成员必须有一条定义语句。
 
-***Notes：***即便一个常量静态数据成员在类内部被初始化了，**通常情况下也应该在类的外部定义一下该成员**。
+***Notes:*** 即便一个常量静态数据成员在类内部被初始化了，**通常情况下也应该在类的外部定义一下该成员**。
 
 **静态成员能用于某些场景，而普通成员不能，如：**
 
@@ -952,7 +950,7 @@ class Account {
   ```
 
 
-**不完全类型(incomplete type)：**已经声明但是尚未定义的类型。不完全类型不能用于定义变量或者类的成员，但是用不完全类型定义指针或者引用是合法的。
+**不完全类型(incomplete type):** 已经声明但是尚未定义的类型。不完全类型不能用于定义变量或者类的成员，但是用不完全类型定义指针或者引用是合法的。
 
 **静态成员和普通成员的另外一个区别就是我们可以使用静态成员作为默认实参**
 
@@ -962,14 +960,14 @@ class Account {
   - <font color=red>静态成员在编译时就已经确定，而默认实参也需要在编译时确定，所以静态类型是可以作为默认实参的值的。</font>
   - <font color=red>动态成员在运行时才能确定，无法在编译时确定其具体的值，所以动态类型不可以作为默认实参。</font>
 
-```c++
-class Screen {
-    public:
-    	Screen& clear(char = bkground); // 默认实参
-    private:
-    	static const char bkground;     // 是不是可以在外部定义值！
-};
-```
+    ```c++
+    class Screen {
+        public:
+            Screen& clear(char = bkground); // 默认实参
+        private:
+            static const char bkground;     // 是不是可以在外部定义值！
+    };
+    ```
 
 ## 类的作用域
 
@@ -983,7 +981,7 @@ char c = scr.get();             // 访问scr对象的get成员
 c = p->get();       // 本质上同上
 ```
 
-**名字查找(name lookup)的过程：**在名字所在块中寻找声明语句-->若未找到，查找外层作用域-->若最终未找到匹配的声明，程序报错；在类中首先编译成员的声明，直到类全部可见再编译函数体。
+**名字查找(name lookup)的过程:** 在名字所在块中寻找声明语句-->若未找到，查找外层作用域-->若最终未找到匹配的声明，程序报错；在类中首先编译成员的声明，直到类全部可见再编译函数体。
 
 **用于类成员声明的名字查找：**主要是有一点说明，类中的函数体**只会在整个类可见后才被处理**，因此**如果函数体要返回类内类外都定义过的某个变量，会优先返回类内变量**。
 
@@ -991,7 +989,7 @@ c = p->get();       // 本质上同上
 
 <font color = 'red'>其实本质上就是，函数在定义之前最好要声明，这样有利于对函数的查找，也是一个比较好的习惯。</font>
 
-**类型名的特殊处理：**内层作用域可以重新定义外层作用域中的名字，即便名字已经在内层作用域中使用过。但在类中：
+**类型名的特殊处理:** 内层作用域可以重新定义外层作用域中的名字，即便名字已经在内层作用域中使用过。但在类中：
 
 如果成员使用了外层作用域中的某个名字，且该名字代表一种类型，则类不能在之后重新定义该名字；
 
@@ -999,19 +997,17 @@ c = p->get();       // 本质上同上
 
 ## 聚合类
 
-**聚合类(aggregate class)**使得用户可以直接访问其成员，并且具有特殊的初始化语法形式。几个特点：
-
+**聚合类**(aggregate class)使得用户可以直接访问其成员，并且具有特殊的初始化语法形式，几个特点：
 - 所有成员都是`public`的。
 - 没有定义任何构造函数。
 - 没有类内初始值。
 - 没有基类，也没有`virtual`函数。
-
-```c++
-struct Data {	// 就是struct类型而已？
-    int ival;
-    string s;
-};
-```
+    ```c++
+    struct Data {	// 就是struct类型而已？
+        int ival;
+        string s;
+    };
+    ```
 
 初始化聚合类成员的方法：
 
