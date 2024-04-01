@@ -17,10 +17,8 @@ class Solution {
 public:
     vector<int> twoSum(vector<int>& nums, int target) {
         int n = nums.size();
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = i + 1; j < n; j++)
-            {
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
                 if (nums[i] + nums[j] == target)
                     return {i, j};	// 这种返回方式来源于LeetCode
             }
@@ -78,7 +76,7 @@ vector<string> v8{10， "hi"};	// v8有10个值为"hi"的元素
 
 为了减缓这种复杂性，C++语言定义了箭头运算符`->`，箭头运算符把解引用和成员访问两个操作结合在一起；
 
-***Notes：***但凡使用了迭代器的循环体，都不要向迭代器所属的容器添加元素；
+***Notes:*** 但凡使用了迭代器的循环体，都不要向迭代器所属的容器添加元素；
 
 - 因为对元素的插入和删除操作会使得迭代器失效；
 
@@ -447,7 +445,7 @@ if (ca1 < ca2)  // 这里试图比较两个无关地址，所以会得到未定�
 if (strcmp(ca1, ca2) < 0)	// 和两个string对象的比较效果一样
 ```
 
-***Notes：***建议使用标准库`string`，更安全、更高效；
+***Notes:*** 建议使用标准库`string`，更安全、更高效；
 
 ---
 
