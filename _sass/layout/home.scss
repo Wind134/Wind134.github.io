@@ -1,3 +1,5 @@
+@use "../addon/variables";
+
 /*
   Style for Homepage
 */
@@ -19,7 +21,7 @@
 
   .card {
     %img-radius {
-      border-radius: $base-radius $base-radius 0 0;
+      border-radius: variables.$base-radius variables.$base-radius 0 0;
     }
 
     .preview-img {
@@ -42,7 +44,7 @@
       padding: 1rem;
 
       .card-title {
-        @extend %text-clip;
+        @extend %text-clip !optional;
 
         font-size: 1.25rem;
         display: flex;
@@ -57,7 +59,7 @@
         @extend %muted;
 
         p {
-          @extend %text-clip;
+          @extend %text-clip !optional;
 
           line-height: 1.5;
           margin: 0;
@@ -74,7 +76,7 @@
         }
 
         em {
-          @extend %normal-font-style;
+          @extend %normal-font-style !optional;
 
           color: inherit;
         }
@@ -144,7 +146,7 @@
 @media all and (min-width: 768px) {
   #post-list {
     %img-radius {
-      border-radius: 0 $base-radius $base-radius 0;
+      border-radius: 0 variables.$base-radius variables.$base-radius 0;
     }
 
     .card {

@@ -1,31 +1,36 @@
+@use "sass:math";
+@use "../colors/dark-typography";
+@use "../colors/light-typography";
+@use "module";
+@use "variables";
+
 /*
   The common styles
 */
 
 html {
+  font-size: 16px;
   @media (prefers-color-scheme: light) {
     &:not([data-mode]),
     &[data-mode='light'] {
-      @include light-scheme;
+      @include light-typography.light-scheme;
     }
 
     &[data-mode='dark'] {
-      @include dark-scheme;
+      @include dark-typography.dark-scheme;
     }
   }
 
   @media (prefers-color-scheme: dark) {
     &:not([data-mode]),
     &[data-mode='dark'] {
-      @include dark-scheme;
+      @include dark-typography.dark-scheme;
     }
 
     &[data-mode='light'] {
-      @include light-scheme;
+      @include light-typography.light-scheme;
     }
   }
-
-  font-size: 16px;
 }
 
 body {
@@ -34,7 +39,7 @@ body {
     env(safe-area-inset-bottom) env(safe-area-inset-left);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
-  font-family: $font-family-base;
+  font-family: variables.$font-family-base;
 }
 
 /* --- Typography --- */
@@ -163,10 +168,10 @@ blockquote {
     }
   }
 
-  @include prompt('tip', '\e608');
-  @include prompt('info', '\e6e8');
-  @include prompt('warning', '\e6e8');
-  @include prompt('danger', '\e6be');
+  @include module.prompt('tip', '\e608');
+  @include module.prompt('info', '\e6e8');
+  @include module.prompt('warning', '\e6e8');
+  @include module.prompt('danger', '\e6be');
 }
 
 kbd {
@@ -189,10 +194,10 @@ footer {
   font-size: 0.8rem;
   background-color: var(--main-bg);
 
-  @extend %text-color;
+  @extend %text-color !optional;
 
   div.d-flex {
-    height: $footer-height;
+    height: variables.$footer-height;
     line-height: 1.2rem;
     padding-bottom: 1rem;
     border-top: 1px solid var(--main-border-color);
@@ -252,7 +257,7 @@ i {
 #panel-wrapper {
   /* the headings */
   .panel-heading {
-    @include label(inherit);
+    @include module.label(inherit);
   }
 
   .post-tag {
@@ -326,8 +331,8 @@ i {
 
 .footnote {
   @at-root a#{&} {
-    @include ml-mr(1px);
-    @include pl-pr(2px);
+    @include module.ml-mr(1px);
+    @include module.pl-pr(2px);
 
     border-bottom-style: none !important;
     transition: background-color 1.5s ease-in-out;
@@ -440,7 +445,7 @@ i {
     > img[data-src],
     > a.popup {
       &:not(.normal):not(.left):not(.right) {
-        @include align-center;
+        @include module.align-center;
       }
     }
   }
@@ -469,7 +474,7 @@ i {
     &.popup {
       @extend %no-cursor;
       @extend %img-caption;
-      @include mt-mb(0.5rem);
+      @include module.mt-mb(0.5rem);
 
       cursor: zoom-in;
     }
@@ -744,14 +749,14 @@ $btn-border-width: 3px;
 $btn-mb: 0.5rem;
 
 #sidebar {
-  @include pl-pr(0);
+  @include module.pl-pr(0);
 
   position: fixed;
   top: 0;
   left: 0;
   height: 100%;
   overflow-y: auto;
-  width: $sidebar-width;
+  width: variables.$sidebar-width;
   z-index: 99;
   background: var(--sidebar-bg);
 
@@ -792,8 +797,8 @@ $btn-mb: 0.5rem;
   }
 
   .profile-wrapper {
-    @include mt-mb(2.5rem);
-    @include ml-mr(1.25rem);
+    @include module.mt-mb(2.5rem);
+    @include module.ml-mr(1.25rem);
     @extend %clickable-transition;
 
     width: 100%;
@@ -836,7 +841,7 @@ $btn-mb: 0.5rem;
       padding-right: 1.5rem;
 
       a.nav-link {
-        @include pt-pb(0.6rem);
+        @include module.pt-pb(0.6rem);
 
         display: flex;
         align-items: center;
@@ -877,7 +882,7 @@ $btn-mb: 0.5rem;
   }
 
   .sidebar-bottom {
-    @include pl-pr(2rem);
+    @include module.pl-pr(2rem);
 
     margin-bottom: 1.5rem;
 
@@ -923,7 +928,7 @@ $btn-mb: 0.5rem;
 
     .icon-border {
       @extend %no-cursor;
-      @include ml-mr(calc(($btn-gap - $btn-border-width) / 2));
+      @include module.ml-mr(calc(($btn-gap - $btn-border-width) / 2));
 
       background-color: var(--sidebar-muted-color);
       content: '';
@@ -963,7 +968,7 @@ $btn-mb: 0.5rem;
 /* --- top-bar --- */
 
 #topbar-wrapper {
-  height: $topbar-height;
+  height: variables.$topbar-height;
   background-color: var(--topbar-bg);
 }
 
@@ -1036,19 +1041,19 @@ $btn-mb: 0.5rem;
 
     &.form-control {
       &::-moz-placeholder {
-        @include input-placeholder;
+        @include module.input-placeholder;
       }
       &::-webkit-input-placeholder {
-        @include input-placeholder;
+        @include module.input-placeholder;
       }
       &:-ms-input-placeholder {
-        @include input-placeholder;
+        @include module.input-placeholder;
       }
       &::-ms-input-placeholder {
-        @include input-placeholder;
+        @include module.input-placeholder;
       }
       &::placeholder {
-        @include input-placeholder;
+        @include module.input-placeholder;
       }
     }
   }
@@ -1163,15 +1168,15 @@ $btn-mb: 0.5rem;
 
 #main-wrapper {
   position: relative;
-  min-height: calc(100vh - $footer-height-mobile);
+  min-height: calc(100vh - variables.$footer-height-mobile);
 
-  @include pl-pr(0);
+  @include module.pl-pr(0);
 }
 
 #topbar-wrapper.row,
 #main > .row,
 #search-result-wrapper > .row {
-  @include ml-mr(0);
+  @include module.ml-mr(0);
 }
 
 /* --- button back-to-top --- */
@@ -1270,13 +1275,13 @@ $btn-mb: 0.5rem;
 
 @media all and (max-width: 576px) {
   #main-wrapper {
-    min-height: calc(100vh - #{$footer-height-mobile});
+    min-height: calc(100vh - #{variables.$footer-height-mobile});
   }
 
   #core-wrapper {
     .post-content {
       > blockquote[class^='prompt-'] {
-        @include ml-mr(-1.25rem);
+        @include module.ml-mr(-1.25rem);
 
         border-radius: 0;
         max-width: none;
@@ -1301,7 +1306,7 @@ $btn-mb: 0.5rem;
 
   #main {
     @extend %full-width;
-    @include pl-pr(0);
+    @include module.pl-pr(0);
   }
 }
 
@@ -1325,7 +1330,7 @@ $btn-mb: 0.5rem;
   footer {
     @include slide;
 
-    height: $footer-height-mobile;
+    height: variables.$footer-height-mobile;
 
     div.d-flex {
       padding: 1.5rem 0;
@@ -1341,7 +1346,7 @@ $btn-mb: 0.5rem;
 
     #main-wrapper,
     footer {
-      transform: translateX(#{$sidebar-width});
+      transform: translateX(#{variables.$sidebar-width});
     }
 
     #back-to-top {
@@ -1352,8 +1357,8 @@ $btn-mb: 0.5rem;
   #sidebar {
     @include slide;
 
-    transform: translateX(-#{$sidebar-width}); /* hide */
-    -webkit-transform: translateX(-#{$sidebar-width});
+    transform: translateX(-#{variables.$sidebar-width}); /* hide */
+    -webkit-transform: translateX(-#{variables.$sidebar-width});
   }
 
   #main-wrapper {
@@ -1425,11 +1430,11 @@ $btn-mb: 0.5rem;
 
   #main-wrapper,
   footer {
-    margin-left: $sidebar-width;
+    margin-left: variables.$sidebar-width;
   }
 
   #main-wrapper {
-    min-height: calc(100vh - $footer-height);
+    min-height: calc(100vh - variables.$footer-height);
   }
 
   footer {
@@ -1456,11 +1461,11 @@ $btn-mb: 0.5rem;
   }
 
   #search-wrapper {
-    max-width: $search-max-width;
+    max-width: variables.$search-max-width;
   }
 
   #search-result-wrapper {
-    max-width: $main-content-max-width;
+    max-width: variables.$main-content-max-width;
     justify-content: start !important;
   }
 
@@ -1560,7 +1565,7 @@ $btn-mb: 0.5rem;
 
 @media all and (min-width: 1400px) {
   #back-to-top {
-    right: calc((100vw - #{$sidebar-width} - 1140px) / 2 + 3rem);
+    right: calc((100vw - #{variables.$sidebar-width} - 1140px) / 2 + 3rem);
   }
 }
 
@@ -1569,22 +1574,22 @@ $btn-mb: 0.5rem;
 
   #main-wrapper,
   footer {
-    margin-left: $sidebar-width-large;
+    margin-left: variables.$sidebar-width-large;
   }
 
   #topbar-wrapper {
-    left: $sidebar-width-large;
+    left: variables.$sidebar-width-large;
   }
 
   #search-wrapper {
     margin-right: calc(
-      #{$main-content-max-width} * 0.25 - #{$search-max-width} - 0.75rem
+      #{variables.$main-content-max-width} * 0.25 - #{variables.$search-max-width} - 0.75rem
     );
   }
 
   #main,
   footer > .container {
-    max-width: $main-content-max-width;
+    max-width: variables.$main-content-max-width;
     padding-left: 1.75rem !important;
     padding-right: 1.75rem !important;
   }
@@ -1596,12 +1601,12 @@ $btn-mb: 0.5rem;
 
   #back-to-top {
     right: calc(
-      (100vw - #{$sidebar-width-large} - #{$main-content-max-width}) / 2 + 2rem
+      (100vw - #{variables.$sidebar-width-large} - #{variables.$main-content-max-width}) / 2 + 2rem
     );
   }
 
   #sidebar {
-    width: $sidebar-width-large;
+    width: variables.$sidebar-width-large;
 
     $icon-gap: 1rem; // for the bottom icons
 
@@ -1645,7 +1650,7 @@ $btn-mb: 0.5rem;
 
     ul {
       li.nav-item {
-        @include pl-pr(2.75rem);
+        @include module.pl-pr(2.75rem);
       }
     }
 
@@ -1658,7 +1663,7 @@ $btn-mb: 0.5rem;
       }
 
       .icon-border {
-        @include ml-mr(calc(($icon-gap - $btn-border-width) / 2));
+        @include module.ml-mr(calc(($icon-gap - $btn-border-width) / 2));
       }
     }
   }
@@ -1730,8 +1735,8 @@ details {
 }
 
 @function random_range($min, $max) {
-  $rand: random();
-  $random_range: $min + floor($rand * (($max - $min) + 1));
+  $rand: math.random();
+  $random_range: $min + math.floor($rand * (($max - $min) + 1));
   @return $random_range;
 }
 

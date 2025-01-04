@@ -2,29 +2,31 @@
 * The syntax highlight.
 */
 
-@import 'colors/light-syntax';
-@import 'colors/dark-syntax';
+@use '../colors/light-syntax';
+@use '../colors/dark-syntax';
+@use "module";
+@use "variables";
 
 html {
   @media (prefers-color-scheme: light) {
     &:not([data-mode]),
     &[data-mode='light'] {
-      @include light-syntax;
+      @include light-syntax.light-syntax;
     }
 
     &[data-mode='dark'] {
-      @include dark-syntax;
+      @include dark-syntax.dark-syntax;
     }
   }
 
   @media (prefers-color-scheme: dark) {
     &:not([data-mode]),
     &[data-mode='dark'] {
-      @include dark-syntax;
+      @include dark-syntax.dark-syntax;
     }
 
     &[data-mode='light'] {
-      @include light-syntax;
+      @include light-syntax.light-syntax;
     }
   }
 }
@@ -69,7 +71,7 @@ html {
     font-family: "Fira Code", "Microsoft Yahei", monospace;
     font-variant-ligatures: normal;
     margin-bottom: 0;
-    font-size: $code-font-size;
+    font-size: variables.$code-font-size;
     line-height: 1.4rem;
     word-wrap: normal; /* Fixed Safari overflow-x */
     color: var(--code-snippets-color);
@@ -154,7 +156,7 @@ div[class^='language-'] {
   box-shadow: var(--language-border-color) 0 0 0 1px;
 
   .post-content > & {
-    @include ml-mr(-1.25rem);
+    @include module.ml-mr(-1.25rem);
 
     border-radius: 0;
   }
@@ -266,13 +268,13 @@ div {
 @media all and (min-width: 576px) {
   div[class^='language-'] {
     .post-content > & {
-      @include ml-mr(0);
+      @include module.ml-mr(0);
 
-      border-radius: $base-radius;
+      border-radius: variables.$base-radius;
     }
 
     .code-header {
-      @include ml-mr(0);
+      @include module.ml-mr(0);
 
       &::before {
         $dot-size: 0.75rem;

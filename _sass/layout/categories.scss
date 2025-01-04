@@ -1,3 +1,5 @@
+@use "../addon/variables";
+
 /*
   Style for Tab Categories
 */
@@ -12,11 +14,11 @@
 
   &.card,
   .list-group {
-    @extend %rounded;
+    @extend %rounded !optional;
   }
 
   .card-header {
-    $radius: calc($base-radius - 1px);
+    $radius: calc(variables.$base-radius - 1px);
 
     padding: 0.75rem;
     border-radius: $radius;
