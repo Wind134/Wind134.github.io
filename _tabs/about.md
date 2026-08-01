@@ -1,7 +1,7 @@
 ---
 title: 关于
 icon: icon-info
-order: 5
+order: 6
 ---
 
 ## 关于我

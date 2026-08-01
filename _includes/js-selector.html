@@ -5,8 +5,6 @@
 {% assign urls = site.data.origin[type].jquery.js
   | append: ','
   | append: site.data.origin[type].bootstrap.js
-  | append: ','
-  | append: site.data.origin[type].search.js
 %}
 
 <!-- layout specified -->
@@ -103,4 +101,7 @@
   {% if site.google_analytics.id != empty and site.google_analytics.id %}
     {% include google-analytics.html %}
   {% endif %}
+{% elsif site.pwa.enabled %}
+  <!-- A development preview must not be controlled by a stale production cache. -->
+  <script defer src="{{ '/unregister.js' | relative_url }}"></script>
 {% endif %}

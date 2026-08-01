@@ -4,7 +4,7 @@ author: Ping
 math: true
 date: 2023-04-10 14:33:00 +0800
 categories: [数据结构与算法, 算法思想]
-tags: [数据结构，算法]
+tags: [数据结构, 算法]
 ---
 
 ## 动态规划的介绍
@@ -266,5 +266,4 @@ int knapsack_problem3(const vector<int>& values, const vector<int>& weights, con
 至此，这三种背包问题的框架性例题基本就讲解完毕了；
 
 (未完待续，这只是动态规划中的背包问题而已)
-
 

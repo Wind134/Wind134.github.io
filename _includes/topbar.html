@@ -40,7 +40,9 @@
     </span>
     <!-- endof #breadcrumb -->
 
-    <i id="sidebar-trigger" class="iconfont icon-bars"></i>
+    <button id="sidebar-trigger" class="topbar-icon-button" type="button" aria-label="打开导航">
+      <i class="iconfont icon-bars" aria-hidden="true"></i>
+    </button>
 
     <div id="topbar-title">
       {% if page.layout == 'home' %}
@@ -53,7 +55,9 @@
       {% endif %}
     </div>
 
-    <i id="search-trigger" class="iconfont icon-search"></i>
+    <button id="search-trigger" class="topbar-icon-button" type="button" aria-label="打开搜索">
+      <i class="iconfont icon-search" aria-hidden="true"></i>
+    </button>
     <span id="search-wrapper" class="align-items-center">
       <i class="iconfont icon-search"></i>
       <input

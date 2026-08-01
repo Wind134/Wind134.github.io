@@ -2,7 +2,7 @@
 title: TCP概述
 author: Ping
 math: true
-img_path: /assets/img/TCP-IP
+img_path: /assets/img/TCP-IP/
 date: 2023-05-27 14:33:00 +0800
 categories: [计算机网络, 重要协议]
 tags: [NetWork, Linux, 网络编程]

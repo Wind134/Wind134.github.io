@@ -1,7 +1,6 @@
-<!--
-  Jekyll Simple Search loader
-  See: <https://github.com/christian-fei/Simple-Jekyll-Search>
--->
+<!-- Load search code and its compact index only when the visitor opens search. -->
+
+{% include origin-type.html %}
 
 {% capture result_elem %}
 <div class="px-1 px-sm-2 px-lg-4 px-xl-0">
@@ -14,32 +13,59 @@
 </div>
 {% endcapture %}
 
-{% capture not_found %}<p class="mt-5">{{ site.data.locales[include.lang].search.no_results }}</p>{% endcapture %}
+{% capture not_found %}<p class="mt-5">{{ site.data.locales[site.lang].search.no_results }}</p>{% endcapture %}
 
 <script>
-  /* Note: dependent library will be loaded in `js-selector.html` */
-  SimpleJekyllSearch({
-    searchInput: document.getElementById('search-input'),
-    resultsContainer: document.getElementById('search-results'),
-    json: '{{ '/assets/js/data/search.json' | relative_url }}',
-    searchResultTemplate: '{{ result_elem | strip_newlines }}',
-    noResultsText: '{{ not_found }}',
-    templateMiddleware: function(prop, value, template) {
-      if (prop === 'categories') {
-        if (value === '') {
-          return `${value}`;
-        } else {
-          return `<div class="me-sm-4"><i class="iconfont icon-folder"></i>${value}</div>`;
-        }
-      }
+  (() => {
+    const trigger = document.getElementById('search-trigger');
+    const input = document.getElementById('search-input');
+    let searchPromise;
+    let initialized = false;
 
-      if (prop === 'tags') {
-        if (value === '') {
-          return `${value}`;
-        } else {
-          return `<div><i class="iconfont icon-tag"></i>${value}</div>`;
-        }
-      }
+    function loadSearch() {
+      if (initialized) return Promise.resolve();
+      if (searchPromise) return searchPromise;
+
+      searchPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '{{ site.data.origin[type].search.js | relative_url }}';
+        script.onload = () => {
+          SimpleJekyllSearch({
+            searchInput: input,
+            resultsContainer: document.getElementById('search-results'),
+            json: '{{ '/assets/js/data/search.json' | relative_url }}',
+            searchResultTemplate: '{{ result_elem | strip_newlines }}',
+            noResultsText: '{{ not_found }}',
+            templateMiddleware(prop, value) {
+              if (prop === 'categories') {
+                return value === '' ? value : `<div class="me-sm-4"><i class="iconfont icon-folder"></i>${value}</div>`;
+              }
+
+              if (prop === 'tags') {
+                return value === '' ? value : `<div><i class="iconfont icon-tag"></i>${value}</div>`;
+              }
+
+              return value;
+            }
+          });
+          initialized = true;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          resolve();
+        };
+        script.onerror = reject;
+        document.head.append(script);
+      });
+
+      return searchPromise;
     }
-  });
+
+    function activateSearch() {
+      loadSearch().catch(() => {
+        document.getElementById('search-results').innerHTML = '<p class="mt-5">搜索组件加载失败，请检查网络后重试。</p>';
+      });
+    }
+
+    trigger?.addEventListener('click', activateSearch, { once: true });
+    input?.addEventListener('focus', activateSearch, { once: true });
+  })();
 </script>

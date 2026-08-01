@@ -1,7 +1,7 @@
 ---
 title: HTTP概述
 author: Ping
-img_path: /assets/img/TCP-IP
+img_path: /assets/img/TCP-IP/
 date: 2023-06-08 14:33:00 +0800
 categories: [计算机网络, 重要协议]
 tags: [NetWork, Linux, 网络编程]

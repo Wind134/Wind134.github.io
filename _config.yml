@@ -24,15 +24,12 @@ description: >- # 由 seo meta 和 atom feed 使用
   Ping 的个人博客
 
 # 填入你的网站的协议和域名，例如，'https://username.github.io'
-url: "https://github.com/Wind134"
+url: "https://wind134.github.io"
 
 author: Ping # 全名
 
 github:
   username: Wind134 # Github 用户名
-
-twitter:
-  username: Name # 推特用户名
 
 social:
   # 改为你的全名。
@@ -43,7 +40,6 @@ social:
     # 第一个链接将会作为版权所有者的链接
     - https://github.com/Wind134
     - https://space.bilibili.com/277644935 # Bilibili主页
-    - https://github.com/Wind134 # Github 主页
     # 取消注释以添加更多链接
     # - https://www.facebook.com/username
     # - https://www.linkedin.com/in/username
@@ -69,10 +65,10 @@ google_analytics:
 theme_mode: # [light|dark]
 
 # 启用动画背景特效
-backgroud_animation: true
+background_animation: false
 
 # 启用鼠标点击特效
-mouse_click_effect: true
+mouse_click_effect: false
 
 # 图像 CDN 端点。
 # 注意一旦被分配，CDN 网址会被加在

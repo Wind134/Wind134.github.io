@@ -12,19 +12,11 @@ const resource = [
     '{{ "/app.js" | relative_url }}',
     '{{ "/sw.js" | relative_url }}',
 
-    /* --- HTML --- */
+    /* --- Minimal offline shell --- */
     '{{ "/index.html" | relative_url }}',
     '{{ "/404.html" | relative_url }}',
-
-    {% for tab in site.tabs %}
-        '{{ tab.url | relative_url }}',
-    {% endfor %}
-
-    /* --- Favicons & compressed JS --- */
-    {% assign cache_list = site.static_files | where: 'swcache', true  %}
-    {% for file in cache_list %}
-        '{{ file.path | relative_url }}'{%- unless forloop.last -%},{%- endunless -%}
-    {% endfor %}
+    '{{ "/assets/js/dist/commons.min.js" | relative_url }}',
+    '{{ "/assets/js/dist/home.min.js" | relative_url }}'
 ];
 
 /* The request url with below domain will be cached */

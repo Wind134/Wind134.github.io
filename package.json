@@ -17,7 +17,9 @@
     "build": "NODE_ENV=production npx rollup -c --bundleConfigAsCjs",
     "prewatch": "npx rimraf assets/js/dist",
     "watch": "npx rollup -c --bundleConfigAsCjs -w",
-    "test": "npx stylelint _sass/**/*.scss",
+    "post:new": "node tools/new-post.mjs",
+    "content:check": "node tools/check-content.mjs",
+    "test": "node --check assets/js/studio.js && node --check tools/new-post.mjs && node --check tools/check-content.mjs && npx stylelint _sass/**/*.scss && tail -n +4 assets/css/style.scss | npx stylelint --stdin --stdin-filename assets/css/style.scss",
     "fixlint": "npm run test -- --fix"
   },
   "devDependencies": {

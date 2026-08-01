@@ -1,0 +1,122 @@
+---
+layout: page
+refactor: true
+---
+
+<section class="studio-shell" data-content-studio>
+  <header class="studio-hero">
+    <div>
+      <p class="studio-badge">LOCAL CONTENT STUDIO</p>
+      <h1>把文章和配图，整理到正确的位置。</h1>
+      <p class="studio-lead">
+        选择本地博客仓库，再拖入一篇 Markdown 和相关图片。所有文件只在浏览器本地处理，不会上传到第三方服务器。
+      </p>
+    </div>
+    <div class="studio-privacy" aria-label="工作台特性">
+      <span><i class="fas fa-shield-alt"></i> 本地处理</span>
+      <span><i class="fas fa-folder-tree"></i> 自动归档</span>
+      <span><i class="fas fa-eye"></i> 写入前预览</span>
+    </div>
+  </header>
+
+  <div class="studio-grid">
+    <section class="studio-panel">
+      <div class="studio-panel__heading">
+        <span>01</span>
+        <div>
+          <h2>选择文件</h2>
+          <p>先授权博客目录，再选择 Markdown 和文章配图。</p>
+        </div>
+      </div>
+
+      <button class="studio-root-button" id="studio-pick-root" type="button">
+        <i class="fas fa-folder-open"></i>
+        <span>选择博客仓库目录</span>
+      </button>
+      <p class="studio-root-status" id="studio-root-status">尚未选择目录</p>
+
+      <label class="studio-dropzone" id="studio-dropzone" for="studio-files">
+        <input id="studio-files" type="file" accept=".md,.markdown,image/*" multiple>
+        <span class="studio-dropzone__icon"><i class="fas fa-cloud-arrow-up"></i></span>
+        <strong>拖入 Markdown 与配图</strong>
+        <span>或点击选择文件；一次导入一篇文章</span>
+      </label>
+
+      <ul class="studio-file-list" id="studio-file-list" aria-live="polite">
+        <li class="is-empty">尚未选择内容文件</li>
+      </ul>
+    </section>
+
+    <section class="studio-panel studio-panel--metadata">
+      <div class="studio-panel__heading">
+        <span>02</span>
+        <div>
+          <h2>确认文章信息</h2>
+          <p>这些字段决定文章 URL、分类目录和图片目录。</p>
+        </div>
+      </div>
+
+      <div class="studio-form-grid">
+        <label class="studio-field studio-field--wide">
+          <span>标题</span>
+          <input id="studio-title" type="text" placeholder="文章标题">
+        </label>
+        <label class="studio-field">
+          <span>发布日期</span>
+          <input id="studio-date" type="date">
+        </label>
+        <label class="studio-field">
+          <span>Slug</span>
+          <input id="studio-slug" type="text" placeholder="article-slug">
+        </label>
+        <label class="studio-field studio-field--wide">
+          <span>分类路径</span>
+          <input id="studio-categories" type="text" placeholder="Go/语言学习">
+          <small>使用 / 表示多级分类</small>
+        </label>
+        <label class="studio-field studio-field--wide">
+          <span>标签</span>
+          <input id="studio-tags" type="text" placeholder="Go, 编程">
+          <small>使用英文逗号分隔</small>
+        </label>
+      </div>
+
+      <div class="studio-paths">
+        <div>
+          <span>文章将写入</span>
+          <code id="studio-post-path">_posts/分类/YYYY-MM-DD-slug.md</code>
+        </div>
+        <div>
+          <span>图片将写入</span>
+          <code id="studio-image-path">assets/img/posts/slug/</code>
+        </div>
+      </div>
+
+      <div class="studio-actions">
+        <button class="studio-submit" id="studio-write" type="button" disabled>
+          <i class="fas fa-file-arrow-down"></i>
+          写入本地博客
+        </button>
+        <button class="studio-download" id="studio-download" type="button" disabled>
+          下载整理稿
+        </button>
+        <button class="studio-copy" id="studio-copy-command" type="button" disabled>
+          复制发布命令
+        </button>
+      </div>
+      <p class="studio-message" id="studio-message" role="status"></p>
+    </section>
+  </div>
+
+  <aside class="studio-notice">
+    <i class="fas fa-circle-info"></i>
+    <div>
+      <strong>为什么需要选择本地目录？</strong>
+      <p>
+        GitHub Pages 是静态网站，不能直接修改仓库。这里使用浏览器的文件系统授权，只写入你主动选择的本地仓库；写入完成后仍由你检查并执行 Git 提交。
+      </p>
+    </div>
+  </aside>
+</section>
+
+<script defer src="{{ '/assets/js/studio.js' | relative_url }}"></script>

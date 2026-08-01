@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta
     name="viewport"
-    content="width=device-width, user-scalable=no initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
   >
 
   {% capture seo_tags %}
@@ -96,8 +96,6 @@
   {% endif %}
 
   <!-- JavaScript -->
-
-  <script async src="{{ site.data.origin[type].socket-io-client.js | relative_url }}"></script>
 
   {% if site.mouse_click_effect %}
     <script async src="/assets/js/lib/fireworks.js"></script>

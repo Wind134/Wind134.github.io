@@ -47,6 +47,32 @@
     | Rust | `run="rust"` | [Rust Playground](https://play.rust-lang.org/) |
 
 * (2022-11-29) 支持同名的多级 categories，如果你是从旧版本更新到当前版本，请在本地运行 `bundle update`。原版 Chirpy 使用 `jekyll-archives` 插件生成 categories，该插件将所有 categories 视为同等级别关系，这导致在 Chirpy 中无法使用相同名字的二级 categories，这个问题在本分支中得以修复，可以使用任何同名的多级 categories 了。注意：由于将 `jekyll-archives` 下载到本地 `.gems` 目录，并且将 `Gemfile` 指向本地路径，因此本地需要 `bundle update` 之后才能生效。
-* (2022-12-12) 添加了动画背景效果和鼠标点击效果，考虑到不是所有人都喜欢特效，默认情况下这两都是禁用的。如需开启，请在 `_config.yml` 中配置 `backgroud_animation` 和 `mouse_click_effect` 为 `true`。
+* (2022-12-12) 添加了动画背景效果和鼠标点击效果，考虑到不是所有人都喜欢特效，默认情况下这两都是禁用的。如需开启，请在 `_config.yml` 中配置 `background_animation` 和 `mouse_click_effect` 为 `true`。
 
 通常，每周会至少 merge 一次 [`upstream/master`](https://github.com/cotes2020/jekyll-theme-chirpy) 以追踪新的功能。
+
+动画背景和鼠标点击特效可以在 `_config.yml` 中通过 `background_animation` 和 `mouse_click_effect` 配置。
+
+## 新增文章
+
+文章的分类和标签以 Markdown 文件顶部的 Front Matter 为准。推荐使用脚本创建新文章：
+
+```bash
+npm install
+npm run post:new -- --title "文章标题" --category "Go/语言学习" --tags "Go,编程"
+```
+
+也可以打开网站侧边栏的“上传文章”，在内容工作台中选择本地仓库并拖入 Markdown 与配图。工作台通过浏览器授权直接整理本地文件，不会上传文件或保存 GitHub Token；推荐使用最新版 Chrome 或 Edge。
+
+脚本会生成 `_posts/分类/子分类/YYYY-MM-DD-slug.md`。文章中的图片建议放在
+`assets/img/posts/slug/`，并在 Front Matter 中配置 `img_path` 和 `image`。
+
+提交前可以运行内容检查：
+
+```bash
+npm run content:check
+```
+
+完整的文章和图片约定见 [`docs/content-guide.md`](docs/content-guide.md)。
+
+已有文章暂时保留原目录和 URL，避免一次迁移造成图片或链接变化；新文章按上述规范创建即可。

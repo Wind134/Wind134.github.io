@@ -7,11 +7,108 @@ refactor: true
 
 {% assign pinned = site.posts | where: 'pin', 'true' %}
 {% assign default = site.posts | where_exp: 'item', 'item.pin != true and item.hidden != true' %}
-
 {% assign posts = '' | split: '' %}
+{% assign categories_tab = site.tabs | where: 'layout', 'categories' | first %}
 
-<!-- Get pinned posts -->
+{% assign cpp_posts = site.categories['CPP'] %}
+{% assign go_posts = site.categories['Go'] %}
+{% assign os_posts = site.categories['操作系统'] %}
+{% assign network_posts = site.categories['计算机网络'] %}
+{% assign database_posts = site.categories['数据库'] %}
+{% assign algorithm_posts = site.categories['数据结构与算法'] %}
 
+<section class="home-hero">
+  <div class="home-hero__content">
+    <p class="home-hero__eyebrow">
+      <span aria-hidden="true">01</span>
+      Ping 的技术知识库
+    </p>
+    <h1>把知识连成体系，<br>而不是堆成列表。</h1>
+    <p class="home-hero__description">
+      深入 C++ 与 Go，同时梳理操作系统、网络、数据库与算法。这里保留可以反复查阅的技术路径和问题答案。
+    </p>
+    <div class="home-hero__actions">
+      <a class="btn btn-primary" href="#knowledge-map">从知识地图开始</a>
+      <a class="btn btn-outline-primary" href="#latest-posts">阅读最新文章</a>
+    </div>
+  </div>
+  <div class="home-hero__meta" aria-label="博客更新信息">
+    <span><strong>{{ site.posts.size }}</strong> 篇笔记</span>
+    {% if site.posts.first %}
+      <span>最近更新 {{ site.posts.first.date | date: '%Y.%m.%d' }}</span>
+    {% endif %}
+  </div>
+</section>
+
+<section class="home-section knowledge-map" id="knowledge-map" aria-labelledby="knowledge-map-title">
+  <div class="home-section__heading">
+    <div>
+      <span class="home-section__index">02 / KNOWLEDGE MAP</span>
+      <h2 id="knowledge-map-title">知识地图</h2>
+    </div>
+    {% if categories_tab %}
+      <a href="{{ categories_tab.url | relative_url }}">全部分类 <span aria-hidden="true">↗</span></a>
+    {% endif %}
+  </div>
+
+  <div class="topic-grid">
+    <a class="topic-card" data-topic="cpp" href="{{ '/categories/cpp/' | relative_url }}">
+      <span class="topic-card__number">01</span>
+      <div>
+        <h3>C++ 深入</h3>
+        <p>语言机制、STL、并发与工程实践。</p>
+      </div>
+      <span class="topic-card__meta">{{ cpp_posts | size }} 篇笔记</span>
+    </a>
+
+    <a class="topic-card" data-topic="go" href="{{ '/categories/go/' | relative_url }}">
+      <span class="topic-card__number">02</span>
+      <div>
+        <h3>Go 语言</h3>
+        <p>语法、并发模型与工程化方法。</p>
+      </div>
+      <span class="topic-card__meta">{{ go_posts | size }} 篇笔记</span>
+    </a>
+
+    <a class="topic-card" data-topic="system" href="{{ '/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/' | relative_url }}">
+      <span class="topic-card__number">03</span>
+      <div>
+        <h3>操作系统</h3>
+        <p>进程、内存、I/O 与 Linux 实践。</p>
+      </div>
+      <span class="topic-card__meta">{{ os_posts | size }} 篇笔记</span>
+    </a>
+
+    <a class="topic-card" data-topic="network" href="{{ '/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/' | relative_url }}">
+      <span class="topic-card__number">04</span>
+      <div>
+        <h3>计算机网络</h3>
+        <p>TCP/IP、HTTP 与协议工作原理。</p>
+      </div>
+      <span class="topic-card__meta">{{ network_posts | size }} 篇笔记</span>
+    </a>
+
+    <a class="topic-card" data-topic="database" href="{{ '/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/' | relative_url }}">
+      <span class="topic-card__number">05</span>
+      <div>
+        <h3>数据库</h3>
+        <p>数据库原理、SQL 与性能优化。</p>
+      </div>
+      <span class="topic-card__meta">{{ database_posts | size }} 篇笔记</span>
+    </a>
+
+    <a class="topic-card" data-topic="algorithm" href="{{ '/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/' | relative_url }}">
+      <span class="topic-card__number">06</span>
+      <div>
+        <h3>数据结构与算法</h3>
+        <p>常用模型、解题方法与实现细节。</p>
+      </div>
+      <span class="topic-card__meta">{{ algorithm_posts | size }} 篇笔记</span>
+    </a>
+  </div>
+</section>
+
+<!-- Build the current paginated post collection. -->
 {% assign offset = paginator.page | minus: 1 | times: paginator.per_page %}
 {% assign pinned_num = pinned.size | minus: offset %}
 
@@ -23,10 +120,7 @@ refactor: true
   {% assign pinned_num = 0 %}
 {% endif %}
 
-<!-- Get default posts -->
-
 {% assign default_beg = offset | minus: pinned.size %}
-
 {% if default_beg < 0 %}
   {% assign default_beg = 0 %}
 {% endif %}
@@ -40,70 +134,59 @@ refactor: true
   {% endfor %}
 {% endif %}
 
-<div id="post-list">
-  {% for post in posts %}
-    <a href="{{ post.url | relative_url }}" class="card-wrapper">
-      <div class="card post-preview flex-md-row-reverse">
-        {% if post.image %}
-          {% if post.image.lqip %}
-            {% capture lqip %}lqip="{{ post.image.lqip }}"{% endcapture %}
-          {% endif %}
+<section class="home-section latest-posts" id="latest-posts" aria-labelledby="latest-posts-title">
+  <div class="home-section__heading">
+    <div>
+      <span class="home-section__index">03 / LATEST NOTES</span>
+      <h2 id="latest-posts-title">最近文章</h2>
+    </div>
+    <p>从最新的问题和实践记录开始阅读。</p>
+  </div>
 
-          {% assign src = post.image.path | default: post.image %}
-          {% unless src contains '//' %}
-            {% assign src = post.img_path | append: '/' | append: src | replace: '//', '/' %}
-          {% endunless %}
+  <div id="post-list">
+    {% for post in posts %}
+      <a
+        href="{{ post.url | relative_url }}"
+        class="card-wrapper home-post-link"
+        data-topic="{{ post.categories | first | default: 'notes' | escape }}"
+      >
+        <article class="card post-preview{% if post.image %} has-image{% endif %}">
+          <span class="home-post-index">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
 
-          {% assign alt = post.image.alt | xml_escape | default: 'Preview Image' %}
-
-          <img src="{{ src }}" w="17" h="10" alt="{{ alt }}" {{ lqip }}>
-        {% endif %}
-
-        <div class="card-body d-flex flex-column">
-          <h1 class="card-title my-2 mt-md-0">
-            {{ post.title }}
-          </h1>
-
-          <div class="card-text post-content mt-0 mb-2">
-            <p>
-              {% include no-linenos.html content=post.content %}
-              {{ content | markdownify | strip_html | truncate: 200 | escape }}
-            </p>
-          </div>
-
-          <div class="post-meta flex-grow-1 d-flex align-items-end">
-            <div class="me-auto">
-              <!-- posted date -->
-              <i class="iconfont icon-Monthdatecalendar me-1"></i>
-              {% include datetime.html date=post.date lang=lang %}
-
-              <!-- categories -->
-              {% if post.categories.size > 0 %}
-                <i class="iconfont icon-FolderOpen-1 me-1"></i>
-                <span class="categories">
-                  {% for category in post.categories %}
-                    {{ category }}
-                    {%- unless forloop.last -%},{%- endunless -%}
-                  {% endfor %}
+          <div class="card-body d-flex flex-column">
+            <div class="home-post-category">
+              {{ post.categories | first | default: 'Notes' }}
+              {% if post.pin %}<span>· 置顶</span>{% endif %}
+            </div>
+            <h3 class="card-title">{{ post.title }}</h3>
+            <div class="card-text post-content">
+              <p>{{ post.excerpt | strip_html | strip_newlines | truncate: 150 | escape }}</p>
+            </div>
+            <div class="post-meta">
+              <span>{% include datetime.html date=post.date lang=lang %}</span>
+              {% if post.tags.size > 0 %}
+                <span class="post-card-tags">
+                  {% for tag in post.tags limit: 2 %}<span>#{{ tag }}</span>{% endfor %}
                 </span>
               {% endif %}
             </div>
-
-            {% if post.pin %}
-              <div class="pin ms-1">
-                <i class="iconfont icon-thumb-tack"></i>
-                <span>{{ site.data.locales[lang].post.pin_prompt }}</span>
-              </div>
-            {% endif %}
           </div>
-          <!-- .post-meta -->
-        </div>
-        <!-- .card-body -->
-      </div>
-    </a>
-  {% endfor %}
-</div>
-<!-- #post-list -->
+
+          {% if post.image %}
+            {% assign src = post.image.path | default: post.image %}
+            {% unless src contains '//' %}
+              {% assign src = post.img_path | append: '/' | append: src | replace: '//', '/' %}
+            {% endunless %}
+            <div class="home-post-image">
+              <img src="{{ src }}" alt="{{ post.image.alt | xml_escape | default: post.title }}" loading="lazy">
+            </div>
+          {% endif %}
+          <span class="home-post-arrow" aria-hidden="true">↗</span>
+        </article>
+      </a>
+    {% endfor %}
+  </div>
+</section>
 
 {% if paginator.total_pages > 1 %}
   {% include post-paginator.html %}
